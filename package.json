@@ -1,0 +1,10 @@
+{
+  "name": "goods-journey",
+  "version": "0.1.0",
+  "private": true,
+  "description": "From Farm to Shelf: an interactive 3D journey of melons from Brazil to a UK supermarket.",
+  "scripts": {
+    "start": "python3 -m http.server 8080 --bind 127.0.0.1",
+    "check": "node scripts/check.mjs"
+  }
+}

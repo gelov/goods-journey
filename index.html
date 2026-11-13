@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>From Farm to Shelf</title>
+<link rel="stylesheet" href="styles/main.css">
+</head>
+<body class="intro guided">
+<canvas id="stage" tabindex="0" aria-label="Miniature 3D world: melon supply chain from Brazil to the UK"></canvas>
+<div id="labels" aria-hidden="true"></div>
+
+
+<header id="top">
+  <div class="brand glass"><i></i><b>From Farm to Shelf</b></div>
+  <nav class="tools" aria-label="View controls">
+    <div class="seg glass" role="group" aria-label="Exploration mode"><button id="mGuided" class="on">Guided journey</button><button id="mFree">Free exploration</button></div>
+    <button id="bData" class="chip on" aria-pressed="true">Data flow</button>
+    <button id="bOrbit" class="chip" aria-pressed="false">Auto-orbit</button>
+    <button id="bFollow" class="chip" title="Hand the camera back to the guided journey">Follow</button>
+    <button id="bGlobe" class="chip">Globe</button>
+    <button id="bReset" class="chip">Reset view</button>
+  </nav>
+</header>
+
+<section id="hero">
+  <p class="eyebrow">Brazil → United Kingdom · melons · ten stages</p>
+  <h1>From Farm<br>to <em>Shelf</em></h1>
+  <p class="lede">Follow the journey of melons from Brazil to the UK, and discover how data moves through every stage of the supply chain.</p>
+  <div class="cta"><button class="btn" id="bPlay">Play the Journey</button><button class="btn ghost" id="bExplore">Explore the Supply Chain</button></div>
+  <p class="hint">Drag to orbit or spin the globe · right-drag to pan · scroll to zoom · click anything</p>
+</section>
+
+<div id="pad" aria-label="Camera controls">
+  <button id="zIn" title="Zoom in" aria-label="Zoom in">+</button>
+  <button id="zOut" title="Zoom out" aria-label="Zoom out">−</button>
+  <button id="rL" class="hm" title="Rotate left" aria-label="Rotate left">⟲</button>
+  <button id="rR" class="hm" title="Rotate right" aria-label="Rotate right">⟳</button>
+  <button id="bInfo" title="Stage information" aria-label="Stage information">i</button>
+</div>
+<p id="legend">Farm, port, warehouse and store locations and the routes between them are illustrative placeholders, as are readings and report contents. Earth imagery: Solar System Scope, CC BY 4.0. Map: © OpenStreetMap contributors.</p>
+
+<aside id="panel" class="glass" aria-live="polite"><button class="x" id="pX" aria-label="Close">×</button><div id="pBody"></div></aside>
+
+<nav id="tl" class="glass hide" aria-label="Journey progress">
+  <div id="tlHead"><b id="tlName"></b><div id="tlCtl"><button id="bRe" title="Replay this stage" aria-label="Replay this stage">↺</button><button id="bPP" title="Play / pause" aria-label="Play or pause">❚❚</button><input id="scrub" type="range" min="0" max="20" step="0.05" value="0" aria-label="Progress within this stage"></div><span id="tlCount"></span></div>
+  <div id="tlRow"><button class="nav" id="bPrev">← Prev</button><div id="track"><div class="rail"></div><div class="fill" id="fill"></div></div><button class="nav" id="bNext">Next →</button></div>
+</nav>
+<div id="nogl" hidden>This experience needs WebGL. Open it in a current browser with hardware acceleration on.</div>
+<script src="src/config.js"></script>
+<script src="src/engine/math.js"></script>
+<script src="src/engine/tween.js"></script>
+<script src="src/engine/geometry.js"></script>
+<script src="src/sites/palette.js"></script>
+<script src="src/journey/stages.js"></script>
+<script src="src/sites/kit.js"></script>
+<script src="src/geo/sites.js"></script>
+<script src="src/sites/world.js"></script>
+<script src="src/sites/paths.js"></script>
+<script src="src/engine/gl.js"></script>
+<script src="src/sites/movers.js"></script>
+<script src="src/sites/data-layer.js"></script>
+<script src="src/geo/globe.js"></script>
+<script src="src/geo/tiles.js"></script>
+<script src="src/journey/scripts.js"></script>
+<script src="src/engine/camera.js"></script>
+<script src="src/engine/picking.js"></script>
+<script src="src/engine/render.js"></script>
+<script src="src/journey/ui.js"></script>
+<script src="src/main.js"></script>
+</body>
+</html>

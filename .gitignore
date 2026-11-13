@@ -1,0 +1,11 @@
+.claude/settings.local.json
+.claude/backups/
+
+# local workspace tooling, not part of the project
+.claude/
+CLAUDE.md
+ai-excellence-playbook/
+exploded-view-SKILL*.md
+
+.DS_Store
+node_modules/
