@@ -20,11 +20,12 @@ There is no build step and no dependency to install. `npm run check` syntax-chec
 |---|---|
 | `index.html`, `styles/` | Page markup and styling |
 | `src/config.js` | Placeholder coordinates, texture and map tile source |
+| `src/data/` | Sample journey records, the data-source layer and the data model (see `docs/DATA.md`) |
 | `src/engine/` | WebGL renderer, geometry builders, camera, picking |
 | `src/geo/` | Globe, map tiles, routes, placing sites on the globe |
 | `src/sites/` | The 3D models and the animated vehicles, people and cargo, in two visual styles |
 | `src/journey/` | Stage text, stage timelines and camera shots, the UI |
-| `assets/` | Earth texture |
+| `assets/` | Earth texture, logo |
 | `docs/` | Architecture and configuration notes |
 
 ## Visual style

@@ -12,7 +12,6 @@
 
 
 <header id="top">
-  <div class="brand glass"><i></i><b>From Farm to Shelf</b></div>
   <nav class="tools" aria-label="View controls">
     <div class="seg glass" role="group" aria-label="Exploration mode"><button id="mGuided" class="on">Guided journey</button><button id="mFree">Free exploration</button></div>
     <button id="bData" class="chip on" aria-pressed="true">Data flow</button>
@@ -37,9 +36,7 @@
   <button id="zOut" title="Zoom out" aria-label="Zoom out">−</button>
   <button id="rL" class="hm" title="Rotate left" aria-label="Rotate left">⟲</button>
   <button id="rR" class="hm" title="Rotate right" aria-label="Rotate right">⟳</button>
-  <button id="bInfo" title="Stage information" aria-label="Stage information">i</button>
 </div>
-<p id="legend">Farm, port, warehouse and store locations and the routes between them are illustrative placeholders, as are readings and report contents. Earth imagery: Solar System Scope, CC BY 4.0. Map: © OpenStreetMap contributors.</p>
 
 <div id="settings" class="glass" role="dialog" aria-label="Settings">
   <p class="eyebrow">Settings</p>
@@ -55,7 +52,9 @@
     </button>
   </div>
   <p class="note">Changes only the 3D sites and vehicles. Your stage, camera and playback stay where they are.</p>
+  <p class="note">Farm, port, warehouse and store locations and the routes between them are illustrative placeholders, as are readings and report contents. Earth imagery: Solar System Scope, CC BY 4.0. Map: © OpenStreetMap contributors.</p>
 </div>
+<button id="pOpen" class="glass" aria-label="Show stage details" title="Show stage details">›</button>
 <aside id="panel" class="glass" aria-live="polite"><button class="x" id="pX" aria-label="Close">×</button><div id="pBody"></div></aside>
 
 <nav id="tl" class="glass hide" aria-label="Journey progress">
@@ -64,6 +63,9 @@
 </nav>
 <div id="nogl" hidden>This experience needs WebGL. Open it in a current browser with hardware acceleration on.</div>
 <script src="src/config.js"></script>
+<script src="src/data/mock-records.js"></script>
+<script src="src/data/source.js"></script>
+<script src="src/data/model.js"></script>
 <script src="src/engine/math.js"></script>
 <script src="src/engine/tween.js"></script>
 <script src="src/engine/geometry.js"></script>

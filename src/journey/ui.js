@@ -19,9 +19,10 @@ function buildUI(){
  SITES.forEach(S=>{const o=glab(()=>S.g,`<i></i>${S.n}<small>illustrative location</small>`,'gm',()=>X.d>1700&&!(PRIM===S&&FADE>.4)&&(X.d<14000||S.k===0||S.k===2),'translate(-12px,-50%)');o.e.addEventListener('click',()=>goStage(S.st))});
  glab(()=>[-52,-13],'BRAZIL','big',()=>X.d>15000);glab(()=>[-3.5,57.2],'UNITED KINGDOM','big',()=>X.d>15000);glab(()=>[-30,22],'ATLANTIC OCEAN','big',()=>X.d>16000);
  const NM=['Lorry · farm → export port','Cargo vessel · Brazil → UK','Lorry · UK port → warehouse','Lorry · warehouse → supermarket'];
- const v=glab(()=>MARK?MARK.g:[0,0],'','veh',()=>!!MARK&&X.d>1500,'translate(-50%,-190%)');v.dyn=()=>{const m=MARK.mk,pc=Math.round(MKU[m]()*100);return`<b>${NM[m]}</b>${m===1&&VIEW.data?`Temperature ${(8+Math.sin(T*.3)*.3).toFixed(1)} °C · CO₂ ${(4+Math.sin(T*.23+1)*.2).toFixed(1)} %<br>`:''}<em><s style="width:${pc}%"></s></em><u>${pc}% · illustrative route${m===1&&VIEW.data?' and readings':''} · travel time not confirmed</u>`};
+ const v=glab(()=>MARK?MARK.g:[0,0],'','veh',()=>!!MARK&&X.d>1500,'translate(-50%,-190%)');v.dyn=()=>{const m=MARK.mk,pc=Math.round(MKU[m]()*100);return`<b>${NM[m]}</b>${m===1&&VIEW.data?`Temperature ${(5.2+Math.sin(T*.3)*.2).toFixed(1)} °C · CO₂ ${(.4+Math.sin(T*.23+1)*.03).toFixed(2)} %<br>`:''}<em><s style="width:${pc}%"></s></em><u>${pc}% · illustrative route${m===1&&VIEW.data?' and readings':''} · travel time not confirmed</u>`};
  glab(()=>ull(ARCS[0][50]),'Claim → grower / originator','dchip claim',()=>VIEW.data&&STATE.idx===8&&X.d>9000&&tau(8)>6.5,'translate(-50%,-260%)');
  glab(()=>ull(ARCS[1][50]),'Financial settlement <span style="opacity:.6">(illustrative flow)</span>','dchip gold',()=>VIEW.data&&STATE.idx===8&&X.d>9000&&tau(8)>11,'translate(-50%,160%)');
+ initPanel();
  $('#bPrev').onclick=()=>goStage(STATE.idx-1);$('#bNext').onclick=()=>goStage(STATE.idx+1);
  $('#bPlay').onclick=()=>{start('guided');goStage(0)};$('#bExplore').onclick=()=>{start('free');STATE.t=SCRIPT[0].home;STATE.playing=true;flyTo(()=>GLOBE_VIEW,2200)};
  $('#mGuided').onclick=()=>setMode('guided');$('#mFree').onclick=()=>setMode('free');
@@ -31,7 +32,7 @@ function buildUI(){
  $('#bFollow').onclick=follow;$('#bReset').onclick=()=>{if(!STATE.started)return;FOCUS=0;FOLLOW=null;if(STATE.mode==='guided')follow();else{const t=STATE.t;flyTo(()=>{const s=STATE.t;STATE.t=SCRIPT[STATE.idx].home;const p=stagePose(STATE.idx);STATE.t=s;return p});void t}};
  $('#zIn').onclick=()=>{userTook();tween(POSE,'ld',clamp(POSE.ld-.5,LMIN,LMAX),350,out)};$('#zOut').onclick=()=>{userTook();tween(POSE,'ld',clamp(POSE.ld+.5,LMIN,LMAX),350,out)};
  $('#rL').onclick=()=>{userTook();tween(POSE,'ry',POSE.ry-.5,450,out)};$('#rR').onclick=()=>{userTook();tween(POSE,'ry',POSE.ry+.5,450,out)};
- $('#bInfo').onclick=()=>STATE.panel?hidePanel():showPanel(STATE.idx);$('#pX').onclick=hidePanel;
+ $('#pX').onclick=hidePanel;$('#pOpen').onclick=()=>showPanel(STATE.idx);
  $('#bPP').onclick=()=>{if(STATE.t>=SCRIPT[STATE.idx].dur-.01){goStage(STATE.idx);return}STATE.playing=!STATE.playing;STATE.hold=false;syncCtl()};
  $('#bRe').onclick=()=>{STATE.t=0;goStage(STATE.idx,true)};
  const sc=$('#scrub');sc.addEventListener('input',()=>{STATE.t=+sc.value;STATE.playing=false;STATE.hold=false;FLY=null;FOLLOW=null;if(STATE.mode==='guided')STATE.att=true;syncCtl()});
@@ -49,12 +50,33 @@ function goStage(i,replay){if(i<0||i>=STAGES.length)return;if(!STATE.started)sta
  STATE.idx=i;FOCUS=0;FOLLOW=null;STATE.t=g?0:SCRIPT[i].home;STATE.playing=true;syncTL();
  if(!seq){STATE.att=false;STATE.hold=true;flyTo(()=>stagePose(i),null,()=>{STATE.hold=false;STATE.att=g;syncCtl()})}
  if(g)showPanel(i);else hidePanel()}
-function showPanel(i,obj){const s=STAGES[i];STATE.panel=true;
- $('#pBody').innerHTML=`<p class="eyebrow">Stage ${String(i+1).padStart(2,'0')} / ${STAGES.length}</p><h2>${s.name}</h2>${obj?`<div class="obj"><b>${obj.name}</b>${obj.note||''}</div>`:''}
- <h3 style="--c:#f5f3ec">What’s happening</h3><p>${s.what}</p><h3 style="--c:var(--data)">Data captured</h3><div class="tags">${s.data.map(d=>`<span>${d}</span>`).join('')}</div>
- <h3 style="--c:var(--ok)">How it’s used</h3><p>${s.use}</p><h3 style="--c:var(--acc)">What’s next</h3><p>${s.next}</p>${s.note?`<p class="note">${s.note}</p>`:''}`;
- $('#panel').classList.add('show');$('#panel').scrollTop=0}
-function hidePanel(){STATE.panel=false;$('#panel').classList.remove('show')}
+/* stage details: text from STAGES, data chips from FIELDS, values through fieldInfo() for the shipment being followed */
+let PF=[];
+function esc(v){return String(v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function chipsHTML(list){return list.map(f=>`<button type="button" data-f="${PF.push(f)-1}"${fieldInfo(f).status==='unavailable'?' class="na"':''}>${esc(f.label)}</button>`).join('')}
+function showPanel(i,obj){const s=STAGES[i];STATE.panel=true;STATE.pi=i;STATE.obj=obj||null;PF=[];const ships=recs('shipments'),sh=context().one('shipment'),of=obj?entFields(obj):[];
+ $('#pBody').innerHTML=`<p class="eyebrow"><img class="lg" src="assets/contained-logo.png" alt="Contained Technologies" onerror="this.remove()">Stage ${String(i+1).padStart(2,'0')} / ${STAGES.length}</p><h2>${s.name}</h2>
+ <div class="ctx">Following ${ships.length>1?`<select id="selShip" aria-label="Shipment to follow">${ships.map(x=>`<option${x.id===sh.id?' selected':''}>${esc(x.id)}</option>`).join('')}</select>`:sh?`<b>${esc(sh.id)}</b>`:'no shipment'}<em class="ds ${DATA.status}">${STATUS[DATA.status]}</em></div>
+ ${obj?`<div class="obj"><b>${obj.name}</b>${obj.note||''}${of.length?`<div class="tags">${chipsHTML(of)}</div>`:''}</div>`:''}
+ <h3 style="--c:#f5f3ec">What’s happening</h3><p>${s.what}</p><h3 style="--c:var(--data)">Data captured</h3><div class="tags" id="stTags">${chipsHTML(FIELDS[i])}</div>
+ <h3 style="--c:#c9a8ff">Data source</h3><p>${s.src}</p><h3 style="--c:var(--ok)">How it’s used</h3><p>${s.use}</p><h3 style="--c:var(--acc)">What’s next</h3><p>${s.next}</p>${s.note?`<p class="note">${s.note}</p>`:''}`;
+ $('#panel').classList.add('show');document.body.classList.add('pan');$('#panel').scrollTop=0;
+ /* the first data field starts open, so every stage shows real values straight away */
+ const b0=$('#pBody').querySelector(of.length?'.obj [data-f]':'#stTags [data-f]');if(b0)showField(b0)}
+/* a clicked chip opens its detail card right under its row of chips; clicking it again closes it */
+function showField(b){const was=b.classList.contains('on'),old=$('#fd');if(old)old.remove();$('#pBody').querySelectorAll('[data-f].on').forEach(x=>x.classList.remove('on'));if(was)return;
+ const d=fieldInfo(PF[+b.dataset.f]),fd=el('div','fd');fd.id='fd';b.classList.add('on');
+ fd.innerHTML=`<b>${esc(d.label)}</b><dl><dt>Value</dt><dd>${esc(d.value)}</dd><dt>Source</dt><dd>${esc(d.source)}</dd>${d.record?`<dt>Record</dt><dd>${esc(d.record)}</dd>`:''}${d.linked?`<dt>Linked to</dt><dd>${esc(d.linked)}</dd>`:''}<dt>Data status</dt><dd><em class="ds ${d.status}">${STATUS[d.status]}</em></dd></dl>
+ ${vizHTML(d.viz)}<div class="tr">${d.trace.map(t=>`<span class="${t.on?'on':''}${t.ids.length?'':' na'}">${t.k}${t.ids.length>3?' '+esc(t.ids[0]+' … '+t.ids[t.ids.length-1])+' ('+t.ids.length+')':t.ids.length?' '+esc(t.ids.join(', ')):': none'}</span>`).join('')}</div>`;b.parentNode.after(fd)}
+/* small visuals for fields that hold several values: a readings line chart, or a results table with bars */
+function vizHTML(v){if(!v)return'';const d=v[1];
+ if(v[0]==='line'){const ys=d.map(p=>p[1]),lo=Math.min(...ys),hi=Math.max(...ys),W=280,H=64,x=i=>6+i*(W-12)/(d.length-1),y=t=>H-8-(t-lo)/((hi-lo)||1)*(H-18);
+  return`<figure class="viz"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Readings from ${esc(d[0][0])} to ${esc(d[d.length-1][0])}, ${lo} to ${hi}"><polyline points="${d.map((p,i)=>x(i).toFixed(1)+','+y(p[1]).toFixed(1)).join(' ')}"/>${d.map((p,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(p[1]).toFixed(1)}" r="2.2"><title>${esc(p[0])}: ${p[1]}°C</title></circle>`).join('')}</svg>
+  <figcaption><span>${esc(d[0][0])}</span><span>${d.length} daily readings · ${lo.toFixed(1)}–${hi.toFixed(1)}°C</span><span>${esc(d[d.length-1][0])}</span></figcaption></figure>`}
+ const tot=d.reduce((a,r)=>a+r[1],0)||1;return`<table class="viz">${d.map((r,i)=>`<tr><td>${esc(r[0])}</td><td>${r[1].toLocaleString('en-GB')}</td><td><i class="${i?'bad':'ok'}" style="width:${Math.max(2,r[1]/tot*100).toFixed(1)}%"></i></td><td>${esc(r[2]||'')}</td></tr>`).join('')}</table>`}
+function initPanel(){const p=$('#pBody');p.addEventListener('click',e=>{const b=e.target.closest('[data-f]');if(b)showField(b)});
+ p.addEventListener('change',e=>{if(e.target.id==='selShip'){SEL.shipment=e.target.value;showPanel(STATE.pi,STATE.obj)}})}
+function hidePanel(){STATE.panel=false;document.body.classList.remove('pan');$('#panel').classList.remove('show')}
 
 function updateLabels(){
  for(const l of GLB){const g=l.g(),p=llu(g[0],g[1]),q=l.ok()&&dot(p,X.eyeG)>1.004?proj(X.gvp,p):null,ok=STATE.started&&q&&q[1]>50&&q[1]<GLS.ch-90||(!STATE.started&&q&&l.e.classList.contains('big'));l.e.classList.toggle('show',!!ok);
