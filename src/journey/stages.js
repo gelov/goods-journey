@@ -1,6 +1,8 @@
 'use strict';
 /* ================= entities & stages ================= */
-function ent(name,stage,note,fn){const id=ENT.length;ENT.push({id,name,stage,note,site:CUR,bb:[1e9,1e9,1e9,-1e9,-1e9,-1e9]});if(fn){const o=PID;PID=id;fn(id);PID=o}return id}
+/* when a second visual style is built, the same entities are replayed in the same order instead of registered again */
+let REPLAY=false,RI=1;
+function ent(name,stage,note,fn){let id;if(REPLAY)id=RI++;else{id=ENT.length;ENT.push({id,name,stage,note,site:CUR,bb:[1e9,1e9,1e9,-1e9,-1e9,-1e9]})}if(fn){const o=PID;PID=id;fn(id);PID=o}return id}
 const STAGES=[
  {name:'Brazil Farm',short:'Brazil Farm',cam:[-198,0,8,-.55,.62,125],tag:[-196,16,-22],
   what:'Melons grow in open fields on a farm in Brazil. Workers tend and inspect the crop until it is ready to pick.',

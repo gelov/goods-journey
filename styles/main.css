@@ -108,3 +108,17 @@ body.intro #legend{opacity:0}
  #hero{left:18px;bottom:130px}#pad{bottom:124px;left:12px}#pad .hm{display:none}
  .st{flex:0 0 74px}#tl{padding:8px}
 }
+/* settings popover */
+#settings{position:absolute;right:16px;top:64px;width:340px;max-width:calc(100% - 32px);z-index:8;padding:14px 14px 12px;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .25s var(--ease),transform .25s var(--ease)}
+#settings.show{opacity:1;transform:none;pointer-events:auto}
+#settings h3{font-size:15px;margin:4px 0 10px;font-weight:600}
+#settings .styles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#settings .styles button{background:rgba(245,243,236,.04);border:1px solid var(--hair);border-radius:12px;padding:6px 6px 9px;text-align:left;display:flex;flex-direction:column;gap:2px;transition:border-color .15s,background .15s}
+#settings .styles button:hover{border-color:rgba(245,243,236,.45)}
+#settings .styles button.on{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc);background:rgba(242,193,78,.08)}
+#settings .styles svg{width:100%;border-radius:8px;display:block;margin-bottom:6px}
+#settings .styles b{font-size:13px;padding:0 4px}#settings .styles b::after{content:'';display:none}
+#settings .styles button.on b::after{content:'Selected';display:inline-block;margin-left:7px;font-size:10px;font-weight:600;color:#1b1c20;background:var(--acc);border-radius:999px;padding:1px 7px;vertical-align:1px}
+#settings .styles span{font-size:11.5px;color:var(--ink3);padding:0 4px}
+#settings .note{font-size:11.5px;color:var(--ink3);margin:10px 2px 0}
+#bSet{font-size:15px;padding:8px 12px}

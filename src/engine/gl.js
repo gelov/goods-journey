@@ -4,17 +4,33 @@ const cv=$('#stage');let gl,PR={},FB={};const GLS={w:1,h:1,cw:1,ch:1};
 const VS=`attribute vec3 aP,aN,aC,aD;uniform mat4 uVP,uM,uL;uniform float uT,uGrow;varying vec3 vN,vC,vW,vD;varying vec4 vS;varying float vZ;
 void main(){vec4 w=uM*vec4(aP,1.);w.x+=sin(uT*1.6+w.x*.35+w.z*.27)*aD.y*.13;w.z+=cos(uT*1.3+w.x*.21)*aD.y*.08;if(w.y>0.)w.y*=uGrow;
 vN=mat3(uM)*aN;vC=aC;vW=w.xyz;vD=aD;vS=uL*vec4(w.xyz+normalize(vN)*.22,1.);gl_Position=uVP*w;vZ=gl_Position.z*.5+.5;}`;
-const FS=`precision highp float;varying vec3 vN,vC,vW,vD;varying vec4 vS;uniform vec3 uKey,uEye;uniform sampler2D uSh;uniform float uT,uFocus,uHover,uBias,uFade;uniform vec2 uCen,uR;
+/* main surface shader. uSty 0 = cartoon (soft clay look), 1 = industrial (metal, glass, corrugated sheet, grain, sky reflections, filmic tone) */
+const FS=`precision highp float;varying vec3 vN,vC,vW,vD;varying vec4 vS;uniform vec3 uKey,uEye;uniform sampler2D uSh;uniform float uT,uFocus,uHover,uBias,uFade,uSty;uniform vec2 uCen,uR;
 float up(vec4 c){return dot(c,vec4(1.,1./255.,1./65025.,1./16581375.));}
 float shadow(){vec3 s=vS.xyz/vS.w*.5+.5;if(s.x<0.||s.x>1.||s.y<0.||s.y>1.||s.z>1.)return 1.;float a=0.;for(int i=-1;i<=1;i++)for(int j=-1;j<=1;j++)a+=(s.z-uBias>up(texture2D(uSh,s.xy+vec2(float(i),float(j))/2048.)))?0.:1.;return a/9.;}
-void main(){vec3 N=normalize(vN),c=vC;float mat=vD.z;vec3 Vd=normalize(uEye-vW);
-if(mat>1.5){c=c*(.9+.3*sin(uT*3.+vW.x*.2));}else{
- if(mat>.5){float r=sin(vW.x*.8+uT*1.1)*sin(vW.z*1.0-uT*.8)+sin((vW.x+vW.z)*.3+uT*.5);c+=vec3(.03,.045,.05)*r*clamp(90./length(uEye-vW),0.,1.);N=normalize(N+vec3(.07*sin(vW.x*1.3+uT),0.,.07*cos(vW.z*1.1+uT*.8)));}
+float hh(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}
+float vn(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(mix(hh(i),hh(i+vec3(1,0,0)),f.x),mix(hh(i+vec3(0,1,0)),hh(i+vec3(1,1,0)),f.x),f.y),mix(mix(hh(i+vec3(0,0,1)),hh(i+vec3(1,0,1)),f.x),mix(hh(i+vec3(0,1,1)),hh(i+vec3(1,1,1)),f.x),f.y),f.z);}
+void main(){vec3 N=normalize(vN),c=vC;float mat=vD.z;vec3 Vd=normalize(uEye-vW);bool water=mat>.5&&mat<1.5;
+if(mat>1.5&&mat<2.5){c=c*(.9+.3*sin(uT*3.+vW.x*.2));}
+else if(uSty<.5){
+ if(water){float r=sin(vW.x*.8+uT*1.1)*sin(vW.z*1.0-uT*.8)+sin((vW.x+vW.z)*.3+uT*.5);c+=vec3(.03,.045,.05)*r*clamp(90./length(uEye-vW),0.,1.);N=normalize(N+vec3(.07*sin(vW.x*1.3+uT),0.,.07*cos(vW.z*1.1+uT*.8)));}
  float sh=shadow(),ndl=max(dot(N,uKey),0.),h=N.y*.5+.5;
  vec3 amb=mix(vec3(.47,.44,.48),vec3(.64,.68,.75),h);
  c=c*(amb+vec3(.66,.61,.52)*ndl*sh);
  c+=pow(1.-max(dot(N,Vd),0.),3.)*.09;
- if(mat>.5)c+=pow(max(dot(N,normalize(uKey+Vd)),0.),70.)*.45*sh;}
+ if(water)c+=pow(max(dot(N,normalize(uKey+Vd)),0.),70.)*.45*sh;}
+else{
+ float gl=mat>3.5&&mat<4.5?1.:(mat>2.5?.5:.06);
+ if(mat>4.5&&abs(N.y)<.5){vec3 tg=normalize(cross(N,vec3(0.,1.,0.)));N=normalize(N+tg*sin(dot(vW,tg)*10.)*.4);}
+ if(water){gl=1.;c=vec3(.05,.16,.24);float d=clamp(120./length(uEye-vW),0.,1.);N=normalize(N+d*vec3(.1*sin(vW.x*1.7+uT*1.1)+.05*sin(vW.z*4.3-uT*1.6),0.,.1*cos(vW.z*1.4+uT*.9)+.05*sin(vW.x*3.9+uT*1.3)));}
+ else if(mat<.5){c*=.84+.3*(vn(vW*1.9)*.6+vn(vW*8.)*.4);}
+ float sh=shadow(),ndl=max(dot(N,uKey),0.),h=N.y*.5+.5;
+ vec3 amb=mix(vec3(.26,.25,.26),vec3(.46,.52,.62),h);
+ vec3 dif=c*(amb+vec3(1.1,1.,.84)*ndl*sh);
+ vec3 Rf=reflect(-Vd,N);vec3 env=Rf.y>0.?mix(vec3(.66,.70,.74),vec3(.28,.42,.66),clamp(Rf.y*1.4,0.,1.)):mix(vec3(.66,.70,.74),vec3(.22,.22,.2),clamp(-Rf.y*3.,0.,1.));
+ float fr=pow(1.-max(dot(N,Vd),0.),5.),k=clamp(gl*gl*.22+fr*(.15+.75*gl),0.,.85);
+ c=mix(dif,env*(.4+.6*sh),k)+pow(max(dot(N,normalize(uKey+Vd)),0.),mix(14.,110.,gl))*(.05+gl)*sh;
+ c=(c*(2.51*c+.03))/(c*(2.43*c+.59)+.14);}
 float f=step(abs(vD.x-uFocus),.5)*step(.5,vD.x);c+=f*(.13+.1*sin(uT*4.))*vec3(1.,.9,.55);
 float hv=step(abs(vD.x-uHover),.5)*step(.5,vD.x);c+=hv*.09;
 gl_FragColor=vec4(c,uFade*(1.-smoothstep(uR.x,uR.y,length(vW.xz-uCen))));}`;

@@ -2,7 +2,7 @@
 /* ================= movers (driven by stage time, so every stage can be paused and scrubbed) ================= */
 const STATE={mode:'guided',idx:0,t:0,playing:false,started:false,hold:false,att:false,panel:false};
 const MOV=[],ID=I();
-function mover(k,pid,build,upd){const sv=[V,PID,MOVB];V=[];PID=pid;MOVB=true;MAT=0;SW=0;build();const mesh=upload(V);V=sv[0];PID=sv[1];MOVB=sv[2];const o={k,mesh,m:I(),upd,vis:true,p:[0,0,0]};MOV.push(o);if(pid&&ENT[pid]&&!ENT[pid].mover)ENT[pid].mover=o;return o}
+function mover(k,pid,build,upd){const sv=[V,PID,MOVB];V=[];PID=pid;MOVB=true;MAT=0;SW=0;build();const mesh=upload(V);V=sv[0];PID=sv[1];MOVB=sv[2];const o={k,meshes:{[BUILD]:mesh},build,pid,m:I(),upd,vis:true,p:[0,0,0]};MOV.push(o);if(pid&&ENT[pid]&&!ENT[pid].mover)ENT[pid].mover=o;return o}
 function setM(o,x,y,z,yaw,s){o.m=trs(x,y,z,yaw,s);o.p=[x,y,z]}
 const tau=i=>STATE.idx===i?STATE.t:(STATE.idx>i?1e9:-1),u01=(t,a,b)=>clamp((t-a)/(b-a),0,1);
 const onPath=(o,pa,u,y)=>{const p=pAt(pa,u);setM(o,p[0],y,p[2],p[3],1)};

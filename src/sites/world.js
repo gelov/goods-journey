@@ -1,11 +1,11 @@
 'use strict';
 /* ================= build the sites ================= */
-function apron(k){const S=SITES[k],cx=S.c[0],cz=S.c[1],r=S.r1+30,z0=cz-r,z1=cz+r;const land=(a,b)=>{C=k<2?[.60,.79,.47]:[.56,.75,.45];MAT=0;Q([a,-.03,z1],[b,-.03,z1],[b,-.03,z0],[a,-.03,z0],[0,1,0])},sea=(a,b)=>{C=P.water;MAT=1;Q([a,-1.5,z1],[b,-1.5,z1],[b,-1.5,z0],[a,-1.5,z0],[0,1,0]);MAT=0};
+function apron(k){const S=SITES[k],cx=S.c[0],cz=S.c[1],r=S.r1+30,z0=cz-r,z1=cz+r;const land=(a,b)=>{C=STYLES[BUILD].apron[k<2?0:1];MAT=0;Q([a,-.03,z1],[b,-.03,z1],[b,-.03,z0],[a,-.03,z0],[0,1,0])},sea=(a,b)=>{C=P.water;MAT=1;Q([a,-1.5,z1],[b,-1.5,z1],[b,-1.5,z0],[a,-1.5,z0],[0,1,0]);MAT=0};
  if(!S.sea)land(cx-r,cx+r);else if(S.sea[1]>0){land(cx-r,S.sea[0]);sea(S.sea[0],cx+r)}else{sea(cx-r,S.sea[0]);land(S.sea[0],cx+r)}}
 function patch(x0,z0,x1,z1,c){bb(P.bed,(x0+x1)/2,0,(z0+z1)/2,x1-x0,.12,z1-z0);SW=.3;for(let x=x0+2;x<x1-1;x+=4)bb(c,x,.12,(z0+z1)/2,1.7,.55,z1-z0-3);SW=0}
 function scatter(k,n,fn,ok){const S=SITES[k];for(let i=0;i<n;i++){const a=R()*TAU,r=40+R()*(S.r1-30),x=S.c[0]+Math.cos(a)*r,z=S.c[1]+Math.sin(a)*r;if(Math.abs(z-35)<6||!ok(x,z))continue;fn(x,z,.8+R()*.5)}}
 const stripes=(x0,x1,z)=>{for(let x=x0;x<x1;x+=6)bb(P.white,x,.14,z,2.4,.02,.18)};
-function buildWorld(){
+function buildWorld(){R=prng(7);
  site(0);apron(0);
 /* ---------- 01 farm ---------- */
  const yel=ent('Melon field · yellow melons',0,'Rows of melon plants. Harvest information is recorded field by field.',()=>plot(-226,2,-204.5,29,0));
@@ -34,7 +34,8 @@ function buildWorld(){
  
  road([[-345,36],[5,36]],5);stripes(-340,0,36);
  ent('Surrounding farmland',0,'Neighbouring fields around the farm.',()=>{for(const[a,b,c,d,e]of[[-250,-100,-196,-56,P.leaf3],[-186,-104,-122,-60,P.leaf],[-112,-92,-58,-52,P.leaf2],[-262,46,-204,92,P.leaf2],[-194,48,-130,96,P.leaf3],[-120,46,-64,88,P.leaf],[-300,-34,-244,22,P.leaf],[-98,-34,-44,22,P.leaf3]])patch(a,b,c,d,e)});
- scatter(0,70,(x,z,s)=>(R()>.5?palm:tree)(x,z,s),(x,z)=>!(x>-236&&x<-108&&z>-46&&z<46)&&!(z<-48&&z>-106&&x>-252&&x<-56)&&!(z>44&&z<98&&x>-264&&x<-62)&&!(x<-242&&z>-36&&z<24)&&!(x>-100&&z>-36&&z<24));
+ scatter(0,70,(x,z,s)=>(R()>.5?palm:tree)(x,z,s),(x,z)=>!(x>-236&&x<-108&&z>-46&&z<46)&&!(z<-48&&z>-106&&x>-252&&x<-56)&&!(z>44&&z<98&&x>-264&&x<-62)&&!(x<-242&&z>-36&&z<24)&&!(x>-100&&z>-36&&z<24)&&!(IND&&x>-113&&x<-97&&z>-28&&z<8));
+ if(IND)extrasI(0);
 
  site(1);apron(1);
 /* ---------- 03 export port ---------- */
@@ -52,6 +53,7 @@ function buildWorld(){
  for(const[a,b]of[[-40,-40],[10,-60],[-20,60],[40,10]]){cyl(P.red,a,-1.9,b,.5,1.3,8);ball(P.white,a,-.3,b,.35,1,6,3)}
  scatter(1,45,(x,z,s)=>(R()>.4?palm:tree)(x,z,s),(x,z)=>x<-116&&!(x>-146&&x<-122&&z>-32&&z<24));
 
+ if(IND)extrasI(1);
  site(2);apron(2);
 /* ---------- 05 UK port ---------- */
  ent('UK quay',4,CONFIG.ukPort+'.',()=>{bb(P.conc,93,0,2,46,.25,78);bb(P.concD,70.6,-2.2,2,1.2,2.4,78);for(let z=-34;z<40;z+=6)bb(P.yel,71.6,.26,z,.5,.02,3);for(let z=-30;z<=38;z+=17)cyl(P.dark,71.2,.25,z,.4,.6,8)});
@@ -74,6 +76,7 @@ function buildWorld(){
  for(let k=0;k<5;k++)house(170+k*10,-42,0,7,6,4.4,P.brick,P.dark);
  scatter(2,45,(x,z,s)=>(R()>.45?conifer:tree)(x,z,s),(x,z)=>x>120&&!(x>132&&x<160&&z>-34&&z<2)&&!(x>162&&x<218&&z>-50&&z<-34));
 
+ if(IND)extrasI(2);
  site(3);apron(3);
 /* ---------- 07 warehouse ---------- */
  ent('Warehouse',6,'Shown without its roof so you can see inside.',()=>{bb(P.floor,146,.02,0,44,.25,48);bb(P.white,146,.25,-24,44.6,7,.6);bb(P.white,124,.25,-7.5,.6,5,33.6);bb(P.white,124,.25,22.6,.6,5,3.4);bb(P.white,124,4.2,16,.6,1.05,10);bb(P.white,168,.25,-14,.6,5,20.6);bb(P.white,168,.25,19.5,.6,5,9.6);bb(P.white,168,4.2,5.5,.6,1.05,19);bb(P.white,134,.25,24,20.6,1.3,.6);bb(P.white,163,.25,24,10.6,1.3,.6);bb(P.blue,146,6.2,-23.6,44.6,1,.3);for(const x of[135,146,157])bb(P.steel,x,7.25,-12,.3,.3,24.6)});
@@ -104,6 +107,7 @@ function buildWorld(){
  for(let k=0;k<7;k++)lamp(100+k*17,38,6);
  scatter(3,60,(x,z,s)=>(R()>.45?conifer:tree)(x,z,s),(x,z)=>!(x>118&&x<194&&z>-34&&z<30));
 
+ if(IND)extrasI(3);
  site(4);apron(4);
 /* ---------- 10 supermarket ---------- */
  ent('Supermarket',9,'Shown open at the front so the shop floor is visible.',()=>{bb(P.floor,223,.02,2,34,.25,40);bb(P.white,223,.25,-18,34.6,8,.6);bb(P.white,206,.25,-9,.6,5,18.6);bb(P.white,206,.25,16,.6,5,12.6);bb(P.white,206,4.2,5,.6,1.05,10);bb(P.white,240,.25,2,.6,5,40.6);bb(P.green,223,7.4,-17.6,34.6,2.2,.4);MAT=2;ball(P.melY,214,8.5,-17.2,.9,.9,8,4);MAT=0;bb(P.white,214,.25,22,15.6,1,.6);bb(P.white,234,.25,22,11.6,1,.6)});
@@ -119,4 +123,5 @@ function buildWorld(){
  for(let k=0;k<6;k++)lamp(190+k*12,38,6);for(let x=196;x<250;x+=2.6)ball(P.leaf,x,.5,42.5,1.1,.7,6,3);
  ent('More houses',9,'Homes around the store.',()=>{for(let k=0;k<4;k++)house(252+k*9.5,-12-k*4,-.3,7,6,4.4,P.brick,P.dark)});
  scatter(4,50,(x,z,s)=>(R()>.45?conifer:tree)(x,z,s),(x,z)=>!(x>196&&x<246&&z>-42&&z<32)&&!(x>246&&x<292&&z>-34&&z<-4));
+ if(IND)extrasI(4);
 }

@@ -20,6 +20,7 @@
     <button id="bFollow" class="chip" title="Hand the camera back to the guided journey">Follow</button>
     <button id="bGlobe" class="chip">Globe</button>
     <button id="bReset" class="chip">Reset view</button>
+    <button id="bSet" class="chip" aria-label="Settings" aria-expanded="false" title="Settings">⚙</button>
   </nav>
 </header>
 
@@ -40,6 +41,21 @@
 </div>
 <p id="legend">Farm, port, warehouse and store locations and the routes between them are illustrative placeholders, as are readings and report contents. Earth imagery: Solar System Scope, CC BY 4.0. Map: © OpenStreetMap contributors.</p>
 
+<div id="settings" class="glass" role="dialog" aria-label="Settings">
+  <p class="eyebrow">Settings</p>
+  <h3>3D visual style</h3>
+  <div class="styles">
+    <button data-style="cartoon" aria-pressed="true">
+      <svg viewBox="0 0 120 72" aria-hidden="true"><rect width="120" height="72" fill="#7cc55a"/><rect y="52" width="120" height="20" fill="#9a6a44"/><rect x="14" y="26" width="34" height="24" fill="#f0d6a6"/><path d="M10 28 31 12 52 28Z" fill="#e2704f"/><rect x="27" y="36" width="8" height="14" fill="#8a5a3a"/><circle cx="76" cy="26" r="13" fill="#3f9a45"/><rect x="74" y="34" width="4" height="16" fill="#8a5a3a"/><circle cx="98" cy="45" r="6" fill="#f6d24a"/><circle cx="108" cy="47" r="5" fill="#a9cf6a"/></svg>
+      <b>Cartoon</b><span>Colourful miniature world</span>
+    </button>
+    <button data-style="industrial" aria-pressed="false">
+      <svg viewBox="0 0 120 72" aria-hidden="true"><rect width="120" height="72" fill="#5d6a55"/><rect y="50" width="120" height="22" fill="#33363b"/><rect x="8" y="24" width="44" height="26" fill="#c9ccce"/><path d="M6 25 30 16 54 25Z" fill="#7d858e"/><g stroke="#aeb2b5" stroke-width="1"><path d="M14 26v24M20 26v24M26 26v24M32 26v24M38 26v24M44 26v24"/></g><rect x="22" y="34" width="16" height="16" fill="#3a3e44"/><rect x="62" y="38" width="26" height="12" fill="#9a3028"/><rect x="62" y="26" width="26" height="12" fill="#24477a"/><g stroke="#00000055" stroke-width="1"><path d="M66 26v24M70 26v24M74 26v24M78 26v24M82 26v24"/></g><path d="M96 50V12h18M96 12l14 10" stroke="#d6a51c" stroke-width="3" fill="none"/></svg>
+      <b>Industrial</b><span>Realistic logistics simulation</span>
+    </button>
+  </div>
+  <p class="note">Changes only the 3D sites and vehicles. Your stage, camera and playback stay where they are.</p>
+</div>
 <aside id="panel" class="glass" aria-live="polite"><button class="x" id="pX" aria-label="Close">×</button><div id="pBody"></div></aside>
 
 <nav id="tl" class="glass hide" aria-label="Journey progress">
@@ -51,14 +67,16 @@
 <script src="src/engine/math.js"></script>
 <script src="src/engine/tween.js"></script>
 <script src="src/engine/geometry.js"></script>
-<script src="src/sites/palette.js"></script>
+<script src="src/sites/styles.js"></script>
 <script src="src/journey/stages.js"></script>
 <script src="src/sites/kit.js"></script>
+<script src="src/sites/kit-industrial.js"></script>
 <script src="src/geo/sites.js"></script>
 <script src="src/sites/world.js"></script>
 <script src="src/sites/paths.js"></script>
 <script src="src/engine/gl.js"></script>
 <script src="src/sites/movers.js"></script>
+<script src="src/sites/build.js"></script>
 <script src="src/sites/data-layer.js"></script>
 <script src="src/geo/globe.js"></script>
 <script src="src/geo/tiles.js"></script>
@@ -67,6 +85,7 @@
 <script src="src/engine/picking.js"></script>
 <script src="src/engine/render.js"></script>
 <script src="src/journey/ui.js"></script>
+<script src="src/journey/settings.js"></script>
 <script src="src/main.js"></script>
 </body>
 </html>

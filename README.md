@@ -10,7 +10,7 @@ One continuous camera travels from a globe, down through a road map, into five 3
 npm start        # or: scripts/serve.sh
 ```
 
-Then open http://127.0.0.1:8080. It needs a local server (the globe texture will not load from a `file://` page) and an internet connection for the map tiles.
+Then open http://127.0.0.1:8080 (`PORT=3000 npm start` for another port). It needs a local server (the globe texture will not load from a `file://` page) and an internet connection for the map tiles.
 
 There is no build step and no dependency to install. `npm run check` syntax-checks the scripts.
 
@@ -22,10 +22,14 @@ There is no build step and no dependency to install. `npm run check` syntax-chec
 | `src/config.js` | Placeholder coordinates, texture and map tile source |
 | `src/engine/` | WebGL renderer, geometry builders, camera, picking |
 | `src/geo/` | Globe, map tiles, routes, placing sites on the globe |
-| `src/sites/` | The 3D models and the animated vehicles, people and cargo |
+| `src/sites/` | The 3D models and the animated vehicles, people and cargo, in two visual styles |
 | `src/journey/` | Stage text, stage timelines and camera shots, the UI |
 | `assets/` | Earth texture |
 | `docs/` | Architecture and configuration notes |
+
+## Visual style
+
+The gear button (top right) switches the 3D sites and vehicles between **Cartoon** (default) and **Industrial**. The choice is remembered in the browser. `?style=industrial` in the URL forces one.
 
 ## What is illustrative
 

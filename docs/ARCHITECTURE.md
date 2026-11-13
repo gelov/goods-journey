@@ -27,6 +27,12 @@ Each of the ten stages has a duration and a list of camera keyframes (`src/journ
 
 Stage wording lives in `src/journey/stages.js`.
 
+## Visual styles
+
+`src/sites/styles.js` holds one palette and settings entry per style. `src/sites/kit.js` holds the Cartoon models; `src/sites/kit-industrial.js` holds the Industrial ones, with the same origins and footprints. `buildStyle(name)` in `src/sites/build.js` builds every site and mover once per style and keeps the meshes; `setStyle(name)` only swaps which meshes are drawn and a shader flag. Layout, paths, timelines, camera, globe and map are shared, so switching keeps the stage, camera and playback where they are.
+
+To add a style: add a palette and an entry in `STYLES`, give the kit functions a branch for it, and add an option button in `index.html`.
+
 ## Render order
 
 Per frame (`src/engine/render.js`): shadow map for the nearest site, globe and atmosphere, map tiles, route ribbons, the travelling vehicle marker, then the visible sites and their data-flow particles.

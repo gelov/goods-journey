@@ -3,7 +3,7 @@
 let V=[],C=[.8,.8,.8],PID=0,SW=0,MAT=0,XF=null,MOVB=false;
 const ENT=[null];
 function vx(p,n){if(XF){const m=XF,x=p[0],y=p[1],z=p[2];p=[m[0]*x+m[4]*y+m[8]*z+m[12],m[1]*x+m[5]*y+m[9]*z+m[13],m[2]*x+m[6]*y+m[10]*z+m[14]];n=nrm([m[0]*n[0]+m[4]*n[1]+m[8]*n[2],m[1]*n[0]+m[5]*n[1]+m[9]*n[2],m[2]*n[0]+m[6]*n[1]+m[10]*n[2]])}
- V.push(p[0],p[1],p[2],n[0],n[1],n[2],C[0],C[1],C[2],PID,SW,MAT);
+ V.push(p[0],p[1],p[2],n[0],n[1],n[2],C[0],C[1],C[2],PID,SW,MAT||C.m||0);
  if(PID&&!MOVB){const b=ENT[PID].bb;for(let i=0;i<3;i++){if(p[i]<b[i])b[i]=p[i];if(p[i]>b[i+3])b[i+3]=p[i]}}}
 function Q(a,b,c,d,n){vx(a,n);vx(b,n);vx(c,n);vx(a,n);vx(c,n);vx(d,n)}
 function tri(a,b,c,n){vx(a,n);vx(b,n);vx(c,n)}
@@ -26,4 +26,4 @@ function roof(c,cx,y0,cz,w,h,d){C=c;const a=[cx-w/2,y0,cz-d/2],b=[cx-w/2,y0,cz+d
  Q(a,b,r1,r0,nrm([-h,w/2,0]));Q(f,e,r0,r1,nrm([h,w/2,0]));tri(b,f,r1,[0,0,1]);tri(e,a,r0,[0,0,-1])}
 function Tm(m,fn){const o=XF;XF=o?mul(o,m):m;fn();XF=o}
 const Tp=(x,y,z,yaw,s,fn)=>Tm(trs(x,y,z,yaw,s),fn);
-const shade=(c,k)=>[c[0]*k,c[1]*k,c[2]*k];
+const shade=(c,k)=>{const o=[c[0]*k,c[1]*k,c[2]*k];if(c.m)o.m=c.m;return o};
