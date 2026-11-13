@@ -29,7 +29,7 @@ There is no build step and no dependency to install. `npm run check` syntax-chec
 
 ## Visual style
 
-The gear button (top right) switches the 3D sites and vehicles between **Cartoon** (default) and **Industrial**. The choice is remembered in the browser. `?style=industrial` in the URL forces one.
+The gear button (top right) switches the 3D sites and vehicles between **Industrial** (default) and **Cartoon**. The choice is remembered in the browser. `?style=cartoon` in the URL forces one.
 
 ## What is illustrative
 

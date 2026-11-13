@@ -16,7 +16,7 @@ const PALETTES={
   red:metal([.60,.19,.16]),blue:metal([.14,.28,.47]),orange:metal([.78,.40,.11]),green:metal([.17,.38,.29]),teal:metal([.13,.38,.42]),yel:metal([.84,.64,.10]),card:[.64,.52,.38],card2:[.58,.46,.33],crate:[.16,.30,.50],
   hull:metal([.09,.12,.17]),hullR:metal([.42,.15,.13]),brick:[.46,.29,.24],table:metal([.40,.42,.45]),floor:[.55,.56,.57],chalk:[.74,.76,.78]}};
 const STYLES={cartoon:{label:'Cartoon',apron:[[.60,.79,.47],[.56,.75,.45]]},industrial:{label:'Industrial',apron:[[.50,.58,.38],[.47,.56,.38]]}};
-let STYLE='cartoon';try{const s=localStorage.getItem('ffts.style');if(STYLES[s])STYLE=s}catch(e){}
+let STYLE='industrial';try{const s=localStorage.getItem('ffts.style.v2');if(STYLES[s])STYLE=s}catch(e){}
 /* ?style=industrial in the address opens a style directly, without changing the saved choice */
 try{const q=new URLSearchParams(location.search).get('style');if(STYLES[q])STYLE=q}catch(e){}
 /* build-time state: which style the geometry builders are currently producing */
