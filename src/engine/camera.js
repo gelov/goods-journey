@@ -1,7 +1,7 @@
 'use strict';
 /* ================= camera ================= */
 const POSE={lon:-30,lat:8,ry:0,rx:1.45,ld:Math.log(58000)},CAM={auto:true,last:-1e9,drag:false};let X={},FLY=null,FOLLOW=null,PRIM=null,FADE=0;
-function flyTo(to,ms,done){const from={...POSE},b=to(),dist=angd([from.lon,from.lat],[b.lon,b.lat])*RS;FLY={from,to,t0:NOW,dist,done,dur:(ms||1500+Math.min(2600,dist/7+Math.abs(b.ld-from.ld)*260))*MOTION+1}}
+function flyTo(to,ms,done){const from={...POSE},b=to(),dist=angd([from.lon,from.lat],[b.lon,b.lat])*RS;FLY={from,to,t0:NOW,dist,done,dur:(ms||(800+Math.min(1700,dist/9+Math.abs(b.ld-from.ld)*190))/spd())*MOTION+1}}
 function stepCam(dt){
  if(FLY){const k=clamp((NOW-FLY.t0)/FLY.dur,0,1),e=io(k),a=FLY.from,b=FLY.to(),mx=Math.max(a.ld,b.ld),bump=Math.max(0,Math.log(Math.max(1,FLY.dist*1.5))-mx);
   POSE.lon=a.lon+dlon(a.lon,b.lon)*e;POSE.lat=lerp(a.lat,b.lat,e);POSE.ry=a.ry+dang(a.ry,b.ry)*e;POSE.rx=lerp(a.rx,b.rx,e);POSE.ld=lerp(a.ld,b.ld,e)+bump*Math.sin(Math.PI*k);

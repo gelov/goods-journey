@@ -3,18 +3,22 @@
 function apron(k){const S=SITES[k],cx=S.c[0],cz=S.c[1],r=S.r1+30,z0=cz-r,z1=cz+r;const land=(a,b)=>{C=STYLES[BUILD].apron[k<2?0:1];MAT=0;Q([a,-.03,z1],[b,-.03,z1],[b,-.03,z0],[a,-.03,z0],[0,1,0])},sea=(a,b)=>{C=P.water;MAT=1;Q([a,-1.5,z1],[b,-1.5,z1],[b,-1.5,z0],[a,-1.5,z0],[0,1,0]);MAT=0};
  if(!S.sea)land(cx-r,cx+r);else if(S.sea[1]>0){land(cx-r,S.sea[0]);sea(S.sea[0],cx+r)}else{sea(cx-r,S.sea[0]);land(S.sea[0],cx+r)}}
 function patch(x0,z0,x1,z1,c){bb(P.bed,(x0+x1)/2,0,(z0+z1)/2,x1-x0,.12,z1-z0);SW=.3;for(let x=x0+2;x<x1-1;x+=4)bb(c,x,.12,(z0+z1)/2,1.7,.55,z1-z0-3);SW=0}
-function scatter(k,n,fn,ok){const S=SITES[k];for(let i=0;i<n;i++){const a=R()*TAU,r=40+R()*(S.r1-30),x=S.c[0]+Math.cos(a)*r,z=S.c[1]+Math.sin(a)*r;if(Math.abs(z-35)<6||!ok(x,z))continue;fn(x,z,.8+R()*.5)}}
+function scatter(k,n,fn,ok){const S=SITES[k];LOWD=true;for(let i=0;i<n;i++){const a=R()*TAU,r=40+R()*(S.r1-30),x=S.c[0]+Math.cos(a)*r,z=S.c[1]+Math.sin(a)*r;if(Math.abs(z-35)<6||!ok(x,z))continue;fn(x,z,.8+R()*.5)}LOWD=false}
 const stripes=(x0,x1,z)=>{for(let x=x0;x<x1;x+=6)bb(P.white,x,.14,z,2.4,.02,.18)};
+let OPENC=0;
+/* built as a mover (see tracking.js): it appears once the tracked container has been brought to the unloading bay */
+function openContainerModel(){const c=P.teal,d=shade(c,.8);bb(P.dark,0,0,0,2.4,.5,8.4);for(const z of[-2.6,2.6])for(const x of[-1.1,1.1])wheelX(x,.1,z,.5,.4);bb(c,0,.5,0,2.6,.16,8);bb(c,-1.24,.66,0,.12,2.5,8);bb(c,0,.66,-3.94,2.6,2.5,.12);bb(c,0,3.1,-1.9,2.6,.12,4.2);for(let k=0;k<5;k++)bb(d,-1.3,.8,-3.5+k*1.7,.14,2.2,.2);for(let k=0;k<3;k++)pallet(0,.66,-2.7+k*2.5,2,k===2)}
 function buildWorld(){R=prng(7);
  site(0);apron(0);
 /* ---------- 01 farm ---------- */
  const yel=ent('Melon field · yellow melons',0,'Rows of melon plants. Harvest information is recorded field by field.',()=>plot(-226,2,-204.5,29,0));
  ent('Melon field · green melons',0,'A second variety grown alongside.',()=>plot(-199.5,2,-177,29,1));
  road([[-229,-1],[-150,-1]],3,P.path);road([[-202,-1],[-202,33]],3,P.path);road([[-175,-1],[-175,33]],3,P.path);
- ent('Farmhouse hill',0,'The farm buildings sit on a terraced rise above the fields.',()=>{mound(-196,-23,19,3,P.soil,P.grass);Tp(0,4.5,0,0,1,()=>house(-199,-25,.5,7,5.5,4,P.wall,P.tile));cyl(P.steel,-190,4.5,-28,1.6,4.2,10);lathe(P.concD,[[1.7,0],[0,1.3]],-190,8.7,-28,10);Tp(0,3,0,0,1,()=>{for(const[a,b]of[[-205,-30],[-192,-33],[-186,-22]])tree(a,b,.9)});Tp(0,4.5,0,0,1,()=>plot(-200,-19,-190,-13,2,2.6,2.4))});
- ent('Young crop terrace',0,'Seedlings on a smaller terrace. Fertiliser usage is logged as the crop develops.',()=>{mound(-221,-12,10,2,P.soil,P.grass,3);for(let k=0;k<7;k++){const a=k/7*TAU;plant(-221+Math.cos(a)*3.6,-12+Math.sin(a)*3.6,2)}});
+ /* the farm's core: a terraced rise with the farmhouse in the Cartoon style, a flat operations hub in the Industrial style */
+ ent('Farm operations',0,'The buildings and services at the heart of the farm.',()=>{if(IND)return opsHubI(0);mound(-196,-23,19,3,P.soil,P.grass);Tp(0,4.5,0,0,1,()=>house(-199,-25,.5,7,5.5,4,P.wall,P.tile));cyl(P.steel,-190,4.5,-28,1.6,4.2,10);lathe(P.concD,[[1.7,0],[0,1.3]],-190,8.7,-28,10);Tp(0,3,0,0,1,()=>{for(const[a,b]of[[-205,-30],[-192,-33],[-186,-22]])tree(a,b,.9)});Tp(0,4.5,0,0,1,()=>plot(-200,-19,-190,-13,2,2.6,2.4))});
+ ent('Young crop and feeding',0,'Where young crop is fed. Fertiliser usage is logged as the crop develops.',()=>{if(IND)return opsHubI(1);mound(-221,-12,10,2,P.soil,P.grass,3);for(let k=0;k<7;k++){const a=k/7*TAU;plant(-221+Math.cos(a)*3.6,-12+Math.sin(a)*3.6,2)}});
  ent('Farm cottages',0,'Homes and stores at the edge of the farm.',()=>{house(-224,-36,.1,6,5,3.4,P.wall,P.tile);house(-214,-37,-.1,6,5,3.4,P.wall,P.tile);house(-204,-38.5,.05,5.5,4.6,3.2,P.wood,P.tile)});
- for(let k=0;k<9;k++)(k%3?tree:palm)(-229+k*3.2+R(),-41+R()*2,.9+R()*.3);for(let k=0;k<7;k++)palm(-229+R()*1.5,-28+k*9,.8+R()*.3);
+ for(let k=0;k<9;k++)(k%3?tree:palm)(-229+k*3.2+R(),-41+R()*2-(IND?0:4.5),.9+R()*.3);for(let k=0;k<7;k++)palm(-229+R()*1.5,-28+k*9,.8+R()*.3);
  ent('Growing tunnels',0,'Covered tunnels for young plants.',()=>{for(const z0 of[-20,-11]){bb(P.bed,-166,0,z0,16,.15,6);for(let x=-173;x<=-159;x+=3.5)for(let k=0;k<8;k++){const a=Math.PI*(k+.5)/8;Tm(mul(tr(x+0,3*Math.sin(a),z0+3*Math.cos(a)),rX(-a-Math.PI/2+Math.PI/2)),()=>box([.62,.74,.92],0,0,0,.2,.2,1.25))}for(const k of[.5,1.57,2.64])bb([.7,.8,.95],-166,3*Math.sin(k)-.08,z0+3*Math.cos(k),15,.14,.14);for(let x=-172;x<-160;x+=2.6)plant(x,z0,2)}});
  ent('Weather station',0,'Measures local weather conditions on the farm.',()=>{cyl(P.steel,-186,0,-6,.14,6,6);bb(P.white,-186,3,-6,.9,1.1,.7);Tm(mul(tr(-186,4.6,-5.4),rX(-.6)),()=>box(P.dark,0,0,0,1.5,.08,1));bb(P.steel,-186,5.6,-6,1.8,.1,.1)});
  ent('Fertiliser store',0,'Where fertiliser is kept. Usage is one of the farm records.',()=>{cyl(P.green,-156,0,-30,2.2,4.2,12);lathe(shade(P.green,.85),[[2.2,0],[0,1]],-156,4.2,-30,12);cyl(P.green,-151,0,-31,1.6,3.2,10);bb(P.wood,-161,0,-33,4,2.6,3.2);roof(P.tile,-161,2.6,-33,5,1.4,4)});
@@ -33,9 +37,10 @@ function buildWorld(){R=prng(7);
 
  
  road([[-345,36],[5,36]],5);stripes(-340,0,36);
- ent('Surrounding farmland',0,'Neighbouring fields around the farm.',()=>{for(const[a,b,c,d,e]of[[-250,-100,-196,-56,P.leaf3],[-186,-104,-122,-60,P.leaf],[-112,-92,-58,-52,P.leaf2],[-262,46,-204,92,P.leaf2],[-194,48,-130,96,P.leaf3],[-120,46,-64,88,P.leaf],[-300,-34,-244,22,P.leaf],[-98,-34,-44,22,P.leaf3]])patch(a,b,c,d,e)});
+ /* around the farm: open fields in the Cartoon style; in the Industrial style only the three northern plots remain, as production greenhouses, and the rest is open ground */
+ ent('Surrounding growing area',0,'More growing area around the farm.',()=>{const F=[[-250,-100,-196,-56,P.leaf3],[-186,-104,-122,-60,P.leaf],[-112,-92,-58,-52,P.leaf2],[-262,46,-204,92,P.leaf2],[-194,48,-130,96,P.leaf3],[-120,46,-64,88,P.leaf],[-300,-34,-244,22,P.leaf],[-98,-34,-44,22,P.leaf3]];if(IND)for(const[a,b,c,d]of F.slice(0,3))prodHouseI(a,b,c,d);else for(const[a,b,c,d,e]of F)patch(a,b,c,d,e)});
  scatter(0,70,(x,z,s)=>(R()>.5?palm:tree)(x,z,s),(x,z)=>!(x>-236&&x<-108&&z>-46&&z<46)&&!(z<-48&&z>-106&&x>-252&&x<-56)&&!(z>44&&z<98&&x>-264&&x<-62)&&!(x<-242&&z>-36&&z<24)&&!(x>-100&&z>-36&&z<24)&&!(IND&&x>-113&&x<-97&&z>-28&&z<8));
- if(IND)extrasI(0);
+ if(IND)extrasI(0);else extrasD(0);
 
  site(1);apron(1);
 /* ---------- 03 export port ---------- */
@@ -53,7 +58,7 @@ function buildWorld(){R=prng(7);
  for(const[a,b]of[[-40,-40],[10,-60],[-20,60],[40,10]]){cyl(P.red,a,-1.9,b,.5,1.3,8);ball(P.white,a,-.3,b,.35,1,6,3)}
  scatter(1,45,(x,z,s)=>(R()>.4?palm:tree)(x,z,s),(x,z)=>x<-116&&!(x>-146&&x<-122&&z>-32&&z<24));
 
- if(IND)extrasI(1);
+ if(IND)extrasI(1);else extrasD(1);
  site(2);apron(2);
 /* ---------- 05 UK port ---------- */
  ent('UK quay',4,CONFIG.ukPort+'.',()=>{bb(P.conc,93,0,2,46,.25,78);bb(P.concD,70.6,-2.2,2,1.2,2.4,78);for(let z=-34;z<40;z+=6)bb(P.yel,71.6,.26,z,.5,.02,3);for(let z=-30;z<=38;z+=17)cyl(P.dark,71.2,.25,z,.4,.6,8)});
@@ -64,7 +69,7 @@ function buildWorld(){R=prng(7);
 
  
 /* ---------- 06 unloading ---------- */
- ent('Open container',5,'One container holds many pallets. Each pallet is stacked with boxes of melons.',()=>{Tp(96,.25,16,Math.PI/2,1,()=>{const c=P.teal,d=shade(c,.8);bb(P.dark,0,0,0,2.4,.5,8.4);for(const z of[-2.6,2.6])for(const x of[-1.1,1.1])wheelX(x,.1,z,.5,.4);bb(c,0,.5,0,2.6,.16,8);bb(c,-1.24,.66,0,.12,2.5,8);bb(c,0,.66,-3.94,2.6,2.5,.12);bb(c,0,3.1,-1.9,2.6,.12,4.2);for(let k=0;k<5;k++)bb(d,-1.3,.8,-3.5+k*1.7,.14,2.2,.2);for(let k=0;k<3;k++)pallet(0,.66,-2.7+k*2.5,2,k===2)})});
+ OPENC=ent('Open container',5,'One container holds many pallets. Each pallet is stacked with boxes of melons.');
  ent('Unloaded pallets',5,'Pallets set down beside the container, counted before they move on.',()=>{for(let k=0;k<3;k++)pallet(103+k*3,.25,22.5,2+k%2,k===1)});
  guy(101,12.5,2.4,P.yel,P.white);
 
@@ -76,7 +81,7 @@ function buildWorld(){R=prng(7);
  for(let k=0;k<5;k++)house(170+k*10,-42,0,7,6,4.4,P.brick,P.dark);
  scatter(2,45,(x,z,s)=>(R()>.45?conifer:tree)(x,z,s),(x,z)=>x>120&&!(x>132&&x<160&&z>-34&&z<2)&&!(x>162&&x<218&&z>-50&&z<-34));
 
- if(IND)extrasI(2);
+ if(IND)extrasI(2);else extrasD(2);
  site(3);apron(3);
 /* ---------- 07 warehouse ---------- */
  ent('Warehouse',6,'Shown without its roof so you can see inside.',()=>{bb(P.floor,146,.02,0,44,.25,48);bb(P.white,146,.25,-24,44.6,7,.6);bb(P.white,124,.25,-7.5,.6,5,33.6);bb(P.white,124,.25,22.6,.6,5,3.4);bb(P.white,124,4.2,16,.6,1.05,10);bb(P.white,168,.25,-14,.6,5,20.6);bb(P.white,168,.25,19.5,.6,5,9.6);bb(P.white,168,4.2,5.5,.6,1.05,19);bb(P.white,134,.25,24,20.6,1.3,.6);bb(P.white,163,.25,24,10.6,1.3,.6);bb(P.blue,146,6.2,-23.6,44.6,1,.3);for(const x of[135,146,157])bb(P.steel,x,7.25,-12,.3,.3,24.6)});
@@ -107,7 +112,7 @@ function buildWorld(){R=prng(7);
  for(let k=0;k<7;k++)lamp(100+k*17,38,6);
  scatter(3,60,(x,z,s)=>(R()>.45?conifer:tree)(x,z,s),(x,z)=>!(x>118&&x<194&&z>-34&&z<30));
 
- if(IND)extrasI(3);
+ if(IND)extrasI(3);else extrasD(3);
  site(4);apron(4);
 /* ---------- 10 supermarket ---------- */
  ent('Supermarket',9,'Shown open at the front so the shop floor is visible.',()=>{bb(P.floor,223,.02,2,34,.25,40);bb(P.white,223,.25,-18,34.6,8,.6);bb(P.white,206,.25,-9,.6,5,18.6);bb(P.white,206,.25,16,.6,5,12.6);bb(P.white,206,4.2,5,.6,1.05,10);bb(P.white,240,.25,2,.6,5,40.6);bb(P.green,223,7.4,-17.6,34.6,2.2,.4);MAT=2;ball(P.melY,214,8.5,-17.2,.9,.9,8,4);MAT=0;bb(P.white,214,.25,22,15.6,1,.6);bb(P.white,234,.25,22,11.6,1,.6)});
@@ -123,5 +128,5 @@ function buildWorld(){R=prng(7);
  for(let k=0;k<6;k++)lamp(190+k*12,38,6);for(let x=196;x<250;x+=2.6)ball(P.leaf,x,.5,42.5,1.1,.7,6,3);
  ent('More houses',9,'Homes around the store.',()=>{for(let k=0;k<4;k++)house(252+k*9.5,-12-k*4,-.3,7,6,4.4,P.brick,P.dark)});
  scatter(4,50,(x,z,s)=>(R()>.45?conifer:tree)(x,z,s),(x,z)=>!(x>196&&x<246&&z>-42&&z<32)&&!(x>246&&x<292&&z>-34&&z<-4));
- if(IND)extrasI(4);
+ if(IND)extrasI(4);else extrasD(4);
 }

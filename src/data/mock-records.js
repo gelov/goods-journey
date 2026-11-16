@@ -20,4 +20,7 @@ const MOCK_RECORDS={
  qcReports:[{id:'QC-001',palletIds:DEMO_PALLETS,date:'1 November 2026',type:'Third-party QC',inspected:'18,000 melons',accepted:'17,640 melons',rejected:'360 melons',damageRate:'2%',status:'Completed',report:'Available',
   results:[['Accepted',17640,'Delivery DEL-001'],['Rejected',360,'Claim CLAIM-001']]}],
  claims:[{id:'CLAIM-001',qcReportId:'QC-001',quantity:'360 melons',reason:'Quality damage',status:'Settled',value:'£450 (sample value)',settled:'3 November 2026',growerRef:'FARM-BR-001'}],
+ /* which pallet and container the followed melon's batch is shown in. level says how fine the real tracking is:
+    'batch' = the melon on screen only stands for its batch; 'item' = a real per-melon id exists. */
+ tracking:[{id:'TRK-DEMO-001',shipmentId:'SHIP-BR-2026-001',batchId:'HARV-BR-001',palletId:'PAL-014',containerId:'CONT-001',level:'batch'}],
  deliveries:[{id:'DEL-001',shipmentId:'SHIP-BR-2026-001',qcReportId:'QC-001',customer:'UK Retail Customer (fictional)',destination:'UK distribution centre (illustrative)',quantity:'17,640 melons',date:'5 November 2026',status:'Completed',pod:'Available'}]};

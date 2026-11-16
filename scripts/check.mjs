@@ -3,7 +3,7 @@
 // (they share one global scope in the browser).
 import { readFileSync } from 'node:fs';
 const html = readFileSync('index.html', 'utf8');
-const files = [...html.matchAll(/<script src="([^"]+)"/g)].map((m) => m[1]);
+const files = [...html.matchAll(/<script src="([^"]+)"/g)].map((m) => m[1].split('?')[0]);
 let all = '';
 let failed = false;
 for (const f of files) {

@@ -11,12 +11,82 @@ function coniferI(x,z,s){cyl(P.trunk,x,0,z,.2*s,1.4*s,7);SW=.35;for(let k=0;k<4;
 function palmI(x,z,s){const pr=[];for(let k=0;k<=8;k++)pr.push([(.3-.014*k+(k%2?.03:0))*s,k*.75*s]);pr.push([0,6.05*s]);lathe(P.trunk,pr,x,0,z,8);SW=1;
  for(let k=0;k<10;k++)Tm(mul(mul(tr(x,6*s,z),rY(k/10*TAU+x)),mul(rZ(-.25-(k%3)*.22),mul(tr(1.9*s,0,0),sc(2.3*s,.1*s,.36*s)))),()=>ball(k%2?P.leaf2:P.leaf,0,0,0,1,1,8,3));SW=0;
  for(let k=0;k<3;k++)ball(P.trunk,x+Math.cos(k*2.1)*.3*s,5.7*s,z+Math.sin(k*2.1)*.3*s,.2*s,1,6,3)}
-function plantI(x,z,kind){SW=.45;for(let k=0;k<3;k++){const a=k*2.1+x;ball(k?P.leaf:P.leaf2,x+Math.cos(a)*.45,.22,z+Math.sin(a)*.45,.62,.38,7,3)}SW=0;if(kind<2)ball(kind?P.melG:P.melY,x+.35,.3,z+.4,.34,.85,8,4)}
-/* drip irrigation: a header pipe and one line per crop row */
-function plotI(x0,z0,x1,z1,dx){bb(P.dark,(x0+x1)/2,.2,z0+.4,x1-x0-1,.16,.16);for(let x=x0+1.5;x<x1-.8;x+=dx||2.9)bb(P.dark,x-.75,.2,(z0+z1)/2,.07,.07,z1-z0-1.2)}
-function houseI(x,z,yaw,w,d,h){Tp(x,0,z,yaw,1,()=>{bb(P.conc,0,0,0,w+.8,.2,d+.8);mt(5,()=>{bb(P.white,0,.2,0,w,h,d);roof(P.steel,0,h+.2,0,w+.5,h*.26,d+.5)});
- mt(3,()=>{bb(P.steel,0,.2,d/2+.05,w*.42,h*.78,.08);for(let k=1;k<6;k++)bb(P.dark,0,.2+k*h*.13,d/2+.1,w*.42,.03,.02);bb(P.dark,-w*.36,.2,d/2+.05,.9,2,.06);cyl(P.steel,w/2+.2,.2,-d/4,.12,h,6);bb(P.steel,w/4,h+h*.2,0,.9,.7,.9)});
- mt(4,()=>bb(P.glass,w*.36,h*.55,d/2+.05,1,.7,.05))})}
+/* glass goes into its own mesh per site (GLV), drawn last and see-through, so whatever is inside stays visible */
+let GLV=[];
+function glassI(fn){const o=V,m=MAT;V=GLV[CUR]||(GLV[CUR]=[]);MAT=4;C=[.78,.9,.94];fn();V=o;MAT=m}
+/* trellised melon vine: stem on a string, leaves, fruit hanging. kind 0 mature yellow, 1 younger green, 2 seedling */
+function plantI(x,z,kind){const r=prng((Math.abs(x*13+z*7)*10|0)+1);
+ if(kind===2){SW=.3;for(let k=0;k<3;k++)ball(P.leaf2,x+Math.cos(k*2.1)*.25,.34,z+Math.sin(k*2.1)*.25,.3,.5,6,3);SW=0;return}
+ const h=kind?1.6:2.3;cyl(P.leaf,x,.2,z,.05,h,4);SW=.3;for(let k=0;k<(kind?3:4);k++){const a=k*2.4+r()*2;Tm(mul(mul(tr(x,.65+k*.5,z),rY(a)),rZ(.3)),()=>ball(k%2?P.leaf:P.leaf2,.3,0,0,.34,.25,6,3))}SW=0;
+ ball(kind?P.melG:P.melY,x+.22,kind?.95:1.3,z+.1,kind?.26:.34,.9,8,4);if(!kind&&r()>.4)ball(P.melY,x-.2,.8,z-.12,.3,.9,7,3)}
+/* growing rows: raised gutter, drip line, trellis posts and top wire, a walkway between rows; large plots get a greenhouse over them */
+function plotI(x0,z0,x1,z1,dx){const cz=(z0+z1)/2,len=z1-z0-1.4;dx=dx||2.9;bb(P.dark,(x0+x1)/2,.2,z0+.4,x1-x0-1,.16,.16);
+ for(let x=x0+1.5;x<x1-.8;x+=dx){bb(P.white,x,.18,cz,.8,.2,len);bb(P.dark,x-.5,.4,cz,.06,.06,len);bb(P.conc,x+dx/2,.185,cz,.9,.02,len);
+  mt(3,()=>{for(let z=z0+1;z<z1-.6;z+=4.4)bb(P.steel,x,.2,z,.08,2.7,.08);bb(P.steel,x,2.86,cz,.04,.04,len)})}
+ if(!XF&&(x1-x0)*(z1-z0)>200)ghI(x0-.6,z0-.6,x1+.6,z1+.6)}
+/* greenhouse: white frame in spans along x, pitched glass roofs, glass walls, a door bay left open on the east side, vents, fans, overhead pipes */
+function ghI(x0,z0,x1,z1){const w=x1-x0,d=z1-z0,cz=(z0+z1)/2,n=Math.max(1,Math.round(w/11)),sw=w/n,e=4.3,r=2.4,F=P.white,L=Math.hypot(sw/2,r),a=Math.atan2(r,sw/2),zs=[];
+ for(let z=z0;z<z1-.1;z+=5.4)zs.push(z);zs.push(z1);
+ for(const[x,z,ww,dd]of[[(x0+x1)/2,z0,w+.5,.4],[(x0+x1)/2,z1,w+.5,.4],[x0,cz,.4,d],[x1,cz,.4,d]])bb(P.conc,x,0,z,ww,.4,dd);
+ mt(3,()=>{for(let i=0;i<=n;i++){const x=x0+i*sw;bb(F,x,e,cz,.2,.2,d);for(const z of zs)bb(F,x,.2,z,.2,e,.2)}
+  for(let i=0;i<n;i++){const xm=x0+(i+.5)*sw;bb(F,xm,e+r-.08,cz,.2,.2,d);for(const z of zs)for(const sg of[-1,1])Tm(mul(tr(xm+sg*sw/4,e+r/2+.05,z),rZ(-sg*a)),()=>box(F,0,0,0,L,.14,.14));
+   for(const z of[z0,z1]){bb(F,xm,.2,z,.14,e+r-.2,.14);bb(F,xm,2.3,z,sw,.12,.12)}
+   bb(P.steel,xm,e-.5,cz,.14,.14,d-1);for(let z=z0+4;z<z1-3;z+=8)Tm(mul(tr(xm+1.3,e+r-.55,z),rZ(-.5)),()=>box(F,0,0,0,1.9,.08,2.6));
+   cyl(P.dark,xm,e+.9,z0-.12,.9,.2,12);bb(P.steel,xm,e+.5,z0-.2,2.2,.12,.12)}
+  bb(F,x1,2.6,z0+13.5,.2,.14,5.4);bb(P.white,x0+2.4,.4,z1+.9,1.5,1.7,.7);bb(P.dark,x0+2.4,1.3,z1+1.27,.9,.5,.04)});
+ glassI(()=>{const up=[0,1,0];for(let i=0;i<n;i++){const xa=x0+i*sw,xm=xa+sw/2,xb=xa+sw;Q([xa,e,z1],[xm,e+r,z1],[xm,e+r,z0],[xa,e,z0],nrm([-r,sw/2,0]));Q([xm,e+r,z1],[xb,e,z1],[xb,e,z0],[xm,e+r,z0],nrm([r,sw/2,0]));
+   tri([xa,e,z1],[xb,e,z1],[xm,e+r,z1],[0,0,1]);tri([xb,e,z0],[xa,e,z0],[xm,e+r,z0],[0,0,-1])}
+  Q([x0,.4,z1],[x1,.4,z1],[x1,e,z1],[x0,e,z1],[0,0,1]);Q([x1,.4,z0],[x0,.4,z0],[x0,e,z0],[x1,e,z0],[0,0,-1]);Q([x0,.4,z0],[x0,.4,z1],[x0,e,z1],[x0,e,z0],[-1,0,0]);
+  const da=z0+10.8,db=z0+16.2;Q([x1,.4,z1],[x1,.4,db],[x1,e,db],[x1,e,z1],[1,0,0]);Q([x1,.4,da],[x1,.4,z0],[x1,e,z0],[x1,e,da],[1,0,0]);Q([x1,2.7,db],[x1,2.7,da],[x1,e,da],[x1,e,db],[1,0,0])})}
+/* operations hub on flat ground, replacing the terraced rise in this style. part 0: water treatment and irrigation station,
+   equipment store, utility and control building, climate station, service road and pads. part 1: fertigation facility. */
+function opsHubI(part){const pipe=(x0,z0,x1,z1,y,c)=>mt(3,()=>bb(c||P.steel,(x0+x1)/2,y,(z0+z1)/2,Math.abs(x1-x0)+.18,.18,Math.abs(z1-z0)+.18)),cab=(x,z,w)=>mt(3,()=>{bb(P.chalk,x,.12,z,w,1.5,.7);bb(P.dark,x,1.62,z,w+.1,.06,.8);for(let q=-w/2+.5;q<w/2;q+=.9)bb(P.steel,x+q,.5,z+.36,.5,.8,.02)});
+ if(part===1){ /* fertigation: mixing hall, three nutrient tanks on a bunded pad, dosing pumps, a feed main heading for the greenhouses */
+  bb(P.conc,-220,0,-12,22,.12,13);Tp(-224,0,-12.5,0,1,()=>bldgI(9,8,4.2,P.wall,{doors:1}));bb(P.concD,-213.2,.12,-12.5,9,.3,6.4);
+  mt(3,()=>{for(const[x,c]of[[-216,P.green],[-213.2,P.white],[-210.4,P.green]]){cyl(c,x,.42,-13.4,1.2,3.3,12);lathe(shade(c,.85),[[1.2,0],[0,.5]],x,3.72,-13.4,12);cyl(P.steel,x,4.1,-13.4,.14,.5,6);bb(P.blue,x,.42,-10.6,.8,.7,.6);bb(P.steel,x,1,-11.3,.14,.14,1.6)}
+   for(const a of[-1,1])for(let x=-217.4;x<=-209;x+=2.8)bb(P.yel,x,.42,-12.5+a*3.1,.08,.9,.08)});
+  pipe(-219.4,-10.2,-209.4,-10.2,1.3,P.green);pipe(-209.4,-10.2,-209.4,-5.2,1.3,P.green);pipe(-209.4,-5.2,-226,-5.2,1.3,P.green);for(const x of[-224,-217,-210])mt(3,()=>bb(P.steel,x,.12,-5.2,.14,1.2,.14));cab(-229,-8.5,1.8);return}
+ /* service road with a spur toward the greenhouse path, pads, kerbed walkway */
+ road([[-231,-22.5],[-177.6,-22.5]],3.4,P.asph);road([[-177.6,-22.5],[-177.6,-4.4]],3,P.asph);bb(P.conc,-197,0,-12,27,.12,13);bb(P.conc,-190,0,-31,17,.12,11);for(let x=-228;x<-181;x+=3)bb(P.white,x,.215,-22.5,1.4,.02,.14);bb(P.path,-204,.13,-19.6,50,.03,1.2);
+ /* water treatment and irrigation station: two storage tanks with ladders, a filter bank, pump skid, mains */
+ mt(3,()=>{for(const[x,c]of[[-203.4,P.white],[-196,P.chalk]]){cyl(c,x,.12,-13,3,5.2,18);cyl(P.steel,x,5.32,-13,3.06,.14,18);lathe(shade(c,.9),[[3,0],[0,.7]],x,5.46,-13,18);bb(P.steel,x+3.05,.12,-13,.08,5.3,.5);for(let y=.6;y<5.2;y+=.6)bb(P.steel,x+3.1,y,-13,.06,.05,.5)}
+  for(let i=0;i<4;i++){cyl(P.blue,-204.6+i*1.5,.5,-7.6,.5,1.9,10);ball(P.blue,-204.6+i*1.5,2.4,-7.6,.5,.6,10,4)}bb(P.steel,-202.3,.12,-7.6,6.4,.38,1.4);bb(P.steel,-202.3,2.9,-7.6,6,.14,.14);
+  bb(P.concD,-195.3,.12,-7.6,4.4,.2,2.2);for(const x of[-196.5,-194.1]){bb(P.green,x,.32,-7.6,1.5,.9,1.1);Tm(mul(tr(x,.95,-7.6),rZ(Math.PI/2)),()=>cyl(P.steel,0,-1,0,.3,.9,8))}});
+ pipe(-203.4,-10,-196,-10,.8,P.blue);pipe(-199.7,-10,-199.7,-7.6,.8,P.blue);pipe(-197.5,-7.6,-192,-7.6,.8,P.blue);pipe(-192,-7.6,-192,-4.6,.8,P.blue);cab(-207.6,-17.4,2.4);
+ /* equipment store with three bays, facing the service road */
+ Tp(-190,0,-31,0,1,()=>bldgI(15,9,5,P.chalk,{doors:3}));mt(3,()=>{bb(P.yel,-181.4,.12,-27.2,.3,1,.3);bb(P.yel,-198.6,.12,-27.2,.3,1,.3);bb(P.green,-190,5.1,-26.44,15,.5,.06)});
+ /* utility and control building: switch room, transformer in a fenced bay, cable tray */
+ Tp(-184,0,-16.2,Math.PI/2,1,()=>bldgI(5.4,5,3.6,P.wall,{doors:0}));mt(3,()=>{bb(P.concD,-184.4,.12,-10.4,4.4,.2,3.4);bb(P.steel,-184.4,.32,-10.4,2.2,1.7,1.6);for(const q of[-.7,0,.7])cyl(P.chalk,-184.4+q,2.02,-10.4,.14,.7,6);
+  for(const[x,z,w,d]of[[-184.4,-8.7,4.4,.06],[-184.4,-12.1,4.4,.06],[-186.6,-10.4,.06,3.4]])bb(P.steel,x,.32,z,w,1.5,d);bb(P.steel,-184.2,2.9,-13.2,.5,.08,3)});cab(-180.2,-18.6,1.6);
+ /* climate and weather monitoring: sensor mast with anemometer and radiation shield, control kiosk, antenna (the weather station entity stands beside it) */
+ mt(3,()=>{bb(P.conc,-189.6,0,-6.6,6,.12,4);bb(P.chalk,-190.6,.12,-7,2.4,2.4,2);bb(P.dark,-190.6,2.52,-7,2.6,.08,2.2);bb(P.dark,-190.6,.5,-5.98,.9,1.5,.04);cyl(P.steel,-188.4,.12,-7.4,.08,5,6);bb(P.steel,-188.4,4.6,-7.4,1.6,.06,.06);for(const q of[-.8,.8])ball(P.dark,-188.4+q,4.75,-7.4,.16,1,6,3);
+  for(let y=3.2;y<4;y+=.22)cyl(P.white,-188.4,y,-7.4,.24,.08,8);cyl(P.steel,-191.4,2.6,-7.6,.04,2,5)});MAT=2;ball([.4,.95,.55],-190.6,2.75,-6.2,.12,1,6,3);MAT=0}
+/* large production greenhouse: concrete floor, hydroponic gutters with trained vine rows and fruit, a central service aisle,
+   supply pipes, then the same glass-and-frame shell as the farm houses; outside, a service path, a plant room and feed tanks */
+function prodHouseI(x0,z0,x1,z1){const cx=(x0+x1)/2,cz=(z0+z1)/2,w=x1-x0,d=z1-z0,r=prng((Math.abs(x0*7+z0)|0)+1),half=d/2-2.2;
+ bb(P.conc,cx,0,cz,w+5,.14,d+5);bb(P.floor,cx,.14,cz,w,.06,d);bb(P.concD,cx,.2,cz,w-1,.02,2.4);
+ for(let x=x0+2.2;x<x1-1.4;x+=3.4)for(const sg of[-1,1]){const zc=cz+sg*(half/2+1.3);bb(P.white,x,.5,zc,.7,.22,half);mt(3,()=>{for(const q of[-.42,0,.42])bb(P.steel,x,.2,zc+q*half,.08,.3,.08);bb(P.steel,x,3.1,zc,.04,.04,half)});
+  SW=.25;bb(P.leaf,x,.72,zc,.42,2.2,half-.4);bb(P.leaf2,x,1.1,zc,.6,1.2,half-.8);SW=0;
+  for(let q=-half/2+1;q<half/2-.6;q+=2.6+r()*.6)ball(r()>.25?P.melY:P.melG,x+(r()>.5?.38:-.38),1.1+r()*.9,zc+q,.3,.9,7,3)}
+ mt(3,()=>{bb(P.blue,cx,3.5,cz,w-1,.16,.16);for(let x=x0+2.2;x<x1-1.4;x+=6.8)bb(P.blue,x,3.5,cz,.1,.1,d-2);bb(P.white,x1-2.6,.2,cz,1.6,2,1);bb(P.dark,x1-2.6,1.2,cz+.52,1,.6,.04)});
+ ghI(x0,z0,x1,z1);
+ Tp(x1+5.2,0,cz-8,-Math.PI/2,1,()=>bldgI(7,5.5,3.6,P.chalk,{doors:1}));mt(3,()=>{for(const q of[0,3.4])cyl(P.white,x1+4.6,.14,cz+2+q,1.4,3.6,12);bb(P.steel,x1+2.4,.6,cz+3.7,3,.18,.18);bb(P.steel,x1+4.6,1.8,cz+3.7,.14,.14,3.4)})}
+/* modern industrial unit, centred on the origin with its front on +z: plinth, pastel walls, parapet and dark flat roof,
+   window grids, roller doors, rooftop plant; o.stack adds a chimney and tank, o.doors sets how many roller doors */
+function bldgI(w,d,h,col,o){o=o||{};const y0=.25,dk=shade(col,.82),nd=o.doors==null?1:o.doors;bb(P.conc,0,0,0,w+1.2,y0,d+1.2);bb(col,0,y0,0,w,h,d);bb(dk,0,y0,0,w+.08,.45,d+.08);
+ for(const[x,z,ww,dd]of[[0,d/2-.12,w,.24],[0,-d/2+.12,w,.24],[w/2-.12,0,.24,d],[-w/2+.12,0,.24,d]])bb(col,x,y0+h,z,ww,.42,dd);
+ mt(3,()=>{bb(P.tile,0,y0+h,0,w-.4,.1,d-.4);bb(P.tile,0,y0+h+.42,0,w+.14,.08,d+.14);
+  const nw=Math.max(1,Math.floor(w/2.9)),ns=Math.max(1,Math.floor(d/3.2)),wy=y0+h*.6;
+  for(let i=0;i<nw;i++){const x=(i-(nw-1)/2)*(w/nw);for(const sg of[-1,1]){bb(P.dark,x,wy,sg*(d/2+.03),1.9,Math.min(1.3,h*.3),.07)}}
+  for(let i=0;i<ns;i++){const z=(i-(ns-1)/2)*(d/ns);for(const sg of[-1,1])bb(P.dark,sg*(w/2+.03),wy,z,.07,Math.min(1.3,h*.3),1.9)}
+  for(let i=0;i<nd;i++){const x=(i-(nd-1)/2)*3.1+(nd<2?w*.2:0);bb(P.dark,x,y0,d/2+.04,2.4,Math.min(2.6,h*.62),.08);for(let k=1;k<5;k++)bb(P.steel,x,y0+k*Math.min(.5,h*.12),d/2+.09,2.3,.04,.02)}
+  bb(P.dark,-w*.34,y0,d/2+.04,1,2,.07);bb(P.steel,-w*.34,y0+2.05,d/2+.3,1.5,.08,.6);
+  bb(P.steel,w*.2,y0+h+.1,-d*.15,Math.min(2,w*.3),.8,Math.min(1.6,d*.3));cyl(P.dark,w*.2,y0+h+.9,-d*.15,.42,.1,10);
+  if(o.stack){cyl(P.dark,-w*.25,y0+h+.1,-d*.2,.5,h*.9,10);for(const y of[.5,.75])cyl(P.dark,-w*.25,y0+h+h*y,-d*.2,.6,.12,10);cyl(P.steel,-w*.02,y0+h+.1,-d*.22,.85,h*.5,12);cyl(P.dark,-w*.02,y0+h+.1+h*.5,-d*.22,.9,.1,12)}});
+ mt(4,()=>{const nw=Math.max(1,Math.floor(w/2.9)),ns=Math.max(1,Math.floor(d/3.2)),wy=y0+h*.6,wh=Math.min(1.3,h*.3);
+  for(let i=0;i<nw;i++){const x=(i-(nw-1)/2)*(w/nw);for(const sg of[-1,1])for(const q of[-.45,.45])bb(P.glass,x+q,wy+.08,sg*(d/2+.06),.78,wh-.16,.05)}
+  for(let i=0;i<ns;i++){const z=(i-(ns-1)/2)*(d/ns);for(const sg of[-1,1])for(const q of[-.45,.45])bb(P.glass,sg*(w/2+.06),wy+.08,z+q,.05,wh-.16,.78)}})}
+function houseI(x,z,yaw,w,d,h){const r=prng((Math.abs(x*31+z*17)|0)+1),c=[P.brick,P.wall,P.chalk][Math.floor(r()*3)];Tp(x,0,z,yaw,1,()=>bldgI(w,d,h,c,{stack:r()>.6,doors:1}))}
 function personI(shirt,hat){for(const x of[-.15,.15])bb(P.dark,x,0,0,.22,.98,.26);lathe(shirt,[[.3,.98],[.37,1.5],[.31,1.98],[.13,2.06]],0,0,0,10);for(const x of[-.44,.44])bb(shirt,x,1.2,0,.15,.78,.17);
  if(hat)lathe([.92,.82,.1],[[.375,1.22],[.4,1.74],[.33,1.96]],0,0,0,10);ball(P.skin,0,2.32,0,.27,1.1,10,5);if(hat){lathe(hat,[[.31,2.4],[.31,2.47],[.25,2.62],[0,2.67]],0,0,0,10);bb(hat,0,2.4,.27,.4,.04,.22)}}
 function lorryI(cab,bx,band){const rib=shade(bx,.88);
@@ -75,34 +145,48 @@ function shipI(){mt(3,()=>{bb(P.hullR,0,-1.7,-1,7.4,1.2,26);bb(P.hull,0,-.5,-1,8
 /* ---- extra plant and equipment that only the industrial style has; nothing here is clickable ---- */
 function extrasI(k){PID=0;
  const mast=(x,z,h)=>{mt(3,()=>{cyl(P.steel,x,0,z,.22,h,8);bb(P.steel,x,h,z,2.6,.2,.5)});MAT=2;for(const d of[-1,-.35,.35,1])bb(LIT,x+d,h-.25,z,.5,.2,.4);MAT=0};
- const shed=(x,z,w,d,h)=>{bb(P.conc,x,0,z,w+1,.2,d+1);mt(5,()=>{bb(P.white,x,.2,z,w,h,d);roof(P.steel,x,h+.2,z,w+.6,h*.22,d+.6)})};
+ const shed=(x,z,w,d,h)=>Tp(x,0,z,-Math.PI/2,1,()=>bldgI(d,w,h,P.wall,{doors:3,stack:1}));
+ /* rooftop plant, parapet and a window grid for the plain office blocks that world.js builds for both styles */
+ const roofKit=(x,y,z,w,d)=>mt(3,()=>{for(const[a,b,ww,dd]of[[0,d/2,w+.3,.25],[0,-d/2,w+.3,.25],[w/2,0,.25,d+.3],[-w/2,0,.25,d+.3]])bb(P.chalk,x+a,y,z+b,ww,.5,dd);bb(P.steel,x+w*.2,y,z-d*.1,2,.9,1.5);cyl(P.dark,x+w*.2,y+.9,z-d*.1,.45,.1,10);bb(P.steel,x-w*.25,y,z+d*.15,1.3,.6,1.3);for(const q of[-.3,.3])bb(P.steel,x-w*.25+q,y+.6,z+d*.15,.12,.5,.12)});
+ const sideWin=(x,z,w,d,y)=>{mt(3,()=>{for(const sg of[-1,1])for(let q=z-d/2+2;q<z+d/2-1.5;q+=3.4)bb(P.dark,x+sg*(w/2+.04),y,q,.08,1.3,2.2)});mt(4,()=>{for(const sg of[-1,1])for(let q=z-d/2+2;q<z+d/2-1.5;q+=3.4)for(const o of[-.52,.52])bb(P.glass,x+sg*(w/2+.08),y+.1,q+o,.05,1.1,.9)})};
+ const tower=(x,z)=>mt(3,()=>{for(const a of[-1,1])for(const b of[-1,1])bb(P.white,x+a*1.3,0,z+b*1.3,.2,6,.2);for(const y of[2,4])for(const a of[-1,1]){bb(P.white,x+a*1.3,y,z,.1,.1,2.6);bb(P.white,x,y,z+a*1.3,2.6,.1,.1)}cyl(P.white,x,6,z,2.2,.3,14);cyl(P.chalk,x,6.3,z,1.9,3.4,14);lathe(P.white,[[1.9,0],[0,.6]],x,9.7,z,14);cyl(P.dark,x+.9,0,z,.16,6,6)});
  const rtg=(x0,x1,z,c)=>{mt(3,()=>{for(const x of[x0,x1]){for(const dz of[-4,4])bb(c,x,1.2,z+dz,.6,10.1,.6);bb(c,x,1.3,z,.5,.5,8.6)}for(const dz of[-1.2,1.2])bb(c,(x0+x1)/2,11.3,z+dz,x1-x0+1.4,.7,.5);bb(P.white,x0+2.5,9.6,z,2,1.6,2);bb(P.dark,(x0+x1)/2,10.6,z,2.2,.7,2.6)});for(const x of[x0,x1])for(const dz of[-4,4])wheelX(x,.75,z+dz,.5,.7)};
  const stacker=(x,z,yaw)=>Tp(x,.25,z,yaw,1,()=>{mt(3,()=>{bb(P.yel,0,.9,0,2.6,1.2,5.4);bb(P.dark,0,2.1,-1.6,2.4,1.3,1.6);Tm(mul(tr(0,4.2,2.2),rX(-.55)),()=>box(P.yel,0,0,0,.7,.7,8));bb(P.dark,0,5.9,5.4,6.2,.25,.8)});mt(4,()=>bb(P.glass,0,2.5,-.3,1.6,1.3,1.4));for(const zz of[1.8,-1.9])for(const xx of[-1.3,1.3])wheelX(xx,.8,zz,.8,.7)});
  const tug=(x,z,yaw)=>Tp(x,-1.5,z,yaw,1,()=>{mt(3,()=>{bb(P.hull,0,-.4,0,3.4,1.6,8);bb(P.red,0,1.2,0,3.5,.25,8.1);bb(P.white,0,1.45,.6,2.4,1.6,2.6);cyl(P.dark,0,3.05,-.2,.3,1.2,8)});mt(4,()=>bb(P.glass,0,2.3,1.92,2.1,.6,.05))});
  if(k===0){ /* farm: irrigation rig, weighbridge, fence, cold store, pump station, solar array, floodlights */
-  mt(3,()=>{for(const x of[-227.2,-203.6]){for(const zz of[12.5,15.5])bb(P.steel,x,0,zz,.25,3.4,.25);wheelX(x,.5,11.6,.5,.3);wheelX(x,.5,16.4,.5,.3)}for(const zz of[13.2,14.8])bb(P.steel,-215.4,3.3,zz,23.8,.16,.16);
-   for(let x=-226;x<-204;x+=1.9){bb(P.steel,x,3.3,14,.08,.08,1.7);bb(P.dark,x,1.3,14,.05,2,.05)}
+  mt(3,()=>{
    bb(P.dark,-126,.14,30.5,13,.08,3.4);for(let x=-232;x<-176;x+=4)bb(P.steel,x,0,31.2,.1,1.8,.1);bb(P.steel,-204,1.7,31.2,56,.05,.05);bb(P.steel,-204,.9,31.2,56,.03,.03);
    bb(P.blue,-147,0,-27,3.2,2.2,2.6);cyl(P.steel,-147,2.2,-27,.5,.8,8);for(const zz of[-27.6,-26.4])Tm(mul(tr(-150.5,.5,zz),rZ(Math.PI/2)),()=>cyl(P.steel,0,-2.5,0,.22,5,8))});
   shed(-105,-10,10,30,7);mt(3,()=>{for(const zz of[-19,-10,-1])bb(P.dark,-110.06,.2,zz,.1,4.4,5);bb(P.white,-105,8.2,-18,3,1.2,2.2)});
   for(let i=0;i<4;i++)Tm(mul(tr(-145+i*3.4,1.5,-6),rX(-.5)),()=>{mt(4,()=>box(P.glass,0,0,0,3,.1,2));mt(3,()=>box(P.steel,0,-.5,.3,.12,1,.12))});
-  for(const[x,z]of[[-149.5,-3],[-120,22],[-175,-36]])mast(x,z,11)}
+  for(const[x,z]of[[-149.5,-3],[-120,22],[-175,-36]])mast(x,z,11);tower(-167,-35);
+  mt(3,()=>{for(const[x0,z0,x1,z1]of[[-167,-33,-167,-27],[-167,-27,-176,-27]])bb(P.steel,(x0+x1)/2,.3,(z0+z1)/2,Math.abs(x1-x0)+.2,.2,Math.abs(z1-z0)+.2)})}
  if(k===1||k===2){const s=k===1?-1:1,q=k===1?-70:70;
   for(let z=-34;z<40;z+=4.5)Tm(mul(tr(q-s*.2,-.7,z),rX(Math.PI/2)),()=>cyl(P.dark,0,-.9,0,.55,1.8,8));
-  if(k===1){ /* export port: yard gantry, reach stacker, tug, light masts, tanks, gate */
+  if(k===1){roofKit(-105,5.65,27,9,7);for(const z of[-18,10])sideWin(-134,z,18,22,3.4);
+   /* export port: yard gantry, reach stacker, tug, light masts, tanks, gate */
    rtg(-111.6,-94.4,-17,P.yel);stacker(-86,24,2.2);tug(-48,-34,.6);for(const[x,z]of[[-112,-34],[-112,38],[-76,38],[-78,-34]])mast(x,z,17);
    mt(3,()=>{for(const[x,z]of[[-142,-42],[-151,-44],[-146,-52]])cyl(P.white,x,0,z,4,6.5,16);bb(P.steel,-92,5.2,30,9,.4,3);for(const x of[-96.2,-87.8])bb(P.steel,x,0,30,.3,5.2,.3);bb(P.white,-96.6,.2,28,1.6,2.4,1.6)})}
-  else{ /* UK port: yard gantry, reach stacker, tug, light masts, container scanner at customs */
+  else{roofKit(107,6.15,-27,11,8);sideWin(146,-16,20,26,3.4);
+   /* UK port: yard gantry, reach stacker, tug, light masts, container scanner at customs */
    rtg(83.6,97.4,-28,P.blue);stacker(88,8,-1);tug(46,-32,2.4);for(const[x,z]of[[114,-34],[114,38],[76,38],[78,-34]])mast(x,z,17);
    mt(3,()=>{for(const z of[-19.4,-12.6])bb(P.white,104,.25,z,7,5.2,.7);bb(P.white,104,5.45,-16,7,.8,7.5);bb(P.yel,104,5.2,-16,7.04,.25,7.54);bb(P.dark,104,.26,-16,9,.04,4)});MAT=2;bb([.3,.9,1],104,5.3,-16,.3,.12,5);MAT=0}}
- if(k===3){ /* warehouse and QC: portal frames, sprinklers, dock leveller, barriers, roller conveyor, inspection booth, plant */
+ /* dark coping along wall tops, an accent band and roller doors on outside faces: finishes the cutaway buildings */
+ const cope=(x,y,z,w,d)=>mt(3,()=>bb(P.dark,x,y,z,w,.16,d)),dock=(x,z,n,sg)=>mt(3,()=>{for(let i=0;i<n;i++){const q=z+i*7.2;bb(P.dark,x+sg*.04,.25,q,.08,3.4,4.2);for(let j=1;j<6;j++)bb(P.steel,x+sg*.09,.25+j*.55,q,.03,.05,4.1);bb(P.yel,x+sg*.5,.25,q-2.5,.3,1,.3);bb(P.yel,x+sg*.5,.25,q+2.5,.3,1,.3)}});
+ if(k===3){roofKit(180,7.4,-24,12,9);cope(146,7.25,-24,45.2,.9);cope(124,5.25,0,.9,48.6);cope(168,5.25,0,.9,48.6);cope(179,5.25,-7,20.9,.9);cope(189,3.45,8,.9,30.6);
+  dock(123.7,-19,3,-1);mt(3,()=>{bb(P.brick,123.66,4.2,-7.5,.06,.7,33.6);bb(P.brick,146,5.6,-24.34,44.6,1.1,.06);bb(P.brick,189.34,2.3,8,.06,.7,30.6)});sideWin(189.2,8,.2,30,1)
+  /* warehouse and QC: portal frames, sprinklers, dock leveller, barriers, roller conveyor, inspection booth, plant */
   mt(3,()=>{for(let x=127;x<=165;x+=9.5){for(const z of[-23.4,23.6])bb(P.steel,x,.25,z,.35,7.2,.35);for(const sg of[-1,1])Tm(mul(tr(x,8.2,sg*11.75),rX(sg*.065)),()=>box(P.steel,0,0,0,.3,.4,23.6));bb(P.red,x+1.2,7.1,0,.1,.1,46)}
    bb(P.red,146,7.1,-6,38,.14,.14);bb(P.steel,151,.14,27.2,7,.1,2.2);for(const x of[146.6,155.4])bb(P.yel,x,.14,26.4,.3,1,.3);
    for(let x=126;x<137;x+=2.5)bb(P.yel,x,.27,23,.12,1,.12);bb(P.yel,131,1.1,23,10.2,.1,.1);
    for(let x=172;x<=186;x+=.7)Tm(mul(tr(x,1.23,13),rX(Math.PI/2)),()=>cyl(P.steel,0,-.7,0,.1,1.4,6));for(const z of[12.2,13.8])bb(P.steel,179,1.25,z,15,.3,.06);
    for(const z of[11.6,14.4])bb(P.steel,179,.27,z,.2,3.6,.2);bb(P.steel,179,3.8,13,2.4,.25,3);bb(P.white,190.4,.25,-2,1.6,1.4,2.6);bb(P.white,180,7.4,-22,2.4,1,1.6)});
   MAT=2;for(let x=131.75;x<165;x+=9.5)for(const z of[-12,0,12])bb(LIT,x,6.9,z,1.4,.12,.5);bb([.9,.97,1],179,3.75,13,2,.06,2.6);MAT=0}
- if(k===4){ /* supermarket: dock canopy, condensers, chillers, parking bays, trolley bay, sign */
+ if(k===4){cope(223,8.25,-18,35.2,.9);cope(206,5.25,3.2,.9,38.6);cope(240,5.25,2,.9,40.6);dock(205.7,-12,2,-1);mt(3,()=>{bb(P.brick,240.34,4.2,2,.06,.7,40.6);
+   /* glazed shopfront (no canopy: it would block the closing shot of the melon on display); the glass is see-through so the shop floor stays in view */
+   for(const x of[206.3,211.5,216.6,221.8,228.2,234,239.7])bb(P.white,x,.25,22,.22,4.9,.22);bb(P.white,223,5.1,22,34,.24,.3);bb(P.white,214,3,22,15.6,.1,.14);bb(P.white,234,3,22,11.6,.1,.14);});
+  glassI(()=>{for(const[a,b]of[[206.3,221.8],[228.2,239.7]])Q([a,1.25,22.05],[b,1.25,22.05],[b,5.1,22.05],[a,5.1,22.05],[0,0,1])});
+  /* supermarket: dock canopy, condensers, chillers, parking bays, trolley bay, sign */
   mt(3,()=>{for(const z of[9.5,18.5])for(const x of[196.8,203.2])bb(P.steel,x,.1,z,.25,5.4,.25);bb(P.steel,200,5.5,14,7.4,.25,10);bb(P.dark,205.6,.25,14,.12,4,5);
    for(let i=0;i<3;i++){bb(P.white,214+i*8.5,.25,-21.5,3,1.8,1.6);cyl(P.dark,214+i*8.5,2.05,-21.5,.6,.1,10);bb(P.white,214+i*8.5,.25,-15.6,6.4,2.6,1.6)}
    for(let x=209;x<234;x+=3.6)bb(P.white,x,.215,28,.12,.02,5);for(const x of[236,239.5])bb(P.steel,x,.1,27,.1,1.3,.1);bb(P.steel,237.75,1.4,27,3.6,.08,.08);for(let i=0;i<4;i++)bb(P.steel,236.6+i*.7,.4,26.6,.5,.5,.8);

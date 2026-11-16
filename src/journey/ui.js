@@ -6,7 +6,7 @@ function chip(k,stage,pos,html,cls){const e=el('div','dchip '+(cls||''),html);LA
 function glab(g,html,cls,ok,off){const e=el(cls==='gm'?'button':'div','gl '+(cls||''),html);LAB.appendChild(e);const o={e,g,ok,off:off||'translate(-50%,-50%)'};GLB.push(o);return o}
 function buildUI(){
  const tk=$('#track');STAGES.forEach((s,i)=>{const b=el('button','st',`<i>${i+1}</i><span>${s.short}</span>`);b.title=s.name;b.addEventListener('click',()=>goStage(i));tk.appendChild(b);s.btn=b});
- chip(0,0,[-186,10.5,-6],'Weather conditions');chip(0,0,[-214,5,16],'Harvest information');chip(0,0,[-221,7,-12],'Fertiliser usage');
+ chip(0,0,[-186,10.5,-6],'Weather conditions').posI=[-186,8.4,-6];chip(0,0,[-214,5,16],'Harvest information');chip(0,0,[-221,7,-12],'Fertiliser usage');
  chip(0,1,[-161,5,14],'Harvest record <span style="opacity:.6">(illustrative)</span>');chip(0,1,[-128.5,5,22],'Collection record');
  chip(1,2,[-105,11,27],'Shipping manifest');chip(1,2,[-73,23,-10],'Export documentation');
  chip(2,4,[107,12,-27],'','card').dyn=()=>{const t=tau(4);return`<b>CDS · CUSTOMS DECLARATION</b>${t<9?'Submitted':t<15?'Processing':'<span class="ok">Cleared · goods may enter the UK</span>'}<u>status shown illustratively</u>`};
@@ -48,7 +48,7 @@ function syncTL(){const i=STATE.idx;STAGES.forEach((s,k)=>{s.btn.classList.toggl
    when a stage simply runs into the next one the shots already join up, so nothing needs to fly */
 function goStage(i,replay){if(i<0||i>=STAGES.length)return;if(!STATE.started)start('guided');const g=STATE.mode==='guided',seq=!replay&&g&&STATE.att&&!FLY&&i===STATE.idx+1&&STATE.t>=SCRIPT[STATE.idx].dur-.05;
  STATE.idx=i;FOCUS=0;FOLLOW=null;STATE.t=g?0:SCRIPT[i].home;STATE.playing=true;syncTL();
- if(!seq){STATE.att=false;STATE.hold=true;flyTo(()=>stagePose(i),null,()=>{STATE.hold=false;STATE.att=g;syncCtl()})}
+ STATE.hold=false;if(!seq){STATE.att=false;flyTo(()=>stagePose(i),null,()=>{STATE.att=g;syncCtl()})}
  if(g)showPanel(i);else hidePanel()}
 /* stage details: text from STAGES, data chips from FIELDS, values through fieldInfo() for the shipment being followed */
 let PF=[];
@@ -56,7 +56,7 @@ function esc(v){return String(v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','
 function chipsHTML(list){return list.map(f=>`<button type="button" data-f="${PF.push(f)-1}"${fieldInfo(f).status==='unavailable'?' class="na"':''}>${esc(f.label)}</button>`).join('')}
 function showPanel(i,obj){const s=STAGES[i];STATE.panel=true;STATE.pi=i;STATE.obj=obj||null;PF=[];const ships=recs('shipments'),sh=context().one('shipment'),of=obj?entFields(obj):[];
  $('#pBody').innerHTML=`<p class="eyebrow"><img class="lg" src="assets/contained-logo.png" alt="Contained Technologies" onerror="this.remove()">Stage ${String(i+1).padStart(2,'0')} / ${STAGES.length}</p><h2>${s.name}</h2>
- <div class="ctx">Following ${ships.length>1?`<select id="selShip" aria-label="Shipment to follow">${ships.map(x=>`<option${x.id===sh.id?' selected':''}>${esc(x.id)}</option>`).join('')}</select>`:sh?`<b>${esc(sh.id)}</b>`:'no shipment'}<em class="ds ${DATA.status}">${STATUS[DATA.status]}</em></div>
+ <div class="ctx">Following ${ships.length>1?`<select id="selShip" aria-label="Shipment to follow">${ships.map(x=>`<option${x.id===sh.id?' selected':''}>${esc(x.id)}</option>`).join('')}</select>`:sh?`<b>${esc(sh.id)}</b>`:'no shipment'}<em class="ds ${DATA.status}">${STATUS[DATA.status]}</em></div><div class="tnow" id="trkNow"></div>
  ${obj?`<div class="obj"><b>${obj.name}</b>${obj.note||''}${of.length?`<div class="tags">${chipsHTML(of)}</div>`:''}</div>`:''}
  <h3 style="--c:#f5f3ec">What’s happening</h3><p>${s.what}</p><h3 style="--c:var(--data)">Data captured</h3><div class="tags" id="stTags">${chipsHTML(FIELDS[i])}</div>
  <h3 style="--c:#c9a8ff">Data source</h3><p>${s.src}</p><h3 style="--c:var(--ok)">How it’s used</h3><p>${s.use}</p><h3 style="--c:var(--acc)">What’s next</h3><p>${s.next}</p>${s.note?`<p class="note">${s.note}</p>`:''}`;
@@ -81,5 +81,5 @@ function hidePanel(){STATE.panel=false;document.body.classList.remove('pan');$('
 function updateLabels(){
  for(const l of GLB){const g=l.g(),p=llu(g[0],g[1]),q=l.ok()&&dot(p,X.eyeG)>1.004?proj(X.gvp,p):null,ok=STATE.started&&q&&q[1]>50&&q[1]<GLS.ch-90||(!STATE.started&&q&&l.e.classList.contains('big'));l.e.classList.toggle('show',!!ok);
   if(ok){if(l.dyn){const h=l.dyn();if(h!==l.h){l.h=h;l.e.innerHTML=h}}l.e.style.transform=`translate(${q[0].toFixed(1)}px,${q[1].toFixed(1)}px) ${l.off}`}}
- for(const c of CHIPS){const q=PRIM&&PRIM.k===c.k?proj(PRIM.vp,c.pos):null,ok=VIEW.data&&STATE.started&&q&&c.stage===STATE.idx&&FADE>.7&&X.d<340&&q[1]>56&&q[1]<GLS.ch-100;
+ for(const c of CHIPS){const q=PRIM&&PRIM.k===c.k?proj(PRIM.vp,STYLE==='industrial'&&c.posI||c.pos):null,ok=VIEW.data&&STATE.started&&q&&c.stage===STATE.idx&&FADE>.7&&X.d<340&&q[1]>56&&q[1]<GLS.ch-100;
   c.e.classList.toggle('show',!!ok);if(ok&&c.dyn){const h=c.dyn();if(h!==c.h){c.h=h;c.e.innerHTML=h}}if(q)c.e.style.transform=`translate(${q[0].toFixed(1)}px,${q[1].toFixed(1)}px) translate(-50%,-115%)`}}

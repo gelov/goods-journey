@@ -2,18 +2,48 @@
 /* ================= stage scripts: duration, free-mode home time, camera keys ================= */
 const G=(lon,lat)=>()=>[lon,lat],AT=(k,x,z)=>()=>geoOf(k,x,z),MV=(k,m)=>()=>{const o=m();return geoOf(k,o.p[0],o.p[2])},GS=k=>()=>SITES[k].g;
 const K=(t,g,ry,rx,d)=>({t,g,ry,rx,d});
+/* w: stretches of a stage that run at their own pace (start, end, multiplier). Below 1 slows the clock for work that
+   should read clearly: crane loading and unloading, forklifts, lorries pulling away and travelling.
+   Shots are keyed so the camera is always going somewhere: it descends toward the destination while the vehicle is
+   still on its route, and keeps orbiting once it is inside a site. */
 const SCRIPT=[
- {dur:18,home:13,k:[K(0,G(-54,-14),0,1.45,42000),K(3.5,G(-45,-9),0,1.45,24000),K(8,AT(0,-198,8),-.2,1.2,2600),K(11.5,AT(0,-198,8),-.55,.62,125),K(18,AT(0,-190,10),-.25,.55,105)]},
- {dur:26,home:2,k:[K(0,AT(0,-190,10),-.25,.55,105),K(3,AT(0,-160,14),.35,.56,74),K(6.5,AT(0,-138,14),.15,.6,58),K(9,AT(0,-128,28),-.25,.55,52),K(12.5,MV(0,()=>LORF),-.6,.5,60),K(16.5,RT(0),0,1.45,5200),K(24,RT(0),0,1.45,4200),K(26,GS(1),0,1.45,3600)]},
- {dur:28,home:5,k:[K(0,GS(1),0,1.45,3600),K(4,AT(1,-90,10),.28,.56,112),K(7.5,AT(1,-76,-8),.03,.5,84),K(16,AT(1,-70,-8),.48,.55,96),K(21.5,MV(1,()=>SHBR),.98,.6,112),K(25,MV(1,()=>SHBR),.4,.9,700),K(28,GS(1),0,1.45,5200)]},
- {dur:24,home:8,k:[K(0,GS(1),0,1.45,5200),K(4,RT(1),0,1.45,30000),K(12,RT(1),0,1.45,36000),K(20,RT(1),0,1.45,20000),K(24,GS(2),0,1.45,5200)]},
- {dur:24,home:7,k:[K(0,GS(2),0,1.45,5200),K(4.5,AT(2,56,8),2.95,.55,128),K(10,AT(2,78,-10),2.85,.56,96),K(19,AT(2,98,-18),2.55,.55,72),K(24,AT(2,104,17),2.05,.5,56)]},
- {dur:26,home:2,k:[K(0,AT(2,104,17),2.05,.5,56),K(8.5,AT(2,110,17),2.25,.55,50),K(12.5,MV(2,()=>LORU),2.65,.5,60),K(16.5,RT(2),0,1.45,4200),K(24,RT(2),0,1.45,3600),K(26,GS(3),0,1.45,2800)]},
- {dur:20,home:8,k:[K(0,GS(3),0,1.45,2800),K(4,AT(3,150,22),.1,.6,72),K(8.5,AT(3,146,0),.25,.72,92),K(20,AT(3,146,-2),.45,.68,84)]},
- {dur:16,home:4,k:[K(0,AT(3,146,-2),.45,.68,84),K(3.5,AT(3,179,9),-.35,.56,46),K(16,AT(3,179,10),.1,.5,40)]},
- {dur:20,home:3.5,k:[K(0,AT(3,179,10),.1,.5,40),K(3,AT(3,180,-18),-.28,.5,48),K(8,G(-18,27),0,1.45,40000),K(14.5,G(-18,27),0,1.45,40000),K(20,AT(3,150,26),.15,.58,60)]},
- {dur:31,home:23,k:[K(0,AT(3,150,26),.15,.58,60),K(4,AT(3,151,28),.4,.5,50),K(8,MV(3,()=>LORW),.6,.5,60),K(11,RT(3),0,1.45,3400),K(16.5,RT(3),0,1.45,3000),K(19.5,AT(4,206,22),.2,.55,70),K(23,AT(4,221,8),.3,.5,62),K(27,AT(4,221,8),.55,.5,58),K(31,G(-18,25),0,1.45,42000)]}];
+ {dur:18,home:13,k:[K(0,G(-54,-14),0,1.45,42000),K(2,G(-45,-9),0,1.45,20000),K(5,AT(0,-198,8),0,1.2,2400),K(7.5,AT(0,-198,8),-.75,.62,135),K(13,AT(0,-184,10),-.3,.58,104),K(18,AT(0,-156.2,12.2),.2,.55,46)]},
+ {dur:26,home:2,w:[[0,17,.65],[17,24,.85],[15.6,18.6,1.7]],k:[K(0,AT(0,-156.2,12.2),.2,.55,46),K(4,TR(0,-154.6,13.5),.5,.56,34),K(8.5,TR(0,-130,16),.2,.6,50),K(11,AT(0,-128,28),-.25,.55,52),K(13.5,MV(0,()=>LORF),-.6,.5,60),K(17,RT(0),0,1.45,5200),K(24,RT(0),0,1.45,1900),K(26,GS(1),0,1.45,950)]},
+ {dur:28,home:5,w:[[4,21.5,.6]],k:[K(0,GS(1),0,1.45,950),K(4,AT(1,-90,10),-.3,.56,112),K(7.5,TR(1,-92,13),.15,.5,64),K(14.2,TR(1,-78,-9),.6,.52,70),K(18,TR(1,-66,-9),1.05,.55,96),K(21.5,MV(1,()=>SHBR),1.5,.6,112),K(25,MV(1,()=>SHBR),0,.9,700),K(28,GS(1),0,1.45,5200)]},
+ {dur:24,home:8,w:[[4,20,1.6]],k:[K(0,GS(1),0,1.45,5200),K(4,RT(1),0,1.45,22000),K(12,RT(1),0,1.45,38000),K(20,RT(1),0,1.45,12000),K(24,GS(2),0,1.45,2600)]},
+ {dur:24,home:7,w:[[4.5,24,.6]],k:[K(0,GS(2),0,1.45,2600),K(4.5,AT(2,56,8),3.4,.55,128),K(10,TR(2,64,-12),3,.56,96),K(19,TR(2,84,2),2.4,.55,72),K(24,AT(2,104,17),2.05,.5,56)]},
+ {dur:26,home:2,w:[[0,12.5,.65],[12.5,17,.7],[17,24,.85],[15.6,18.6,1.7]],k:[K(0,AT(2,104,17),2.05,.5,56),K(8.5,AT(2,108,17),2.95,.55,48),K(12.5,MV(2,()=>LORU),3.2,.5,60),K(17,RT(2),0,1.45,4200),K(24,RT(2),0,1.45,1700),K(26,GS(3),0,1.45,900)]},
+ {dur:20,home:8,k:[K(0,GS(3),0,1.45,900),K(4,AT(3,150,22),.1,.6,72),K(8.5,TR(3,146,14),.25,.66,70),K(13,TR(3,138,0),.6,.7,64),K(20,TR(3,160,6),1.15,.66,78)]},
+ {dur:16,home:4,k:[K(0,TR(3,160,6),1.15,.66,78),K(3.5,AT(3,179,10),.45,.56,46),K(16,AT(3,172,10),-.55,.5,56)]},
+ {dur:20,home:3.5,k:[K(0,AT(3,172,10),-.55,.5,56),K(3,AT(3,180,-18),-.95,.5,48),K(8,G(-30,22),0,1.45,34000),K(14.5,G(-8,30),0,1.45,44000),K(20,AT(3,150,26),.15,.58,60)]},
+ {dur:31,home:23,w:[[4,11,.7],[11,16.5,.85],[16.5,23,.75],[9.8,12.6,1.8]],k:[K(0,AT(3,150,26),.15,.58,60),K(4,AT(3,151,28),.4,.5,50),K(8,MV(3,()=>LORW),.6,.5,60),K(11,RT(3),0,1.45,3400),K(16.5,RT(3),0,1.45,1500),K(19.5,AT(4,206,22),.2,.55,70),K(23,TR(4,208,11),.45,.5,46),K(27,AT(4,219,8),.8,.5,30),K(31,AT(4,219,8),1.25,.46,22)]}];
+/* clock rate inside a stage: 1 outside the w stretches, their multiplier inside, blended over 1.5 s at each edge so pace never jumps */
+const warp=(i,t)=>{let r=1;for(const q of SCRIPT[i].w||[])r+=(q[2]-1)*ss(q[0]-.75,q[0]+.75,t)*(1-ss(q[1]-.75,q[1]+.75,t));return r};
 const STSITE=[0,0,1,-1,2,2,3,3,3,4];
 const dlon=(a,b)=>((b-a+540)%360)-180,dang=(a,b)=>((b-a+Math.PI)%TAU+TAU)%TAU-Math.PI;
-function stagePose(i){const k=SCRIPT[i].k,t=clamp(STATE.t,0,SCRIPT[i].dur);let j=0;while(j<k.length-2&&k[j+1].t<=t)j++;const a=k[j],b=k[j+1],e=io(u01(t,a.t,b.t)),ga=a.g(),gb=b.g();
- return{lon:ga[0]+dlon(ga[0],gb[0])*e,lat:lerp(ga[1],gb[1],e),ry:a.ry+dang(a.ry,b.ry)*e,rx:lerp(a.rx,b.rx,e),ld:lerp(Math.log(a.d),Math.log(b.d),e)}}
+/* journey speed: one factor for stage time, so camera, vehicles and routes stay in step. Saved per browser. */
+const SPEEDS={normal:1,cinematic:1.3,fast:1.7};let SPEED='fast';try{const v=localStorage.getItem('ffts.speed');if(SPEEDS[v])SPEED=v}catch(e){}
+const spd=()=>SPEEDS[SPEED];
+/* The camera follows one smooth curve through a stage's keys (cubic Hermite), so it keeps moving through each key
+   instead of easing to a stop there. The neighbouring key of the previous and next stage shapes the ends, so speed
+   also carries across stage changes. A tangent is zero only where the motion really reverses or rests, and is
+   limited so zoom and position never overshoot a key. */
+function stagePose(i){const S=SCRIPT[i],k=S.k,t=clamp(STATE.t,0,S.dur),P=[],add=(q,tt)=>{const g=q.g();P.push({t:tt,v:[g[0],g[1],q.ry,q.rx,Math.log(q.d)]})};
+ if(i>0){const pk=SCRIPT[i-1].k,q=pk[pk.length-2];add(q,q.t-SCRIPT[i-1].dur)}
+ for(const q of k)add(q,q.t);
+ if(i<SCRIPT.length-1){const q=SCRIPT[i+1].k[1];add(q,S.dur+q.t)}
+ for(let j=1;j<P.length;j++){P[j].v[0]=P[j-1].v[0]+dlon(P[j-1].v[0],P[j].v[0]);P[j].v[2]=P[j-1].v[2]+dang(P[j-1].v[2],P[j].v[2])}
+ let j=i>0?1:0;const hi=j+k.length-2;while(j<hi&&P[j+1].t<=t)j++;
+ const a=P[j],b=P[j+1],h=b.t-a.t,u=(t-a.t)/h,o=[],tan=(q,c)=>{const p0=P[q-1],p1=P[q],p2=P[q+1];if(!p0||!p2)return 0;const s0=(p1.v[c]-p0.v[c])/(p1.t-p0.t),s1=(p2.v[c]-p1.v[c])/(p2.t-p1.t);if(s0*s1<=0)return 0;
+   const m=(p2.v[c]-p0.v[c])/(p2.t-p0.t);return Math.sign(m)*Math.min(Math.abs(m),3*Math.min(Math.abs(s0),Math.abs(s1)))},
+  herm=(c,x)=>{const x2=x*x,x3=x2*x;return(2*x3-3*x2+1)*a.v[c]+(x3-2*x2+x)*h*tan(j,c)+(3*x2-2*x3)*b.v[c]+(x3-x2)*h*tan(j+1,c)};
+ for(let c=0;c<5;c++)o[c]=herm(c,u);
+ /* Big changes of altitude (leaving or entering a site) are flown like a map dive: the ground moves under the camera in
+    proportion to how much ground is in view, so the low end stays locked in the centre while the camera rises or descends,
+    and the sideways travel happens high up. The turn to north-up (and back to the site's viewing angle) is tied to altitude
+    too and is finished before the map takes over, so the map itself never rotates. */
+ const dz=Math.abs(b.v[4]-a.v[4]),w=ss(.8,1.8,dz);
+ if(w>0){const N=24;let I=0,Iu=0,pv=Math.exp(herm(4,0));for(let n=1;n<=N;n++){const x=n/N,cv=Math.exp(herm(4,x)),seg=(pv+cv)/2/N;if(x<=u+1e-9)Iu+=seg;else if(x-1/N<u)Iu+=seg*(u-(x-1/N))*N;I+=seg;pv=cv}
+  const p=Iu/I,lo=a.v[4]<b.v[4]?a:b,hi=lo===a?b:a,g=ss(0,1,(o[4]-lo.v[4])/Math.min(dz,2.4)),mix=(c,k)=>lerp(o[c],k,w);
+  o[0]=mix(0,lerp(a.v[0],b.v[0],p));o[1]=mix(1,lerp(a.v[1],b.v[1],p));o[2]=mix(2,lerp(lo.v[2],hi.v[2],g));o[3]=mix(3,lerp(lo.v[3],hi.v[3],g))}
+ return{lon:o[0],lat:o[1],ry:o[2],rx:o[3],ld:o[4]}}
