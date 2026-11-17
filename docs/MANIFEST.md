@@ -13,7 +13,7 @@ The journey is driven by one JSON file per shipment. Load a different manifest a
 | File | Role |
 |---|---|
 | `manifests/manifest.schema.json` | The schema, version 1.0 (JSON Schema, for reference and for tooling) |
-| `manifests/sample-*.json`, `manifests/index.json` | Four demonstration manifests (one in the alternative format) and the list shown in Settings |
+| `manifests/sample-*.json`, `manifests/index.json` | Three demonstration manifests and the list shown in Settings |
 | `manifests/template.json` | A canonical manifest to copy |
 | `src/data/adapters.js` | Format detection and conversion to the canonical format; `prepareManifest()` |
 | `src/data/manifest.js` | `validateManifest()` and `normalizeManifest()` |
@@ -37,7 +37,7 @@ Nothing changes in the journey until you press Load. A file that fails leaves th
 |---|---|---|
 | Canonical | locations have `role` and `{lon, lat}`, `transport` is an object | nothing |
 | Canonical with alternative names | locations use `type` or another known role name | role names, coordinate forms, `fromLocationId`/`toLocationId`, vessel `imoNumber`/`voyageNumber`, route `mode` words, ISO dates |
-| Demo manifest with a transport list (the Philippines to Australia file) | `transport` or `cargo` is a list, or stages have `highlightTarget` | all of the above, plus: transport list split into lorries, vessel and containers; `tracking.mode`; fine-grained steps merged into the supported stage types; travel steps folded into the route legs |
+| Manifest with a transport list | `transport` or `cargo` is a list, or stages have `highlightTarget` | all of the above, plus: transport list split into lorries, vessel and containers; `tracking.mode`; fine-grained steps merged into the supported stage types; travel steps folded into the route legs |
 
 Known names (the full tables are at the top of `adapters.js`):
 

@@ -11,10 +11,6 @@
   {
    "file": "sample-senegal-uk.json",
    "label": "Demo \u00b7 Senegal to UK (sparse data)"
-  },
-  {
-   "file": "sample-philippines-australia.json",
-   "label": "Demo \u00b7 Philippines to Australia (alternative format)"
   }
  ]
 }
