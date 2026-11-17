@@ -21,7 +21,7 @@ function lathe(c,pr,cx,cy,cz,seg,flat){C=c;seg=seg||10;const n=pr.length,nn=[];
    const A=[n0[0]*c0,n0[1],n0[0]*s0],B=[n0[0]*c1,n0[1],n0[0]*s1],D=[n1[0]*c0,n1[1],n1[0]*s0],E=[n1[0]*c1,n1[1],n1[0]*s1];
    if(r0>1e-4){vx(p00,A);vx(p10,B);vx(p11,E)}if(r1>1e-4){vx(p00,A);vx(p11,E);vx(p01,D)}}}}
 const cyl=(c,x,y0,z,r,h,seg)=>lathe(c,[[0,0],[r,0],[r,h],[0,h]],x,y0,z,seg||10,1);
-function ball(c,x,y,z,r,sy,seg,rings){sy=sy||1;rings=rings||4;const pr=[];for(let k=0;k<=rings;k++){const a=-Math.PI/2+Math.PI*k/rings;pr.push([Math.max(0,r*Math.cos(a)),r*sy*Math.sin(a)])}lathe(c,pr,x,y,z,seg||8)}
+function ball(c,x,y,z,r,sy,seg,rings){if(typeof melonKind==='function'){const mk=melonKind(c);if(mk){melonInst(mk,x,y,z,r,sy||1);return}}sy=sy||1;rings=rings||4;const pr=[];for(let k=0;k<=rings;k++){const a=-Math.PI/2+Math.PI*k/rings;pr.push([Math.max(0,r*Math.cos(a)),r*sy*Math.sin(a)])}lathe(c,pr,x,y,z,seg||8)}
 function roof(c,cx,y0,cz,w,h,d){C=c;const a=[cx-w/2,y0,cz-d/2],b=[cx-w/2,y0,cz+d/2],e=[cx+w/2,y0,cz-d/2],f=[cx+w/2,y0,cz+d/2],r0=[cx,y0+h,cz-d/2],r1=[cx,y0+h,cz+d/2];
  Q(a,b,r1,r0,nrm([-h,w/2,0]));Q(f,e,r0,r1,nrm([h,w/2,0]));tri(b,f,r1,[0,0,1]);tri(e,a,r0,[0,0,-1])}
 function Tm(m,fn){const o=XF;XF=o?mul(o,m):m;fn();XF=o}

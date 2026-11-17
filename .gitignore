@@ -9,3 +9,6 @@ exploded-view-SKILL*.md
 
 .DS_Store
 node_modules/
+
+# source character pack (264 MB); the app uses the extracted GLBs in assets/characters/
+assets/Ultimate Modular Men- Feb 2022/

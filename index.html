@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>From Farm to Shelf</title>
-<link rel="stylesheet" href="styles/main.css?v=33">
+<link rel="stylesheet" href="styles/main.css?v=84">
 </head>
 <body class="intro guided">
 <canvas id="stage" tabindex="0" aria-label="Miniature 3D world: melon supply chain from Brazil to the UK"></canvas>
@@ -13,12 +13,14 @@
 
 <header id="top">
   <nav class="tools" aria-label="View controls">
+    <button id="bHome" class="chip" title="Back to the start screen">⌂ Start</button>
     <div class="seg glass" role="group" aria-label="Exploration mode"><button id="mGuided" class="on">Guided journey</button><button id="mFree">Free exploration</button></div>
-    <button id="bData" class="chip on" aria-pressed="true">Data flow</button>
-    <button id="bOrbit" class="chip" aria-pressed="false">Auto-orbit</button>
+    <button id="bData" class="chip on" aria-pressed="true" title="Show or hide data moving between places">Data flow</button>
+    <button id="bOrbit" class="chip" aria-pressed="false" title="Slowly rotate the view on its own">Auto-orbit</button>
     <button id="bFollow" class="chip" title="Hand the camera back to the guided journey">Follow</button>
-    <button id="bGlobe" class="chip">Globe</button>
-    <button id="bReset" class="chip">Reset view</button>
+    <button id="bGlobe" class="chip" title="Back to the whole globe">Globe</button>
+    <button id="bReset" class="chip" title="Back to this stage's view">Reset view</button>
+    <button id="bMore" class="chip" aria-label="More controls" aria-expanded="false" title="More controls">☰</button>
     <button id="bSet" class="chip" aria-label="Settings" aria-expanded="false" title="Settings">⚙</button>
   </nav>
 </header>
@@ -51,12 +53,19 @@
       <b>Industrial</b><span>Realistic logistics simulation</span>
     </button>
   </div>
+  <h3>Shipment manifest</h3>
+  <div class="man"><select id="manSel" aria-label="Shipment manifest"></select><button id="manImp" type="button">Import manifest JSON</button><input id="manFile" type="file" accept=".json,application/json" hidden></div>
+  <div id="manInfo" class="maninfo"></div>
+  <div id="manRoutes" class="manroutes"></div>
+  <p class="manlinks"><a href="manifests/template.json" download="manifest-template.json">Download JSON template</a> · <a href="manifests/manifest.schema.json" target="_blank" rel="noopener">JSON Schema</a></p><div id="manErr" class="manerr" role="alert" hidden></div>
   <h3>Journey speed</h3>
   <div class="speeds" role="group" aria-label="Journey speed"><button data-speed="normal">Normal</button><button data-speed="fast">Fast</button><button data-speed="cinematic">Cinematic</button></div>
   <p class="note">Changes only the 3D sites and vehicles. Your stage, camera and playback stay where they are.</p>
   <p class="note">Farm, port, warehouse and store locations and the routes between them are illustrative placeholders, as are readings and report contents. Earth imagery: Solar System Scope, CC BY 4.0. Map: © OpenStreetMap contributors.</p>
 </div>
 <button id="pOpen" class="glass" aria-label="Show stage details" title="Show stage details">›</button>
+<div id="impPrev" class="glass" role="dialog" aria-modal="true" aria-label="Manifest import preview" hidden><p class="eyebrow">Import preview</p><h2 id="ipTitle"></h2><div id="ipBody"></div>
+ <div class="ipbtn"><button id="ipCancel" type="button">Cancel</button><button id="ipLoad" type="button" class="go">Load this journey</button></div></div>
 <aside id="trkSum" class="glass" aria-live="polite"><button class="x" id="tsX" aria-label="Close">×</button><p class="eyebrow">Journey summary</p><h2>From farm to shelf</h2><div id="tsBody"></div></aside>
 <aside id="panel" class="glass" aria-live="polite"><button class="x" id="pX" aria-label="Close">×</button><div id="pBody"></div></aside>
 
@@ -65,34 +74,41 @@
   <div id="tlRow"><button class="nav" id="bPrev">← Prev</button><div id="track"><div class="rail"></div><div class="fill" id="fill"></div></div><button class="nav" id="bNext">Next →</button></div>
 </nav>
 <div id="nogl" hidden>This experience needs WebGL. Open it in a current browser with hardware acceleration on.</div>
-<script src="src/config.js?v=33"></script>
-<script src="src/data/mock-records.js?v=33"></script>
-<script src="src/data/source.js?v=33"></script>
-<script src="src/data/model.js?v=33"></script>
-<script src="src/engine/math.js?v=33"></script>
-<script src="src/engine/tween.js?v=33"></script>
-<script src="src/engine/geometry.js?v=33"></script>
-<script src="src/sites/styles.js?v=33"></script>
-<script src="src/journey/stages.js?v=33"></script>
-<script src="src/sites/kit.js?v=33"></script>
-<script src="src/sites/kit-industrial.js?v=33"></script>
-<script src="src/sites/kit-diorama.js?v=33"></script>
-<script src="src/geo/sites.js?v=33"></script>
-<script src="src/sites/world.js?v=33"></script>
-<script src="src/sites/paths.js?v=33"></script>
-<script src="src/engine/gl.js?v=33"></script>
-<script src="src/sites/movers.js?v=33"></script>
-<script src="src/journey/tracking.js?v=33"></script>
-<script src="src/sites/build.js?v=33"></script>
-<script src="src/sites/data-layer.js?v=33"></script>
-<script src="src/geo/globe.js?v=33"></script>
-<script src="src/geo/tiles.js?v=33"></script>
-<script src="src/journey/scripts.js?v=33"></script>
-<script src="src/engine/camera.js?v=33"></script>
-<script src="src/engine/picking.js?v=33"></script>
-<script src="src/engine/render.js?v=33"></script>
-<script src="src/journey/ui.js?v=33"></script>
-<script src="src/journey/settings.js?v=33"></script>
-<script src="src/main.js?v=33"></script>
+<script src="src/config.js?v=84"></script>
+<script src="src/data/manifest.js?v=84"></script>
+<script src="src/data/adapters.js?v=84"></script>
+<script src="src/data/providers.js?v=84"></script>
+<script src="src/data/model.js?v=84"></script>
+<script src="src/engine/math.js?v=84"></script>
+<script src="src/engine/tween.js?v=84"></script>
+<script src="src/engine/geometry.js?v=84"></script>
+<script src="src/sites/styles.js?v=84"></script>
+<script src="src/journey/stages.js?v=84"></script>
+<script src="src/sites/kit.js?v=84"></script>
+<script src="src/sites/kit-industrial.js?v=84"></script>
+<script src="src/sites/kit-diorama.js?v=84"></script>
+<script src="src/sites/people.js?v=84"></script>
+<script src="src/sites/nav.js?v=84"></script>
+<script src="src/geo/sites.js?v=84"></script>
+<script src="src/sites/world.js?v=84"></script>
+<script src="src/sites/paths.js?v=84"></script>
+<script src="src/engine/gl.js?v=84"></script>
+<script src="src/engine/gltf.js?v=84"></script>
+<script src="src/engine/melons.js?v=84"></script>
+<script src="src/sites/movers.js?v=84"></script>
+<script src="src/journey/tracking.js?v=84"></script>
+<script src="src/sites/build.js?v=84"></script>
+<script src="src/sites/data-layer.js?v=84"></script>
+<script src="src/geo/globe.js?v=84"></script>
+<script src="src/geo/routing.js?v=84"></script>
+<script src="src/geo/tiles.js?v=84"></script>
+<script src="src/journey/scripts.js?v=84"></script>
+<script src="src/engine/camera.js?v=84"></script>
+<script src="src/engine/picking.js?v=84"></script>
+<script src="src/engine/render.js?v=84"></script>
+<script src="src/journey/ui.js?v=84"></script>
+<script src="src/journey/settings.js?v=84"></script>
+<script src="src/journey/manifest-ui.js?v=84"></script>
+<script src="src/main.js?v=84"></script>
 </body>
 </html>

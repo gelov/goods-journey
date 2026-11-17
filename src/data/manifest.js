@@ -1,0 +1,61 @@
+'use strict';
+/* ================= shipment manifest: validation and normalisation =================
+   A manifest (see manifests/manifest.schema.json) is the source of truth for everything specific to one shipment:
+   places and coordinates, vessel and vehicles, routes, stage events, quality control and what the followed melon stands for.
+   validateManifest() returns a list of plain-language problems (empty = valid). normalizeManifest() turns a valid manifest
+   into the one internal model the rest of the app reads: DATA.man (places, routes, stage switches) and DATA.records
+   (linked records for the panel and tracking). Missing optional values become null and show as "Unavailable". */
+const DATA={records:{},status:'unavailable',man:null};
+const ROLES=['farm','exportPort','arrivalPort','warehouse','supermarket'];
+const STAGE_TYPES=['farm','harvest','exportPort','ocean','customs','unloading','warehouse','qualityControl','claims','delivery'],OPTIONAL_STAGES=['claims'];
+function validateManifest(m){const E=[],err=s=>{if(E.length<12)E.push(s)},isObj=o=>!!o&&typeof o==='object'&&!Array.isArray(o);
+ const ids=(list,path)=>{const seen={};if(list!=null&&!Array.isArray(list)){err(path+': must be a list');return seen}(list||[]).forEach((o,i)=>{if(!isObj(o)||typeof o.id!=='string'||!o.id)err(`${path}[${i}]: needs an "id"`);else if(seen[o.id])err(`${path}: the id "${o.id}" is used twice`);else seen[o.id]=1});return seen};
+ if(!isObj(m))return['The file does not contain a JSON object.'];
+ if(!/^1\./.test(m.schemaVersion||''))err(`schemaVersion: expected "1.x", found ${JSON.stringify(m.schemaVersion)}; add "schemaVersion": "1.0"`);
+ if(!isObj(m.manifest)||typeof m.manifest.id!=='string'||!m.manifest.id)err('manifest.id is required');
+ if(!Array.isArray(m.locations))err('locations: a list of locations is required');if(!Array.isArray(m.stages))err('stages: a list of stages is required');
+ const L=ids(m.locations,'locations');
+ (Array.isArray(m.locations)?m.locations:[]).forEach((o,i)=>{if(!isObj(o))return;const w=`locations[${i}] (${o.id||'no id'})`;if(!ROLES.includes(o.role))err(`${w}: role "${o.role}" is not one of ${ROLES.join(', ')}`);
+  const c=o.coordinates;if(!isObj(c)||typeof c.lon!=='number'||typeof c.lat!=='number')err(`${w}: coordinates need a numeric lon and lat, written as {"lon": …, "lat": …}`);else{if(c.lon<-180||c.lon>180)err(`${w}: lon ${c.lon} is outside -180 to 180`);if(c.lat<-85||c.lat>85)err(`${w}: lat ${c.lat} is outside -85 to 85`)}
+  if(typeof o.name!=='string'||!o.name)err(`${w}: needs a name`)});
+ if(Array.isArray(m.locations))for(const r of ROLES){const n=m.locations.filter(o=>isObj(o)&&o.role===r).length;if(n!==1)err(`locations: exactly one "${r}" location is needed, found ${n}${n?'':'; add a location with "role": "'+r+'"'}`)}
+ ids(m.routes,'routes');(Array.isArray(m.routes)?m.routes:[]).forEach((o,i)=>{if(!isObj(o))return;const w=`routes[${i}] (${o.id||'no id'})`;for(const k of['from','to'])if(!L[o[k]])err(`${w}: ${k} "${o[k]}" is not a location id`);
+  if(!['road','sea'].includes(o.mode))err(`${w}: mode "${o.mode}" must be road or sea`);
+  if(o.geometry!=null&&(!Array.isArray(o.geometry)||o.geometry.some(p=>!Array.isArray(p)||typeof p[0]!=='number'||typeof p[1]!=='number'||Math.abs(p[0])>180||Math.abs(p[1])>85)))err(`${w}: geometry must be a list of [lon, lat] pairs within range`)});
+ ids(m.stages,'stages');const seenT={},ord=[];(Array.isArray(m.stages)?m.stages:[]).forEach((o,i)=>{if(!isObj(o))return;const w=`stages[${i}] (${o.id||'no id'})`;
+  if(!STAGE_TYPES.includes(o.type))err(`${w}: stage type "${o.type}" is not supported. Supported types: ${STAGE_TYPES.join(', ')}`);else{if(seenT[o.type])err(`stages: the type "${o.type}" appears more than once`);seenT[o.type]=1;ord.push(STAGE_TYPES.indexOf(o.type))}
+  if(o.locationId!=null&&!L[o.locationId])err(`${w}: locationId "${o.locationId}" is not a location id`);if(o.events!=null&&(!Array.isArray(o.events)||o.events.some(e=>!isObj(e)||typeof e.type!=='string')))err(`${w}: events must be a list of objects with a "type"`);
+  else for(const e of o.events||[])if(e.timestamp!=null&&(typeof e.timestamp!=='string'||isNaN(Date.parse(e.timestamp))))err(`${w}: the ${e.type} timestamp ${JSON.stringify(e.timestamp)} is not a date this app can read; use a form like "2026-10-12" or "12 October 2026"`)});
+ if(Array.isArray(m.stages)){for(const t of STAGE_TYPES)if(!OPTIONAL_STAGES.includes(t)&&!seenT[t])err(`stages: a "${t}" stage is needed by the current scenes`);if(ord.some((v,i)=>i&&v<ord[i-1]))err('stages: must be listed in journey order ('+STAGE_TYPES.join(' > ')+')')}
+ const LEGS=['farm-exportPort','arrivalPort-warehouse','warehouse-supermarket'],T=m.transport;if(T!=null){if(!isObj(T))err('transport: must be an object with vehicles, vessel and containers');else{ids(T.vehicles,'transport.vehicles');
+  (Array.isArray(T.vehicles)?T.vehicles:[]).forEach((v,i)=>{if(!isObj(v))return;if(v.type!=null&&v.type!=='lorry')err(`transport.vehicles[${i}] (${v.id}): type "${v.type}" is not supported; use "lorry"`);for(const l of v.legs||(v.leg!=null?[v.leg]:[]))if(!LEGS.includes(l))err(`transport.vehicles[${i}] (${v.id}): leg "${l}" must be one of ${LEGS.join(', ')}`)});const C=ids(T.containers,'transport.containers'),tc=isObj(m.tracking)&&m.tracking.containerId;if(tc&&Array.isArray(T.containers)&&!C[tc])err(`tracking.containerId "${tc}" is not listed in transport.containers`)}}
+ if(m.tracking!=null&&!isObj(m.tracking))err('tracking: must be an object');else if(m.tracking&&m.tracking.level!=null&&!['batch','item'].includes(m.tracking.level))err(`tracking.level "${m.tracking.level}" must be batch or item`);
+ if(m.qualityControl!=null&&!isObj(m.qualityControl))err('qualityControl: must be an object');
+ return E}
+function normalizeManifest(m){const nil=v=>v==null||v===''?null:v,M=m.manifest,TR=m.tracking||{},T=m.transport||{},QC=m.qualityControl||null,q=M.quantity||{},num=(n,u)=>typeof n==='number'?n.toLocaleString('en-GB')+(u?' '+u:''):null;
+ const by={};for(const l of m.locations)by[l.role]=l;const clean=s=>String(s).replace(/ \(fictional\)/,'');
+ const loc={};for(const r of ROLES){const l=by[r];loc[r]={id:l.id,lon:l.coordinates.lon,lat:l.coordinates.lat,label:clean(l.name),name:l.name,country:nil(l.country),illustrative:l.coordinateSource!=='actual',sea:typeof l.seaBearingDeg==='number'?l.seaBearingDeg:r==='exportPort'?45:135,note:nil(l.note),details:l.details||{}}}
+ const PAIRS=[['farm','exportPort'],['exportPort','arrivalPort'],['arrivalPort','warehouse'],['warehouse','supermarket']];
+ const routes=PAIRS.map(([a,b])=>{const r=(m.routes||[]).find(x=>x.from===by[a].id&&x.to===by[b].id);return{id:r?r.id:null,pts:r&&r.geometry&&r.geometry.length?r.geometry:null,source:r&&r.geometry&&r.geometry.length?(r.geometrySource==='actual'?'actual':'illustrative'):'straight'}});
+ const st={};for(const s of m.stages)st[s.type]=s;const ev=(t,e)=>(st[t]&&(st[t].events||[]).find(x=>x.type===e))||{},veh=leg=>((T.vehicles||[]).find(v=>v.leg===leg||(v.legs||[]).includes(leg))||{}).id||null;
+ const con=(T.containers||[]).find(c=>c.id===TR.containerId)||(T.containers||[])[0]||null,ves=T.vessel||{},farmId=nil(loc.farm.details.farmId)||loc.farm.id,ship=nil(M.reference)||M.id,pal=nil(TR.palletId),bat=nil(TR.batchId);
+ const R={farms:[{id:farmId,name:loc.farm.name,location:(by.farm.region||loc.farm.country||'')+(loc.farm.illustrative?' (illustrative)':''),grower:nil(loc.farm.details.grower),weather:nil(loc.farm.details.weather),humidity:nil(loc.farm.details.humidity),fertiliser:nil(loc.farm.details.fertiliserApplication),expectedHarvest:nil(ev('farm','expectedHarvest').timestamp)}],
+  batches:bat?[{id:bat,shipmentId:ship,farmId,harvestDate:nil(ev('harvest','harvested').timestamp),quantity:num(q.melons,'melons'),boxes:num(q.boxes),pallets:num(q.pallets),packed:nil(ev('harvest','packed').timestamp),lorry:veh('farm-exportPort'),collection:nil(ev('harvest','collected').status)}]:[],
+  shipments:[{id:ship,product:nil(M.product),origin:loc.farm.country,destination:loc.supermarket.country,manifest:M.id,packingList:nil(M.packingList),exportPort:loc.exportPort.name+(loc.exportPort.illustrative?' (illustrative)':''),vessel:nil(ves.name),imo:nil(ves.imo),voyage:nil(ves.voyage),
+   departure:nil(ev('exportPort','departed').timestamp),arrival:nil(ev('ocean','arrived').timestamp),loading:nil(ev('exportPort','loaded').status),seaStatus:nil(ev('ocean','arrived').status),status:nil(M.status)}],
+  containers:con?[{id:con.id,shipmentId:ship,avgTemp:typeof con.averageTemperatureC==='number'?con.averageTemperatureC+'°C':null,co2:typeof con.co2Percent==='number'?con.co2Percent+'%':null,temps:con.temperatureReadings||null,tempC:nil(con.averageTemperatureC),co2P:nil(con.co2Percent),
+   unloaded:nil(ev('unloading','unloaded').timestamp),palletsReceived:num(q.pallets),boxesReceived:num(q.boxes),receipt:nil(ev('unloading','unloaded').reference),truck:veh('arrivalPort-warehouse'),warehouse:nil(loc.warehouse.details.warehouseId)||loc.warehouse.name,status:nil(ev('unloading','unloaded').status)}]:[],
+  customs:[{id:nil(ev('customs','declared').reference),shipmentId:ship,arrival:nil(ev('ocean','arrived').timestamp),status:nil(ev('customs','cleared').status),cleared:nil(ev('customs','cleared').timestamp),docs:nil(st.customs&&st.customs.data&&st.customs.data.importDocuments),port:loc.arrivalPort.name+(loc.arrivalPort.illustrative?' (illustrative)':''),system:nil(ev('customs','declared').system)}],
+  pallets:pal&&con?[{id:pal,containerId:con.id,batchIds:bat?[bat]:[],boxes:null}]:[],
+  allocations:st.warehouse?[{id:nil(ev('warehouse','allocated').reference),shipmentId:ship,palletIds:pal?[pal]:[],warehouse:nil(loc.warehouse.details.warehouseId)||loc.warehouse.name,system:nil(ev('warehouse','allocated').system),totalPallets:num(q.pallets),qcPallets:num(q.pallets,'pallets'),date:nil(ev('warehouse','allocated').timestamp),status:nil(ev('warehouse','allocated').status)}]:[],
+  qcReports:QC?[{id:nil(QC.reportId),shipmentId:ship,palletIds:pal?[pal]:[],date:nil(QC.date),type:nil(QC.type),inspector:nil(QC.inspector),inspected:num(QC.inspected,'melons'),accepted:num(QC.accepted,'melons'),rejected:num(QC.rejected,'melons'),
+   damageRate:typeof QC.inspected==='number'&&QC.inspected>0&&typeof QC.rejected==='number'?Math.round(QC.rejected/QC.inspected*1000)/10+'%':null,status:nil(QC.status),report:nil(QC.report),
+   results:typeof QC.accepted==='number'&&typeof QC.rejected==='number'?[['Accepted',QC.accepted,ev('delivery','delivered').reference?'Delivery '+ev('delivery','delivered').reference:''],['Rejected',QC.rejected,QC.claim&&QC.claim.id?'Claim '+QC.claim.id:'']]:null}]:[],
+  claims:QC&&QC.claim&&st.claims?[{id:nil(QC.claim.id),qcReportId:nil(QC.reportId),quantity:num(QC.rejected,'melons'),reason:nil(QC.claim.reason),status:nil(QC.claim.status),value:nil(QC.claim.value),settled:nil(QC.claim.settled),growerRef:farmId}]:[],
+  deliveries:[{id:nil(ev('delivery','delivered').reference),shipmentId:ship,qcReportId:QC?nil(QC.reportId):null,customer:nil(loc.supermarket.details.customer),destination:loc.supermarket.name+(loc.supermarket.illustrative?' (illustrative)':''),quantity:QC?num(QC.accepted,'melons'):null,
+   date:nil(ev('delivery','delivered').timestamp),status:nil(ev('delivery','delivered').status),pod:nil(ev('delivery','delivered').proofOfDelivery),lorry:veh('warehouse-supermarket'),simulated:!!ev('delivery','delivered').simulated}],
+  tracking:[{id:M.id,shipmentId:ship,batchId:bat,palletId:pal,containerId:con?con.id:null,level:TR.level==='item'?'item':'batch'}]};
+ /* the linked-record helpers need pallets to tie container, pick list and QC together; without a pallet id they simply show nothing */
+ return{id:M.id,ref:ship,demo:M.demo!==false,description:nil(M.description),loc,routes,records:R,origin:loc.farm.country||'Origin',dest:loc.supermarket.country||'Destination',
+  stageOn:STAGE_TYPES.map(t=>!!st[t]),stageOver:STAGE_TYPES.map(t=>st[t]?{title:nil(st[t].title),summary:nil(st[t].summary)}:{}),vessel:nil(ves.name),lorries:[veh('farm-exportPort'),veh('arrivalPort-warehouse'),veh('warehouse-supermarket')],
+  customsSystem:nil(ev('customs','declared').system),warehouseSystem:nil(ev('warehouse','allocated').system)}}

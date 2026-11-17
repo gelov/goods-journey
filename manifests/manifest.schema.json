@@ -1,0 +1,447 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "manifest.schema.json",
+ "title": "Journey manifest",
+ "description": "One shipment for the From Farm to Shelf journey. Version 1.0. Every id must be unique within its list; references must point at existing ids.",
+ "type": "object",
+ "required": [
+  "schemaVersion",
+  "manifest",
+  "locations",
+  "stages"
+ ],
+ "properties": {
+  "schemaVersion": {
+   "type": "string",
+   "pattern": "^1\\."
+  },
+  "manifest": {
+   "type": "object",
+   "required": [
+    "id"
+   ],
+   "properties": {
+    "id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "reference": {
+     "type": "string"
+    },
+    "demo": {
+     "type": "boolean",
+     "description": "true marks demonstration data; the UI labels it Demo Data"
+    },
+    "description": {
+     "type": "string"
+    },
+    "product": {
+     "type": "string"
+    },
+    "status": {
+     "type": "string"
+    },
+    "packingList": {
+     "type": "string"
+    },
+    "quantity": {
+     "type": "object",
+     "properties": {
+      "melons": {
+       "type": "number"
+      },
+      "boxes": {
+       "type": "number"
+      },
+      "pallets": {
+       "type": "number"
+      }
+     }
+    }
+   }
+  },
+  "tracking": {
+   "type": "object",
+   "properties": {
+    "level": {
+     "enum": [
+      "batch",
+      "item"
+     ],
+     "description": "batch: the melon on screen only stands for its batch. item: a real per-melon id exists."
+    },
+    "batchId": {
+     "type": "string"
+    },
+    "palletId": {
+     "type": "string"
+    },
+    "containerId": {
+     "type": "string",
+     "description": "must match a transport.containers id when both are given"
+    },
+    "itemId": {
+     "type": "string"
+    },
+    "simulatedItem": {
+     "type": "boolean"
+    }
+   }
+  },
+  "locations": {
+   "type": "array",
+   "description": "Exactly one location for each role.",
+   "items": {
+    "type": "object",
+    "required": [
+     "id",
+     "role",
+     "name",
+     "coordinates"
+    ],
+    "properties": {
+     "id": {
+      "type": "string",
+      "minLength": 1
+     },
+     "role": {
+      "enum": [
+       "farm",
+       "exportPort",
+       "arrivalPort",
+       "warehouse",
+       "supermarket"
+      ]
+     },
+     "name": {
+      "type": "string"
+     },
+     "country": {
+      "type": "string"
+     },
+     "region": {
+      "type": "string"
+     },
+     "coordinates": {
+      "type": "object",
+      "required": [
+       "lon",
+       "lat"
+      ],
+      "properties": {
+       "lon": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180
+       },
+       "lat": {
+        "type": "number",
+        "minimum": -85,
+        "maximum": 85
+       }
+      }
+     },
+     "coordinateSource": {
+      "enum": [
+       "actual",
+       "illustrative"
+      ]
+     },
+     "seaBearingDeg": {
+      "type": "number",
+      "description": "ports only: compass bearing from the quay out to sea, so the 3D port faces the water"
+     },
+     "note": {
+      "type": "string"
+     },
+     "details": {
+      "type": "object"
+     }
+    }
+   }
+  },
+  "transport": {
+   "type": "object",
+   "properties": {
+    "vehicles": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "required": [
+       "id"
+      ],
+      "properties": {
+       "id": {
+        "type": "string",
+        "minLength": 1
+       },
+       "type": {
+        "enum": [
+         "lorry"
+        ]
+       },
+       "leg": {
+        "enum": [
+         "farm-exportPort",
+         "arrivalPort-warehouse",
+         "warehouse-supermarket"
+        ]
+       },
+       "legs": {
+        "type": "array",
+        "items": {
+         "enum": [
+          "farm-exportPort",
+          "arrivalPort-warehouse",
+          "warehouse-supermarket"
+         ]
+        }
+       }
+      }
+     }
+    },
+    "vessel": {
+     "type": "object",
+     "properties": {
+      "name": {
+       "type": "string"
+      },
+      "imo": {
+       "type": [
+        "string",
+        "null"
+       ]
+      },
+      "voyage": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "containers": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "required": [
+       "id"
+      ],
+      "properties": {
+       "id": {
+        "type": "string",
+        "minLength": 1
+       },
+       "averageTemperatureC": {
+        "type": "number"
+       },
+       "co2Percent": {
+        "type": "number"
+       },
+       "temperatureReadings": {
+        "type": "array",
+        "items": {
+         "type": "array",
+         "prefixItems": [
+          {
+           "type": "string"
+          },
+          {
+           "type": "number"
+          }
+         ]
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "routes": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "required": [
+     "id",
+     "from",
+     "to",
+     "mode"
+    ],
+    "properties": {
+     "id": {
+      "type": "string",
+      "minLength": 1
+     },
+     "from": {
+      "type": "string",
+      "minLength": 1
+     },
+     "to": {
+      "type": "string",
+      "minLength": 1
+     },
+     "mode": {
+      "enum": [
+       "road",
+       "sea"
+      ]
+     },
+     "geometry": {
+      "type": "array",
+      "description": "[lon, lat] points between the two ends. Leave out to get a straight illustrative line.",
+      "items": {
+       "type": "array",
+       "prefixItems": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "number"
+        }
+       ],
+       "minItems": 2,
+       "maxItems": 2
+      }
+     },
+     "geometrySource": {
+      "enum": [
+       "actual",
+       "illustrative"
+      ]
+     }
+    }
+   }
+  },
+  "stages": {
+   "type": "array",
+   "description": "The journey, in order. Supported types: farm, harvest, exportPort, ocean, customs, unloading, warehouse, qualityControl, claims, delivery. claims is optional; the others are needed by the scenes.",
+   "items": {
+    "type": "object",
+    "required": [
+     "id",
+     "type"
+    ],
+    "properties": {
+     "id": {
+      "type": "string",
+      "minLength": 1
+     },
+     "type": {
+      "enum": [
+       "farm",
+       "harvest",
+       "exportPort",
+       "ocean",
+       "customs",
+       "unloading",
+       "warehouse",
+       "qualityControl",
+       "claims",
+       "delivery"
+      ]
+     },
+     "locationId": {
+      "type": "string"
+     },
+     "title": {
+      "type": "string"
+     },
+     "summary": {
+      "type": "string"
+     },
+     "data": {
+      "type": "object"
+     },
+     "events": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "required": [
+        "type"
+       ],
+       "properties": {
+        "type": {
+         "type": "string"
+        },
+        "timestamp": {
+         "type": "string"
+        },
+        "status": {
+         "type": "string"
+        },
+        "reference": {
+         "type": "string"
+        },
+        "system": {
+         "type": "string"
+        },
+        "simulated": {
+         "type": "boolean",
+         "description": "true: storytelling only, not a recorded event"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "qualityControl": {
+   "type": "object",
+   "properties": {
+    "reportId": {
+     "type": "string"
+    },
+    "date": {
+     "type": "string"
+    },
+    "type": {
+     "type": "string"
+    },
+    "inspector": {
+     "type": "string"
+    },
+    "inspected": {
+     "type": "number"
+    },
+    "accepted": {
+     "type": "number"
+    },
+    "rejected": {
+     "type": "number"
+    },
+    "status": {
+     "type": "string"
+    },
+    "report": {
+     "type": "string"
+    },
+    "claim": {
+     "type": "object",
+     "properties": {
+      "id": {
+       "type": "string"
+      },
+      "reason": {
+       "type": "string"
+      },
+      "status": {
+       "type": "string"
+      },
+      "value": {
+       "type": [
+        "string",
+        "null"
+       ]
+      },
+      "settled": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    }
+   }
+  }
+ }
+}

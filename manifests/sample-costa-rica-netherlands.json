@@ -1,0 +1,333 @@
+{
+ "schemaVersion": "1.0",
+ "manifest": {
+  "id": "MAN-CR-014",
+  "reference": "SHIP-CR-2026-014",
+  "demo": true,
+  "description": "Demonstration data: Costa Rica to the Netherlands. Not a real shipment.",
+  "product": "Fresh Melons",
+  "status": "Delivered",
+  "packingList": "PACK-CR-014",
+  "quantity": {
+   "melons": 21600,
+   "boxes": 2160,
+   "pallets": 24
+  }
+ },
+ "tracking": {
+  "level": "batch",
+  "batchId": "HARV-CR-014",
+  "palletId": "PAL-CR-007",
+  "containerId": "CONT-CR-22",
+  "simulatedItem": true
+ },
+ "locations": [
+  {
+   "id": "CR-FARM",
+   "role": "farm",
+   "name": "Finca Sol Dorado (fictional)",
+   "country": "Costa Rica",
+   "coordinates": {
+    "lon": -85.4,
+    "lat": 10.5
+   },
+   "coordinateSource": "illustrative",
+   "region": "Guanacaste",
+   "details": {
+    "farmId": "FARM-CR-003",
+    "grower": "Finca Sol Dorado (fictional)",
+    "weather": "31°C",
+    "humidity": "62%",
+    "fertiliserApplication": "2 February 2026"
+   }
+  },
+  {
+   "id": "CR-PORT",
+   "role": "exportPort",
+   "name": "Caribbean export terminal",
+   "country": "Costa Rica",
+   "coordinates": {
+    "lon": -83.07,
+    "lat": 10.0
+   },
+   "coordinateSource": "illustrative",
+   "seaBearingDeg": 40
+  },
+  {
+   "id": "NL-PORT",
+   "role": "arrivalPort",
+   "name": "Rotterdam area arrival port",
+   "country": "Netherlands",
+   "coordinates": {
+    "lon": 4.05,
+    "lat": 51.95
+   },
+   "coordinateSource": "illustrative",
+   "seaBearingDeg": 290
+  },
+  {
+   "id": "NL-WH",
+   "role": "warehouse",
+   "name": "Warehouse WH-NL-002",
+   "country": "Netherlands",
+   "coordinates": {
+    "lon": 5.5,
+    "lat": 51.45
+   },
+   "coordinateSource": "illustrative",
+   "details": {
+    "warehouseId": "WH-NL-002"
+   }
+  },
+  {
+   "id": "NL-SM",
+   "role": "supermarket",
+   "name": "Supermarket distribution centre",
+   "country": "Netherlands",
+   "coordinates": {
+    "lon": 5.1,
+    "lat": 52.1
+   },
+   "coordinateSource": "illustrative",
+   "details": {
+    "customer": "NL Retail Customer (fictional)"
+   }
+  }
+ ],
+ "transport": {
+  "vehicles": [
+   {
+    "id": "TRUCK-CR-031",
+    "type": "lorry",
+    "leg": "farm-exportPort"
+   },
+   {
+    "id": "TRUCK-NL-112",
+    "type": "lorry",
+    "leg": "arrivalPort-warehouse"
+   },
+   {
+    "id": "TRUCK-NL-140",
+    "type": "lorry",
+    "leg": "warehouse-supermarket"
+   }
+  ],
+  "vessel": {
+   "name": "Caribe Fresh Carrier (fictional)",
+   "imo": "9000002 (demo)",
+   "voyage": "CFC-118 (demo)"
+  },
+  "containers": [
+   {
+    "id": "CONT-CR-22",
+    "averageTemperatureC": 6.1,
+    "co2Percent": 0.5,
+    "temperatureReadings": [
+     [
+      "10 Feb",
+      6.0
+     ],
+     [
+      "12 Feb",
+      6.2
+     ],
+     [
+      "14 Feb",
+      6.1
+     ],
+     [
+      "16 Feb",
+      6.3
+     ],
+     [
+      "18 Feb",
+      6.0
+     ],
+     [
+      "20 Feb",
+      5.9
+     ],
+     [
+      "22 Feb",
+      6.1
+     ],
+     [
+      "24 Feb",
+      6.2
+     ]
+    ]
+   }
+  ]
+ },
+ "routes": [
+  {
+   "id": "CR-R1",
+   "from": "CR-FARM",
+   "to": "CR-PORT",
+   "mode": "road"
+  },
+  {
+   "id": "CR-R2",
+   "from": "CR-PORT",
+   "to": "NL-PORT",
+   "mode": "sea"
+  },
+  {
+   "id": "CR-R3",
+   "from": "NL-PORT",
+   "to": "NL-WH",
+   "mode": "road"
+  },
+  {
+   "id": "CR-R4",
+   "from": "NL-WH",
+   "to": "NL-SM",
+   "mode": "road"
+  }
+ ],
+ "stages": [
+  {
+   "id": "CR-ST-01",
+   "type": "farm",
+   "locationId": "CR-FARM",
+   "events": [
+    {
+     "type": "expectedHarvest",
+     "timestamp": "8 February 2026"
+    }
+   ]
+  },
+  {
+   "id": "CR-ST-02",
+   "type": "harvest",
+   "locationId": "CR-FARM",
+   "events": [
+    {
+     "type": "harvested",
+     "timestamp": "8 February 2026"
+    },
+    {
+     "type": "packed",
+     "timestamp": "9 February 2026"
+    },
+    {
+     "type": "collected",
+     "status": "Completed"
+    }
+   ]
+  },
+  {
+   "id": "CR-ST-03",
+   "type": "exportPort",
+   "locationId": "CR-PORT",
+   "events": [
+    {
+     "type": "loaded",
+     "status": "Completed"
+    },
+    {
+     "type": "departed",
+     "timestamp": "10 February 2026"
+    }
+   ]
+  },
+  {
+   "id": "CR-ST-04",
+   "type": "ocean",
+   "events": [
+    {
+     "type": "arrived",
+     "timestamp": "24 February 2026",
+     "status": "Arrived"
+    }
+   ]
+  },
+  {
+   "id": "CR-ST-05",
+   "type": "customs",
+   "locationId": "NL-PORT",
+   "events": [
+    {
+     "type": "declared",
+     "reference": "NL-DMS-0457",
+     "system": "import declaration system"
+    },
+    {
+     "type": "cleared",
+     "timestamp": "25 February 2026",
+     "status": "Cleared"
+    }
+   ],
+   "data": {
+    "importDocuments": "Available"
+   }
+  },
+  {
+   "id": "CR-ST-06",
+   "type": "unloading",
+   "locationId": "NL-PORT",
+   "events": [
+    {
+     "type": "unloaded",
+     "timestamp": "25 February 2026",
+     "reference": "GRN-NL-208",
+     "status": "Received"
+    }
+   ]
+  },
+  {
+   "id": "CR-ST-07",
+   "type": "warehouse",
+   "locationId": "NL-WH",
+   "events": [
+    {
+     "type": "allocated",
+     "timestamp": "26 February 2026",
+     "reference": "PICK-NL-031",
+     "status": "Completed"
+    }
+   ]
+  },
+  {
+   "id": "CR-ST-08",
+   "type": "qualityControl",
+   "locationId": "NL-WH"
+  },
+  {
+   "id": "CR-ST-09",
+   "type": "claims",
+   "locationId": "NL-WH"
+  },
+  {
+   "id": "CR-ST-10",
+   "type": "delivery",
+   "locationId": "NL-SM",
+   "events": [
+    {
+     "type": "delivered",
+     "timestamp": "2 March 2026",
+     "reference": "DEL-NL-077",
+     "status": "Completed",
+     "proofOfDelivery": "Available"
+    }
+   ]
+  }
+ ],
+ "qualityControl": {
+  "reportId": "QC-NL-019",
+  "date": "27 February 2026",
+  "type": "Third-party QC",
+  "inspected": 21600,
+  "accepted": 21168,
+  "rejected": 432,
+  "status": "Completed",
+  "report": "Available",
+  "claim": {
+   "id": "CLAIM-NL-004",
+   "reason": "Quality damage",
+   "status": "Raised",
+   "value": null,
+   "settled": null
+  }
+ }
+}

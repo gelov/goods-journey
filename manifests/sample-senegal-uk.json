@@ -1,0 +1,246 @@
+{
+ "schemaVersion": "1.0",
+ "manifest": {
+  "id": "MAN-SN-203",
+  "reference": "SHIP-SN-2026-203",
+  "demo": true,
+  "description": "Demonstration data: Senegal to the United Kingdom, with several fields left out on purpose. Not a real shipment.",
+  "product": "Fresh Melons",
+  "status": "In progress",
+  "quantity": {
+   "melons": 12000,
+   "pallets": 14
+  }
+ },
+ "tracking": {
+  "level": "batch",
+  "batchId": "HARV-SN-203",
+  "containerId": "CONT-SN-08",
+  "simulatedItem": true
+ },
+ "locations": [
+  {
+   "id": "SN-FARM",
+   "role": "farm",
+   "name": "Ferme Niayes Melon (fictional)",
+   "country": "Senegal",
+   "coordinates": {
+    "lon": -16.3,
+    "lat": 15.9
+   },
+   "coordinateSource": "illustrative",
+   "details": {
+    "farmId": "FARM-SN-011",
+    "grower": "Ferme Niayes Melon (fictional)"
+   }
+  },
+  {
+   "id": "SN-PORT",
+   "role": "exportPort",
+   "name": "Dakar area export port",
+   "country": "Senegal",
+   "coordinates": {
+    "lon": -17.42,
+    "lat": 14.68
+   },
+   "coordinateSource": "illustrative",
+   "seaBearingDeg": 110
+  },
+  {
+   "id": "UK-PORT2",
+   "role": "arrivalPort",
+   "name": "South coast arrival port",
+   "country": "United Kingdom",
+   "coordinates": {
+    "lon": -1.09,
+    "lat": 50.8
+   },
+   "coordinateSource": "illustrative",
+   "seaBearingDeg": 180
+  },
+  {
+   "id": "UK-WH2",
+   "role": "warehouse",
+   "name": "Warehouse WH-UK-014",
+   "country": "United Kingdom",
+   "coordinates": {
+    "lon": -1.0,
+    "lat": 51.45
+   },
+   "coordinateSource": "illustrative",
+   "details": {
+    "warehouseId": "WH-UK-014"
+   }
+  },
+  {
+   "id": "UK-SM2",
+   "role": "supermarket",
+   "name": "Midlands supermarket",
+   "country": "United Kingdom",
+   "coordinates": {
+    "lon": -1.9,
+    "lat": 52.48
+   },
+   "coordinateSource": "illustrative"
+  }
+ ],
+ "transport": {
+  "vehicles": [
+   {
+    "id": "TRUCK-SN-007",
+    "type": "lorry",
+    "leg": "farm-exportPort"
+   },
+   {
+    "id": "TRUCK-UK-355",
+    "type": "lorry",
+    "leg": "arrivalPort-warehouse"
+   }
+  ],
+  "vessel": {
+   "name": "West Africa Reefer (fictional)"
+  },
+  "containers": [
+   {
+    "id": "CONT-SN-08",
+    "averageTemperatureC": 5.8
+   }
+  ]
+ },
+ "routes": [
+  {
+   "id": "SN-R1",
+   "from": "SN-FARM",
+   "to": "SN-PORT",
+   "mode": "road"
+  },
+  {
+   "id": "SN-R2",
+   "from": "SN-PORT",
+   "to": "UK-PORT2",
+   "mode": "sea"
+  },
+  {
+   "id": "SN-R3",
+   "from": "UK-PORT2",
+   "to": "UK-WH2",
+   "mode": "road"
+  },
+  {
+   "id": "SN-R4",
+   "from": "UK-WH2",
+   "to": "UK-SM2",
+   "mode": "road"
+  }
+ ],
+ "stages": [
+  {
+   "id": "SN-ST-01",
+   "type": "farm",
+   "locationId": "SN-FARM"
+  },
+  {
+   "id": "SN-ST-02",
+   "type": "harvest",
+   "locationId": "SN-FARM",
+   "events": [
+    {
+     "type": "harvested",
+     "timestamp": "3 May 2026"
+    },
+    {
+     "type": "collected",
+     "status": "Completed"
+    }
+   ]
+  },
+  {
+   "id": "SN-ST-03",
+   "type": "exportPort",
+   "locationId": "SN-PORT",
+   "events": [
+    {
+     "type": "departed",
+     "timestamp": "6 May 2026"
+    }
+   ]
+  },
+  {
+   "id": "SN-ST-04",
+   "type": "ocean",
+   "events": [
+    {
+     "type": "arrived",
+     "timestamp": "15 May 2026",
+     "status": "Arrived"
+    }
+   ]
+  },
+  {
+   "id": "SN-ST-05",
+   "type": "customs",
+   "locationId": "UK-PORT2",
+   "events": [
+    {
+     "type": "declared",
+     "reference": "CDS-UK-884",
+     "system": "Customs Declaration Service (CDS)"
+    },
+    {
+     "type": "cleared",
+     "status": "Cleared"
+    }
+   ]
+  },
+  {
+   "id": "SN-ST-06",
+   "type": "unloading",
+   "locationId": "UK-PORT2",
+   "events": [
+    {
+     "type": "unloaded",
+     "timestamp": "16 May 2026",
+     "status": "Received"
+    }
+   ]
+  },
+  {
+   "id": "SN-ST-07",
+   "type": "warehouse",
+   "locationId": "UK-WH2",
+   "events": [
+    {
+     "type": "allocated",
+     "reference": "PICK-203",
+     "system": "Prometheus",
+     "status": "Completed"
+    }
+   ]
+  },
+  {
+   "id": "SN-ST-08",
+   "type": "qualityControl",
+   "locationId": "UK-WH2"
+  },
+  {
+   "id": "SN-ST-10",
+   "type": "delivery",
+   "locationId": "UK-SM2",
+   "events": [
+    {
+     "type": "delivered",
+     "simulated": true,
+     "status": "Planned"
+    }
+   ]
+  }
+ ],
+ "qualityControl": {
+  "reportId": "QC-203",
+  "type": "Third-party QC",
+  "inspected": 12000,
+  "accepted": 12000,
+  "rejected": 0,
+  "status": "Completed"
+ }
+}

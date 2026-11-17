@@ -7,7 +7,7 @@ function scatter(k,n,fn,ok){const S=SITES[k];LOWD=true;for(let i=0;i<n;i++){cons
 const stripes=(x0,x1,z)=>{for(let x=x0;x<x1;x+=6)bb(P.white,x,.14,z,2.4,.02,.18)};
 let OPENC=0;
 /* built as a mover (see tracking.js): it appears once the tracked container has been brought to the unloading bay */
-function openContainerModel(){const c=P.teal,d=shade(c,.8);bb(P.dark,0,0,0,2.4,.5,8.4);for(const z of[-2.6,2.6])for(const x of[-1.1,1.1])wheelX(x,.1,z,.5,.4);bb(c,0,.5,0,2.6,.16,8);bb(c,-1.24,.66,0,.12,2.5,8);bb(c,0,.66,-3.94,2.6,2.5,.12);bb(c,0,3.1,-1.9,2.6,.12,4.2);for(let k=0;k<5;k++)bb(d,-1.3,.8,-3.5+k*1.7,.14,2.2,.2);for(let k=0;k<3;k++)pallet(0,.66,-2.7+k*2.5,2,k===2)}
+function openContainerModel(){const c=P.teal,d=shade(c,.8);bb(P.dark,0,0,0,2.4,.5,8.4);for(const z of[-2.6,2.6])for(const x of[-1.1,1.1])wheelX(x,.1,z,.5,.4);bb(c,0,.5,0,2.6,.16,8);bb(c,-1.24,.66,0,.12,2.5,8);bb(c,0,.66,-3.94,2.6,2.5,.12);bb(c,0,3.1,-1.9,2.6,.12,4.2);for(let k=0;k<5;k++)bb(d,-1.3,.8,-3.5+k*1.7,.14,2.2,.2);for(let k=0;k<2;k++)pallet(0,.66,-2.7+k*2.5,2,false)}/* the third pallet, at the doors, is the forklift's (tracking.js) */
 function buildWorld(){R=prng(7);
  site(0);apron(0);
 /* ---------- 01 farm ---------- */
@@ -33,7 +33,7 @@ function buildWorld(){R=prng(7);
  bb(P.concD,-126,0,30.5,16,.12,5);
  ent('Farm pond',1,'Water for the farm.',()=>{MAT=1;cyl(P.water,-140,.02,-22,7,.12,20);MAT=0;lathe(P.path,[[7,.02],[8,.16],[8.3,.02]],-140,0,-22,20)});
  for(const[a,b]of[[-150,-12],[-131,-14],[-126,-28],[-118,-8],[-146,-36],[-120,-38],[-116,10],[-113,-24]])(R()>.5?palm:tree)(a,b,.9+R()*.4);
- guy(-143.5,10.5,1.6,P.orange,P.straw);guy(-139,6.2,3.1,P.blue,P.straw);
+ /* the two packers at the shed are animated workers now (movers.js) */
 
  
  road([[-345,36],[5,36]],5);stripes(-340,0,36);
@@ -44,7 +44,7 @@ function buildWorld(){R=prng(7);
 
  site(1);apron(1);
 /* ---------- 03 export port ---------- */
- ent('Export quay',2,CONFIG.brPort+'.',()=>{bb(P.conc,-91,0,2,42,.25,78);bb(P.concD,-70.6,-2.2,2,1.2,2.4,78);for(let z=-34;z<40;z+=6)bb(P.yel,-71.6,.26,z,.5,.02,3);for(let z=-30;z<=38;z+=17)cyl(P.dark,-71.2,.25,z,.4,.6,8)});
+ ent('Export quay',2,'Where containers are loaded onto the vessel.',()=>{bb(P.conc,-91,0,2,42,.25,78);bb(P.concD,-70.6,-2.2,2,1.2,2.4,78);for(let z=-34;z<40;z+=6)bb(P.yel,-71.6,.26,z,.5,.02,3);for(let z=-30;z<=38;z+=17)cyl(P.dark,-71.2,.25,z,.4,.6,8)});
  ent('Container yard',2,'Containers wait here for loading. Each one is listed on the shipping manifest.',()=>{const r=prng(11);for(let i=0;i<3;i++)for(let j=0;j<4;j++){const n=1+Math.floor(r()*3);for(let k=0;k<n;k++)cont(CC[Math.floor(r()*6)],-108+i*3.4,.25+k*2.6,-31+j*9.2)}});
  ent('Port office',2,'Where the shipping manifest and export documentation are prepared.',()=>{bb(P.white,-105,.25,27,9,5,7);bb(P.glass,-105,2.4,30.52,7.5,1.6,.06);bb(P.concD,-105,5.25,27,9.6,.4,7.6);cyl(P.steel,-108,5.6,25,.08,3,5)});
  ent('Quay crane',2,'Lifts containers from the quay onto the vessel.',()=>crane(-73,-10,1,P.orange));
@@ -54,14 +54,14 @@ function buildWorld(){R=prng(7);
  road([[-300,36],[-92,36]],5);road([[-92,36],[-92,20]],5);stripes(-296,-98,36);
  ent('Port warehouses',2,'Sheds where cargo is held before loading.',()=>{for(const z of[-18,10]){bb(P.white,-134,0,z,18,6,22);roof(P.blue,-134,6,z,19,2.6,23);bb(P.dark,-124.96,0,z,.1,4.2,8)}});
  ent('Container trucks',2,'Trucks that shuttle containers around the terminal.',()=>{for(const z of[4,10])Tp(-100,.25,z,Math.PI/2,1,()=>lorry(P.white,z>5?P.teal:P.orange,shade(z>5?P.teal:P.orange,.8)))});
- guy(-82,6,1,P.yel,P.white);guy(-78,-22,2.5,P.orange,P.white);guy(-96,20,0,P.yel,P.white);
+
  for(const[a,b]of[[-40,-40],[10,-60],[-20,60],[40,10]]){cyl(P.red,a,-1.9,b,.5,1.3,8);ball(P.white,a,-.3,b,.35,1,6,3)}
  scatter(1,45,(x,z,s)=>(R()>.4?palm:tree)(x,z,s),(x,z)=>x<-116&&!(x>-146&&x<-122&&z>-32&&z<24));
 
  if(IND)extrasI(1);else extrasD(1);
  site(2);apron(2);
 /* ---------- 05 UK port ---------- */
- ent('UK quay',4,CONFIG.ukPort+'.',()=>{bb(P.conc,93,0,2,46,.25,78);bb(P.concD,70.6,-2.2,2,1.2,2.4,78);for(let z=-34;z<40;z+=6)bb(P.yel,71.6,.26,z,.5,.02,3);for(let z=-30;z<=38;z+=17)cyl(P.dark,71.2,.25,z,.4,.6,8)});
+ ent('Arrival quay',4,'Where the vessel is unloaded.',()=>{bb(P.conc,93,0,2,46,.25,78);bb(P.concD,70.6,-2.2,2,1.2,2.4,78);for(let z=-34;z<40;z+=6)bb(P.yel,71.6,.26,z,.5,.02,3);for(let z=-30;z<=38;z+=17)cyl(P.dark,71.2,.25,z,.4,.6,8)});
  ent('Arrivals container stack',4,'Containers lifted off the vessel wait here until customs is processed.',()=>{const r=prng(5);for(let i=0;i<3;i++)for(let j=0;j<2;j++){const n=1+Math.floor(r()*2.5);for(let k=0;k<n;k++)cont(CC[Math.floor(r()*6)],86+i*3.4,.25+k*2.6,-33+j*9.2)}});
  ent('Customs office',4,'Customs declarations are processed through the Customs Declaration Service (CDS) before goods enter the UK.',()=>{bb(P.brick,107,.25,-27,11,5.5,8);bb(P.glass,107,2.6,-22.98,9,1.6,.06);bb(P.dark,107,5.75,-27,11.8,.4,8.8);bb(P.blue,107,6.15,-23.4,6,1.5,.3);for(const z of[-19.5,-14]){bb(P.white,101.5,.25,z,.4,1.4,.4)}MAT=2;bb([.4,.95,.55],101.5,1.75,-19.5,.5,.5,.5);MAT=0;bb(P.red,104.6,1.3,-19.5,6,.18,.18)});
  ent('Quay crane',4,'Lifts containers off the vessel.',()=>crane(73,-14,-1,P.blue));
@@ -71,12 +71,12 @@ function buildWorld(){R=prng(7);
 /* ---------- 06 unloading ---------- */
  OPENC=ent('Open container',5,'One container holds many pallets. Each pallet is stacked with boxes of melons.');
  ent('Unloaded pallets',5,'Pallets set down beside the container, counted before they move on.',()=>{for(let k=0;k<3;k++)pallet(103+k*3,.25,22.5,2+k%2,k===1)});
- guy(101,12.5,2.4,P.yel,P.white);
+
 
  
  road([[100,34],[300,34]],5);road([[113,20],[113,34]],5);stripes(120,296,34);bb(P.concD,113,.26,13,5.4,.05,13);
  ent('Port shed',4,'Covered storage beside the terminal.',()=>{bb(P.white,146,0,-16,20,6,26);roof(P.blue,146,6,-16,21,2.6,27)});
- guy(84,4,4,P.yel,P.white);guy(98,-8,1,P.orange,P.white);
+
  for(const[a,b]of[[30,-36],[-10,50],[40,-70]]){cyl(P.red,a,-1.9,b,.5,1.3,8);ball(P.white,a,-.3,b,.35,1,6,3)}
  for(let k=0;k<5;k++)house(170+k*10,-42,0,7,6,4.4,P.brick,P.dark);
  scatter(2,45,(x,z,s)=>(R()>.45?conifer:tree)(x,z,s),(x,z)=>x>120&&!(x>132&&x<160&&z>-34&&z<2)&&!(x>162&&x<218&&z>-50&&z<-34));
@@ -91,7 +91,7 @@ function buildWorld(){R=prng(7);
  zone('QC bay A',shade(Z[0],.9),134,'Pallets the pick list has allocated to QC location A.',3);zone('QC bay B',shade(Z[1],.9),146,'Pallets the pick list has allocated to QC location B.',2);zone('Storage area',shade(Z[2],.9),158,'Pallets allocated to warehouse storage.',4);
  ent('Intake area',6,'Pallets arrive here from the port and wait for the pick list.',()=>{bb(P.yel,131,.27,15.5,11,.04,.3);bb(P.yel,131,.27,21,11,.04,.3);pallet(128,.27,18.3,2);pallet(134,.27,18.3,3)});
  ent('Prometheus terminal',6,'The warehouse screen where the Prometheus pick list is read.',()=>{bb(P.table,141,.25,19,3,1.1,1.4);bb(P.dark,141,1.4,19,1.6,1.1,.12);MAT=2;bb([.5,.85,1],141,1.5,19.08,1.4,.9,.04);MAT=0});
- guy(141,17,3.14,P.blue,null);
+
 
  
 /* ---------- 08 QC ---------- */
@@ -120,7 +120,7 @@ function buildWorld(){R=prng(7);
  ent('Melon display',9,'The end of the journey: melons on display for shoppers.',()=>{for(const[x,z]of[[219,8],[226,8]]){bb(P.wood,x,.25,z,5,1.1,3.4);bb(P.green,x,1.35,z,5.2,.12,3.6);for(let l=0;l<3;l++)for(let i=0;i<5-l;i++)for(let k=0;k<3-l;k++)ball((i+k+l)%3?P.melY:P.melG,x-1.9+l*.48+i*.95,1.85+l*.72,z-.95+l*.48+k*.95,.48,.9,6,3)}});
  ent('Checkout',9,'Where the shopper pays.',()=>{for(const x of[232,236]){bb(P.table,x,.25,14,1.4,1.1,4);bb(P.dark,x,1.35,15.4,.9,.9,.1)}});
  ent('Delivery bay',9,'Accepted melons arrive here by lorry.',()=>{bb(P.concD,200,.03,14,7,.12,10);pallet(203.6,.15,10,2,true)});
- guy(233.2,13,1.6,P.green,null);guy(216,-6.5,2.8,P.orange,null);
+
  /* cars */ for(const[x,c]of[[213,P.red],[222,P.blue],[229,P.white]]){bb(c,x,.45,28,2,.9,4.2);bb(P.glass,x,1.3,27.8,1.8,.8,2.2);for(const z of[26.6,29.4])for(const a of[-1,1])wheelX(x+a,.4,z,.4,.3)}
  ent('Houses',9,'The neighbourhood the supermarket serves.',()=>{for(let k=0;k<4;k++)house(204+k*9.5,-34,0,7,6,4.4,P.brick,P.dark)});
 

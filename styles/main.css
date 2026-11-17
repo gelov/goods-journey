@@ -87,7 +87,12 @@ button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 #pad{position:absolute;left:16px;bottom:118px;display:flex;flex-direction:column;gap:6px;z-index:4;transition:opacity .4s}
 #pad button{width:38px;height:38px;border-radius:10px;border:1px solid var(--hair);background:var(--glass);backdrop-filter:blur(8px);font-size:17px;color:var(--ink2)}
 #pad button:hover{color:var(--ink);border-color:var(--ink)}
-body.intro #pad,body.intro .tools{opacity:0;pointer-events:none}
+/* landing screen: the same toolbar and camera pad as the journey, minus the controls that only act on a running journey
+   (the two buttons in the hero choose guided or free; Follow and Reset view need a stage). The pad sits on the right edge so it
+   stays clear of the hero text. */
+body.intro .tools .seg,body.intro #bFollow,body.intro #bReset,body.intro #bHome{display:none}
+body.intro #pad{left:auto;right:16px;bottom:auto;top:50%;transform:translateY(-50%)}
+#bMore{display:none}
 #fade{position:absolute;inset:0;background:var(--bg);opacity:0;pointer-events:none;transition:opacity .45s;z-index:3}#fade.on{opacity:1}
 .gl{position:absolute;left:0;top:0;opacity:0;transition:opacity .3s;font-size:11.5px;background:var(--glass);border:1px solid var(--hair);border-radius:999px;padding:4px 10px;white-space:nowrap}.gl.show{opacity:1}.gl.big{font-size:13px;font-weight:650;letter-spacing:.14em;background:none;border:0;text-shadow:0 1px 8px rgba(0,0,0,.75)}
 .gl{pointer-events:none}.gl.gm{display:flex;align-items:center;gap:8px;padding:4px 11px 4px 5px;background:var(--glass);border:1px solid var(--hair);border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;color:var(--ink);backdrop-filter:blur(6px)}
@@ -204,3 +209,54 @@ body.pan #pOpen,body.intro #pOpen{transform:translate(-110%,-50%);opacity:0;poin
 #trkSum small{display:block;font-size:11px;color:var(--ink3);border-top:1px solid var(--hair);padding-top:8px}
 @media (max-width:820px){#trkSum{left:12px;right:12px;top:60px;width:auto}}
 .trk.map::after{display:none}
+
+/* manifest picker in Settings */
+#settings .man{display:flex;gap:6px;margin:6px 0}
+#settings .man select{flex:1;min-width:0;font:inherit;font-size:12px;color:var(--ink);background:rgba(245,243,236,.08);border:1px solid var(--hair);border-radius:8px;padding:6px}
+#settings .man button{font-size:12px;border:1px solid var(--hair);background:none;color:var(--ink);border-radius:8px;padding:6px 9px;white-space:nowrap;cursor:pointer}
+#settings .man button:hover{border-color:var(--ink)}
+#settings .maninfo{font-size:11.5px;color:var(--ink2);line-height:1.5;margin-bottom:10px}
+#settings .maninfo b{color:var(--ink)}
+#settings .manerr{font-size:11.5px;color:#ffd9d2;background:rgba(240,122,106,.14);border:1px solid rgba(240,122,106,.5);border-radius:8px;padding:7px 9px;margin-bottom:10px}
+#settings .manerr ul{margin:4px 0 0;padding-left:16px}
+#settings{max-height:calc(100% - 90px);overflow:auto}
+#panel .ds.manifest{color:var(--ok);border-color:rgba(116,211,145,.5)}
+
+/* manifest import preview */
+#settings .manlinks{font-size:11.5px;margin:-4px 0 10px}#settings .manlinks a{color:var(--data)}
+#impPrev{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100% - 28px));max-height:calc(100% - 60px);overflow:auto;z-index:20;padding:18px}
+#impPrev[hidden]{display:none}
+#impPrev h2{font-size:19px;margin:4px 0 2px;letter-spacing:-.01em}
+#impPrev .fmt{font-size:12px;color:var(--ink3);margin:0 0 10px}
+#impPrev dl{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;margin:0 0 10px;font-size:13px}
+#impPrev dt{color:var(--ink3)}#impPrev dd{margin:0;color:var(--ink)}#impPrev dd.na{color:var(--ink3);font-style:italic}
+#impPrev h3{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;margin:12px 0 4px;color:var(--ink3)}
+#impPrev ul{margin:0;padding-left:17px;font-size:12px;color:var(--ink2)}
+#impPrev .bad{border:1px solid rgba(240,122,106,.5);background:rgba(240,122,106,.12);border-radius:8px;padding:8px 10px;margin-top:10px}#impPrev .bad h3{margin-top:0;color:#ffb9ad}#impPrev .bad ul{color:#ffd9d2}
+#impPrev .ord{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12.5px}
+#impPrev select{font:inherit;color:var(--ink);background:rgba(245,243,236,.08);border:1px solid var(--hair);border-radius:8px;padding:5px}
+#impPrev .ipbtn{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+#impPrev .ipbtn button{border:1px solid var(--hair);background:none;color:var(--ink);border-radius:999px;padding:8px 14px;font-size:13px;cursor:pointer}
+#impPrev .ipbtn .go{background:var(--ink);color:#15161a;border-color:var(--ink)}#impPrev .ipbtn .go:disabled{opacity:.35;cursor:default}
+#impPrev .ipbtn{position:sticky;bottom:-18px;background:linear-gradient(transparent,rgba(22,24,30,.96) 40%);padding:14px 0 4px;margin-bottom:-6px}
+
+/* small screens: the toolbar folds into a menu button; Settings stays visible beside it */
+@media (max-width:820px){
+ #bMore{display:inline-flex;align-items:center;justify-content:center;min-width:38px}
+ .tools{flex-wrap:nowrap;position:relative}
+ .tools>:not(#bMore):not(#bSet){display:none}
+ .tools.open{flex-wrap:wrap;max-width:calc(100vw - 32px)}
+ .tools.open>:not(#bMore):not(#bSet){display:inline-flex}
+ body.intro #pad{top:72px;transform:none}
+ body.intro .tools.open .seg,body.intro .tools.open #bFollow,body.intro .tools.open #bReset,body.intro .tools.open #bHome{display:none!important}
+}
+#settings .manroutes{font-size:11.5px;color:var(--ink2);margin:-4px 0 10px}#settings .manroutes p{margin:0}
+#settings .manroutes ul{margin:4px 0;padding-left:16px;color:#ffd9b0}#settings .manroutes button{font-size:11.5px;border:1px solid var(--hair);background:none;color:var(--ink);border-radius:8px;padding:4px 8px;cursor:pointer}
+.dchip.warnl{border-color:rgba(242,193,78,.6);color:#ffe7a8;background:rgba(40,32,10,.8)}
+
+/* scrolling panels: no light scrollbar track, just a faint thumb that shows while scrolling content */
+#panel,#settings,#impPrev,#trkSum{scrollbar-width:thin;scrollbar-color:rgba(245,243,236,.22) transparent}
+#panel::-webkit-scrollbar,#settings::-webkit-scrollbar,#impPrev::-webkit-scrollbar,#trkSum::-webkit-scrollbar{width:6px;background:transparent}
+#panel::-webkit-scrollbar-track,#settings::-webkit-scrollbar-track,#impPrev::-webkit-scrollbar-track,#trkSum::-webkit-scrollbar-track{background:transparent}
+#panel::-webkit-scrollbar-thumb,#settings::-webkit-scrollbar-thumb,#impPrev::-webkit-scrollbar-thumb,#trkSum::-webkit-scrollbar-thumb{background:rgba(245,243,236,.22);border-radius:3px}
+#panel::-webkit-scrollbar-thumb:hover,#settings::-webkit-scrollbar-thumb:hover{background:rgba(245,243,236,.4)}

@@ -87,13 +87,12 @@ function bldgI(w,d,h,col,o){o=o||{};const y0=.25,dk=shade(col,.82),nd=o.doors==n
   for(let i=0;i<nw;i++){const x=(i-(nw-1)/2)*(w/nw);for(const sg of[-1,1])for(const q of[-.45,.45])bb(P.glass,x+q,wy+.08,sg*(d/2+.06),.78,wh-.16,.05)}
   for(let i=0;i<ns;i++){const z=(i-(ns-1)/2)*(d/ns);for(const sg of[-1,1])for(const q of[-.45,.45])bb(P.glass,sg*(w/2+.06),wy+.08,z+q,.05,wh-.16,.78)}})}
 function houseI(x,z,yaw,w,d,h){const r=prng((Math.abs(x*31+z*17)|0)+1),c=[P.brick,P.wall,P.chalk][Math.floor(r()*3)];Tp(x,0,z,yaw,1,()=>bldgI(w,d,h,c,{stack:r()>.6,doors:1}))}
-function personI(shirt,hat){for(const x of[-.15,.15])bb(P.dark,x,0,0,.22,.98,.26);lathe(shirt,[[.3,.98],[.37,1.5],[.31,1.98],[.13,2.06]],0,0,0,10);for(const x of[-.44,.44])bb(shirt,x,1.2,0,.15,.78,.17);
- if(hat)lathe([.92,.82,.1],[[.375,1.22],[.4,1.74],[.33,1.96]],0,0,0,10);ball(P.skin,0,2.32,0,.27,1.1,10,5);if(hat){lathe(hat,[[.31,2.4],[.31,2.47],[.25,2.62],[0,2.67]],0,0,0,10);bb(hat,0,2.4,.27,.4,.04,.22)}}
-function lorryI(cab,bx,band){const rib=shade(bx,.88);
+function lorryI(cab,bx,band,open){const rib=shade(bx,.88);
  mt(3,()=>{bb(P.dark,0,.62,-.5,1,.28,8.6);bb(P.dark,0,.5,-4.75,2.4,.14,.12);for(const x of[-.9,.9])bb(P.dark,x,.1,.4,.12,.6,.12)});
- mt(5,()=>bb(bx,0,1.15,-1.45,2.6,3.05,6.7));
+ /* open: the box is built from panels with no back wall, so rear doors (separate movers) can open onto a load inside */
+ mt(5,()=>{if(!open)bb(bx,0,1.15,-1.45,2.6,3.05,6.7);else{bb(bx,0,1.15,-1.45,2.6,.1,6.7);bb(bx,0,4.1,-1.45,2.6,.1,6.7);for(const x of[-1.27,1.27])bb(bx,x,1.15,-1.45,.06,3.05,6.7);bb(bx,0,1.15,1.87,2.6,3.05,.06)}});
  mt(3,()=>{bb(rib,0,1.1,-1.45,2.66,.1,6.74);bb(rib,0,4.14,-1.45,2.66,.08,6.74);bb(band,0,2.45,-1.45,2.63,.4,6.72);bb(P.white,0,2.55,2.02,2,1.35,.36);bb(P.dark,0,2.75,2.21,1.5,.8,.04);
-  for(const x of[-.62,0,.62])bb(P.steel,x,1.25,-4.81,.05,2.8,.05);
+  if(!open)for(const x of[-.62,0,.62])bb(P.steel,x,1.25,-4.81,.05,2.8,.05);
   bb(cab,0,.95,3.4,2.5,1.45,2);bb(cab,0,2.4,3.15,2.5,1.35,1.5);Tm(mul(tr(0,4,3.2),rX(.45)),()=>box(cab,0,0,0,2.4,.12,1.5));bb(P.dark,0,1.05,4.41,1.9,.95,.06);bb(P.steel,0,.5,4.48,2.55,.4,.22);
   for(const x of[-1.45,1.45]){bb(P.dark,x,2.8,4.05,.14,.55,.1);cyl(P.steel,x*.72,2.3,2.25,.09,2.2,6)}
   for(const x of[-1,1])Tm(mul(tr(x,.78,1.55),rX(Math.PI/2)),()=>cyl(P.steel,0,-.55,0,.3,1.1,10));
@@ -101,11 +100,11 @@ function lorryI(cab,bx,band){const rib=shade(bx,.88);
  mt(4,()=>{Tm(mul(tr(0,3.05,4),rX(-.32)),()=>box(P.glass,0,0,0,2.3,1.15,.08));for(const x of[-1.26,1.26])bb(P.glass,x,2.75,3.3,.04,.75,1)});
  MAT=2;for(const x of[-.95,.95])bb(LIT,x,.95,4.45,.34,.2,.04);MAT=0;
  for(const z of[3.55,1.45,.45,-2.9,-3.9])for(const x of[-1.15,1.15]){wheelX(x,.56,z,.56,.62);mt(3,()=>Tm(mul(tr(x*1.29,.56,z),rZ(Math.PI/2)),()=>cyl(P.steel,0,-.02,0,.26,.04,8)))}}
-function forkliftI(){mt(3,()=>{bb(P.yel,0,.38,-.15,1.4,.85,1.8);bb(P.dark,0,.38,-1.3,1.42,1.15,.75);bb(P.yel,0,1.23,-.2,1.2,.12,1.2);bb(P.dark,0,1.3,-.55,.62,.5,.6);bb(P.dark,0,1.3,-.95,.62,1,.12);Tm(mul(tr(0,1.7,.35),rX(-.5)),()=>box(P.dark,0,0,0,.08,.9,.08));
+function forkliftI(nf){mt(3,()=>{bb(P.yel,0,.38,-.15,1.4,.85,1.8);bb(P.dark,0,.38,-1.3,1.42,1.15,.75);bb(P.yel,0,1.23,-.2,1.2,.12,1.2);bb(P.dark,0,1.3,-.55,.62,.5,.6);bb(P.dark,0,1.3,-.95,.62,1,.12);Tm(mul(tr(0,1.7,.35),rX(-.5)),()=>box(P.dark,0,0,0,.08,.9,.08));
   for(const x of[-.66,.66])for(const z of[-1,.55])bb(P.dark,x,1.2,z,.09,2.2,.09);bb(P.dark,0,3.36,-.22,1.5,.08,1.75);for(let k=0;k<5;k++)bb(P.dark,-.56+k*.28,3.44,-.22,.05,.04,1.7);
   for(const x of[-.56,.56]){bb(P.steel,x,.15,.95,.14,3.5,.2);bb(P.dark,x*.62,.3,1.02,.1,2.6,.12)}for(const y of[.5,1.9,3.5])bb(P.steel,0,y,.95,1.26,.12,.12);
-  bb(P.dark,0,.35,1.16,1.3,.9,.06);for(let k=0;k<5;k++)bb(P.dark,-.6+k*.3,1.25,1.16,.04,1,.04);bb(P.dark,0,2.25,1.16,1.3,.05,.05);
-  for(const x of[-.5,.5]){bb(P.steel,x,.28,1.22,.14,.75,.07);bb(P.steel,x,.28,2.05,.14,.07,1.7)}});
+  if(!nf){bb(P.dark,0,.35,1.16,1.3,.9,.06);for(let k=0;k<5;k++)bb(P.dark,-.6+k*.3,1.25,1.16,.04,1,.04);bb(P.dark,0,2.25,1.16,1.3,.05,.05);
+  for(const x of[-.5,.5]){bb(P.steel,x,.28,1.22,.14,.75,.07);bb(P.steel,x,.28,2.05,.14,.07,1.7)}}});
  for(const x of[-.78,.78]){wheelX(x,.45,.45,.45,.36);wheelX(x,.34,-1.1,.34,.3)}MAT=2;ball([1,.6,.1],.55,3.6,-.9,.14,1,6,3);for(const x of[-.5,.5])bb(LIT,x,2.9,.62,.18,.14,.05);MAT=0}
 function contI(c,x,y0,z,L){L=L||8;const d=shade(c,.7);mt(5,()=>bb(c,x,y0+.08,z,2.5,2.44,L-.1));
  mt(3,()=>{for(const sx of[-1.25,1.25]){for(const sz of[-L/2+.08,L/2-.08])bb(d,x+sx,y0,z+sz,.16,2.6,.16);for(const y of[0,2.48])bb(d,x+sx,y0+y,z,.14,.12,L)}

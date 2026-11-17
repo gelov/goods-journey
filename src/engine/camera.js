@@ -14,9 +14,12 @@ function stepCam(dt){
  const alt=Math.hypot(eye[0],eye[1]+RS,eye[2])-RS,Gf=mul(tr(0,-RS,0),mul(sc(RS,RS,RS),Qf));
  X={d,eye,Qf,a,alt,gvp:mul(persp(.5,a,Math.max(1,alt*.25),alt+2.3*RS),mul(Vw,Gf)),eyeG:xp(tp(Qf),[eye[0]/RS,(eye[1]+RS)/RS,eye[2]/RS]),PV:mul(persp(.5,a,Math.max(.5,d*.04),d*6+3000),Vw)};
  FADE=1-ss(700,2300,d);PRIM=null;let best=1e9;
- for(const S of SITES){const dist=angd([POSE.lon,POSE.lat],S.g)*RS;S.on=FADE>.01&&dist<S.r1+d*1.5;if(!S.on)continue;
+ /* only one site is shown at a time, so neighbouring sites never overlap: the active stage's site while the guided camera
+    is in charge, otherwise the site nearest the camera. S.a fades each site in and out. */
+ let want=-1;if(STATE.started&&STATE.mode==='guided'&&(STATE.att||FLY))want=stageSite(STATE.idx,STATE.t);else{let bd=1e9;for(const S of SITES){const q=angd([POSE.lon,POSE.lat],S.g)*RS;if(q<bd){bd=q;want=S.k}}}
+ for(const S of SITES){const dist=angd([POSE.lon,POSE.lat],S.g)*RS;S.a=(S.a||0)+((S.k===want?1:0)-(S.a||0))*Math.min(1,dt*6);if(S.a<.004)S.a=0;S.on=FADE>.01&&S.a>0&&dist<S.r1+d*1.5;if(!S.on)continue;
   const QT=mul(Qf,tp(Qm(S.g[0],S.g[1])));const ro=S.rot||0;S.M=mul(tr(0,-RS,0),mul(QT,mul(tr(0,RS,0),mul(rY(ro),tr(-S.c[0],0,-S.c[1])))));const inv=mul(tr(S.c[0],0,S.c[1]),mul(rY(-ro),mul(tr(0,-RS,0),mul(tp(QT),tr(0,RS,0)))));S.vp=mul(X.PV,S.M);S.eye=xp(inv,eye);S.tgt=xp(inv,[0,0,0]);
-  if(dist<S.r1+40&&dist<best){best=dist;PRIM=S}}}
+  if(S.k===want&&dist<S.r1+40&&dist<best){best=dist;PRIM=S}}}
 const proj=(m,p)=>{const w=m[3]*p[0]+m[7]*p[1]+m[11]*p[2]+m[15];if(w<=.01)return null;return[((m[0]*p[0]+m[4]*p[1]+m[8]*p[2]+m[12])/w*.5+.5)*GLS.cw,(1-((m[1]*p[0]+m[5]*p[1]+m[9]*p[2]+m[13])/w*.5+.5))*GLS.ch]};
 function userTook(){CAM.last=NOW;FLY=null;STATE.hold=false;if(STATE.att){STATE.att=false;syncCtl()}}
 function panBy(dx,dy){const s=X.d*.0011,c=Math.cos(POSE.ry),sn=Math.sin(POSE.ry),k=1/Math.max(.35,Math.sin(lerp(POSE.rx,1.45,ss(Math.log(3000),Math.log(14000),POSE.ld)))),ex=-(dx*c+dy*k*sn)*s,sz=-(-dx*sn+dy*k*c)*s;

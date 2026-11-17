@@ -20,6 +20,7 @@ There is no build step and no dependency to install. `npm run check` syntax-chec
 |---|---|
 | `index.html`, `styles/` | Page markup and styling |
 | `src/config.js` | Placeholder coordinates, texture and map tile source |
+| `manifests/` | Shipment manifest schema and three sample manifests (see `docs/MANIFEST.md`) |
 | `src/data/` | Sample journey records, the data-source layer and the data model (see `docs/DATA.md`) |
 | `src/engine/` | WebGL renderer, geometry builders, camera, picking |
 | `src/geo/` | Globe, map tiles, routes, placing sites on the globe |
@@ -27,6 +28,10 @@ There is no build step and no dependency to install. `npm run check` syntax-chec
 | `src/journey/` | Stage text, stage timelines and camera shots, the UI |
 | `assets/` | Earth texture, logo |
 | `docs/` | Architecture and configuration notes |
+
+## Shipment manifests
+
+The journey reads one JSON manifest per shipment. Pick a sample or import your own under Settings. `docs/MANIFEST.md` explains the format, how to add one, and how an MCP adapter plugs in later.
 
 ## Visual style
 

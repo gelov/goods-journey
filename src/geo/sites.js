@@ -1,6 +1,7 @@
 'use strict';
 /* ================= sites & geography =================
-   Every location is its own 3D site, placed on the globe at CONFIG.geo (illustrative placeholders).
+   Every location is its own 3D site, placed on the globe at the coordinates of the active manifest
+   (CONFIG.geo is only the fallback used if no manifest can be loaded).
    One camera pose (lon, lat, heading, pitch, distance) drives everything: far away it shows the globe,
    close up it shows the site standing on the globe's surface. No scene switching. */
 const RAD=Math.PI/180,RS=12500,LMIN=Math.log(14),LMAX=Math.log(60000);
@@ -11,6 +12,8 @@ const SITES=[
  {n:'Warehouse & QC',c:[156,0],g:CONFIG.geo.wh,r0:105,r1:150,st:6},
  {n:'Supermarket',c:[222,0],g:CONFIG.geo.sm,r0:90,r1:130,st:9}];
 SITES.forEach((s,k)=>s.k=k);
+/* set by applyManifest: camera way-points on the globe, and the big country labels */
+const VIEWS={start:[-54,-14],approach:[-45,-9],claimA:[-30,22],claimB:[-8,30]},LBL=[];
 let CUR=0;const VV=SITES.map(()=>[]);const site=k=>{CUR=k;V=VV[k];PID=0;MAT=0;SW=0};
 const llu=(lon,lat)=>{const a=lon*RAD,b=lat*RAD;return[Math.cos(b)*Math.sin(a),Math.sin(b),Math.cos(b)*Math.cos(a)]};
 const ull=p=>[Math.atan2(p[0],p[2])/RAD,Math.asin(clamp(p[1],-1,1))/RAD];

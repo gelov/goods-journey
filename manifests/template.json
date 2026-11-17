@@ -1,0 +1,365 @@
+{
+ "schemaVersion": "1.0",
+ "manifest": {
+  "id": "YOUR-MANIFEST-ID",
+  "reference": "YOUR-SHIPMENT-REFERENCE",
+  "demo": false,
+  "description": "Set demo to true for demonstration data.",
+  "product": "Fresh Melons",
+  "status": "Delivered",
+  "packingList": "PACK-BR-001",
+  "quantity": {
+   "melons": 18000,
+   "boxes": 1800,
+   "pallets": 20
+  },
+  "_note": "Required: id. Everything else here is optional."
+ },
+ "tracking": {
+  "level": "batch",
+  "batchId": "HARV-BR-001",
+  "palletId": "PAL-014",
+  "containerId": "CONT-001",
+  "simulatedItem": true,
+  "_note": "level \"batch\": the melon on screen stands for the batch. Use \"item\" only if single melons really are tracked."
+ },
+ "locations": [
+  {
+   "id": "LOC-FARM",
+   "role": "farm",
+   "name": "Fazenda Verde Melons (fictional)",
+   "country": "Brazil",
+   "coordinates": {
+    "lon": -37.6,
+    "lat": -5.3
+   },
+   "coordinateSource": "illustrative",
+   "region": "Northeast Brazil",
+   "details": {
+    "farmId": "FARM-BR-001",
+    "grower": "Fazenda Verde Melons (fictional)",
+    "weather": "29°C",
+    "humidity": "68%",
+    "fertiliserApplication": "5 October 2026"
+   },
+   "_note": "Required for every location: id, role, name, coordinates {lon, lat}. One location per role: farm, exportPort, arrivalPort, warehouse, supermarket. Set coordinateSource to \"actual\" when the position is real."
+  },
+  {
+   "id": "LOC-EXPORT",
+   "role": "exportPort",
+   "name": "Brazil export port",
+   "country": "Brazil",
+   "coordinates": {
+    "lon": -38.9,
+    "lat": -3.6
+   },
+   "coordinateSource": "illustrative",
+   "seaBearingDeg": 45
+  },
+  {
+   "id": "LOC-ARRIVAL",
+   "role": "arrivalPort",
+   "name": "UK arrival port",
+   "country": "United Kingdom",
+   "coordinates": {
+    "lon": 1.31,
+    "lat": 51.13
+   },
+   "coordinateSource": "illustrative",
+   "seaBearingDeg": 135
+  },
+  {
+   "id": "LOC-WH",
+   "role": "warehouse",
+   "name": "Warehouse WH-UK-001",
+   "country": "United Kingdom",
+   "coordinates": {
+    "lon": -0.6,
+    "lat": 52.3
+   },
+   "coordinateSource": "illustrative",
+   "details": {
+    "warehouseId": "WH-UK-001"
+   }
+  },
+  {
+   "id": "LOC-SM",
+   "role": "supermarket",
+   "name": "UK distribution centre",
+   "country": "United Kingdom",
+   "coordinates": {
+    "lon": -2.0,
+    "lat": 53.6
+   },
+   "coordinateSource": "illustrative",
+   "details": {
+    "customer": "UK Retail Customer (fictional)"
+   }
+  }
+ ],
+ "transport": {
+  "vehicles": [
+   {
+    "id": "TRUCK-BR-001",
+    "type": "lorry",
+    "leg": "farm-exportPort"
+   },
+   {
+    "id": "TRUCK-UK-001",
+    "type": "lorry",
+    "leg": "arrivalPort-warehouse"
+   },
+   {
+    "id": "TRUCK-UK-002",
+    "type": "lorry",
+    "leg": "warehouse-supermarket"
+   }
+  ],
+  "vessel": {
+   "name": "Atlantic Produce Express (fictional)",
+   "imo": null,
+   "voyage": "APE-042 (demo)"
+  },
+  "containers": [
+   {
+    "id": "CONT-001",
+    "averageTemperatureC": 5.2,
+    "co2Percent": 0.4,
+    "temperatureReadings": [
+     [
+      "16 Oct",
+      5.0
+     ],
+     [
+      "17 Oct",
+      5.1
+     ],
+     [
+      "18 Oct",
+      5.3
+     ],
+     [
+      "19 Oct",
+      5.2
+     ],
+     [
+      "20 Oct",
+      5.4
+     ],
+     [
+      "21 Oct",
+      5.3
+     ],
+     [
+      "22 Oct",
+      5.1
+     ],
+     [
+      "23 Oct",
+      5.0
+     ],
+     [
+      "24 Oct",
+      5.2
+     ],
+     [
+      "25 Oct",
+      5.3
+     ],
+     [
+      "26 Oct",
+      5.4
+     ],
+     [
+      "27 Oct",
+      5.2
+     ],
+     [
+      "28 Oct",
+      5.1
+     ],
+     [
+      "29 Oct",
+      5.2
+     ]
+    ]
+   }
+  ],
+  "_note": "Optional. A lorry serves one leg (\"leg\") or several (\"legs\"): farm-exportPort, arrivalPort-warehouse, warehouse-supermarket."
+ },
+ "routes": [
+  {
+   "id": "R-ROAD-1",
+   "from": "LOC-FARM",
+   "to": "LOC-EXPORT",
+   "mode": "road"
+  },
+  {
+   "id": "R-SEA",
+   "from": "LOC-EXPORT",
+   "to": "LOC-ARRIVAL",
+   "mode": "sea",
+   "_note": "geometry is optional: [lon, lat] points between the two ports. It is checked to stay on water; without it a sea route is calculated. Road legs are routed on the road network unless you supply geometry with \"geometrySource\": \"actual\"."
+  },
+  {
+   "id": "R-ROAD-2",
+   "from": "LOC-ARRIVAL",
+   "to": "LOC-WH",
+   "mode": "road"
+  },
+  {
+   "id": "R-ROAD-3",
+   "from": "LOC-WH",
+   "to": "LOC-SM",
+   "mode": "road"
+  }
+ ],
+ "stages": [
+  {
+   "id": "ST-01",
+   "type": "farm",
+   "locationId": "LOC-FARM",
+   "events": [
+    {
+     "type": "expectedHarvest",
+     "timestamp": "12 October 2026"
+    }
+   ],
+   "_note": "Supported types, in this order: farm, harvest, exportPort, ocean, customs, unloading, warehouse, qualityControl, claims (optional), delivery. events are optional; an event with \"simulated\": true is storytelling, not a record."
+  },
+  {
+   "id": "ST-02",
+   "type": "harvest",
+   "locationId": "LOC-FARM",
+   "events": [
+    {
+     "type": "harvested",
+     "timestamp": "12 October 2026"
+    },
+    {
+     "type": "packed",
+     "timestamp": "13 October 2026"
+    },
+    {
+     "type": "collected",
+     "status": "Completed"
+    }
+   ]
+  },
+  {
+   "id": "ST-03",
+   "type": "exportPort",
+   "locationId": "LOC-EXPORT",
+   "events": [
+    {
+     "type": "loaded",
+     "status": "Completed"
+    },
+    {
+     "type": "departed",
+     "timestamp": "16 October 2026"
+    }
+   ]
+  },
+  {
+   "id": "ST-04",
+   "type": "ocean",
+   "events": [
+    {
+     "type": "arrived",
+     "timestamp": "29 October 2026",
+     "status": "Arrived"
+    }
+   ]
+  },
+  {
+   "id": "ST-05",
+   "type": "customs",
+   "locationId": "LOC-ARRIVAL",
+   "events": [
+    {
+     "type": "declared",
+     "reference": "CDS-UK-001",
+     "system": "Customs Declaration Service (CDS)"
+    },
+    {
+     "type": "cleared",
+     "timestamp": "30 October 2026",
+     "status": "Cleared"
+    }
+   ],
+   "data": {
+    "importDocuments": "Available"
+   }
+  },
+  {
+   "id": "ST-06",
+   "type": "unloading",
+   "locationId": "LOC-ARRIVAL",
+   "events": [
+    {
+     "type": "unloaded",
+     "timestamp": "30 October 2026",
+     "reference": "GRN-UK-001",
+     "status": "Received"
+    }
+   ]
+  },
+  {
+   "id": "ST-07",
+   "type": "warehouse",
+   "locationId": "LOC-WH",
+   "events": [
+    {
+     "type": "allocated",
+     "timestamp": "31 October 2026",
+     "reference": "PICK-001",
+     "system": "Prometheus",
+     "status": "Completed"
+    }
+   ]
+  },
+  {
+   "id": "ST-08",
+   "type": "qualityControl",
+   "locationId": "LOC-WH"
+  },
+  {
+   "id": "ST-09",
+   "type": "claims",
+   "locationId": "LOC-WH"
+  },
+  {
+   "id": "ST-10",
+   "type": "delivery",
+   "locationId": "LOC-SM",
+   "events": [
+    {
+     "type": "delivered",
+     "timestamp": "5 November 2026",
+     "reference": "DEL-001",
+     "status": "Completed",
+     "proofOfDelivery": "Available"
+    }
+   ]
+  }
+ ],
+ "qualityControl": {
+  "reportId": "QC-001",
+  "date": "1 November 2026",
+  "type": "Third-party QC",
+  "inspected": 18000,
+  "accepted": 17640,
+  "rejected": 360,
+  "status": "Completed",
+  "report": "Available",
+  "claim": {
+   "id": "CLAIM-001",
+   "reason": "Quality damage",
+   "status": "Settled",
+   "value": "£450 (sample value)",
+   "settled": "3 November 2026"
+  }
+ },
+ "_about": "Template for a From Farm to Shelf shipment manifest (canonical format, schema 1.0). Replace the example values. Keys starting with _ are notes and are ignored. See docs/MANIFEST.md."
+}
