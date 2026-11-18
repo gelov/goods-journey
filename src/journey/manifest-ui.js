@@ -8,7 +8,7 @@ function applyManifest(N){const gc=(p,q,t)=>ull(slerp(llu(p[0],p[1]),llu(q[0],q[
  SITES.forEach((S,k)=>{const l=N.loc[ROLES[k]];S.g=[l.lon,l.lat];S.n=l.label;S.note=l.illustrative?'illustrative location':''});
  /* a port's 3D quay is turned so its water faces the bearing given in the manifest */
  const b1=N.loc.exportPort.sea*RAD,b2=N.loc.arrivalPort.sea*RAD;SITES[1].rot=Math.PI/2-b1;SITES[2].rot=Math.atan2(-Math.cos(b2),-Math.sin(b2));
- buildRoutes(N.routes);routeManifest(N);
+ buildRoutes(N.routes);routeManifest(N);applyBrand(N);
  const f=SITES[0].g,a=SITES[2].g,w=SITES[3].g,e=SITES[4].g,mdl=gc(f,a,.5);
  VIEWS.start=[f[0]-16,clamp(f[1]-9,-70,70)];VIEWS.approach=[f[0]-7,clamp(f[1]-4,-75,75)];VIEWS.claimA=gc(w,f,.42);VIEWS.claimB=gc(w,f,.58);GLOBE_VIEW.lon=mdl[0];GLOBE_VIEW.lat=mdl[1];
  LBL[0]={t:N.origin.toUpperCase(),g:[f[0]-13,clamp(f[1]-8,-70,70)]};LBL[1]=N.dest===N.origin?null:{t:N.dest.toUpperCase(),g:[e[0]-2,clamp(e[1]+4.5,-70,78)]};

@@ -107,3 +107,24 @@ Not driven: the 3D models and choreography. A farm is the same farm scene wherev
 3. Hand the object to `useManifest(obj, key, label, 'mcp')`. Validation, normalisation and the journey update are the same as for a file.
 
 No MCP connection exists in this project yet, and none is simulated.
+
+## Retailer branding (optional)
+
+A `retailer` block dresses the 3D supermarket and fills the Destination section of the supermarket stage. It only styles the store: it is not shipment data.
+
+```json
+"retailer": {
+  "id": "tesco",
+  "name": "Tesco",
+  "fictionalAssignment": true,
+  "store": { "name": "Tesco Demo Supermarket", "locationId": "loc-supermarket" },
+  "brand": { "primaryColor": "#00539F", "secondaryColor": "#EE1C2E", "accentColor": "#FFFFFF", "signStyle": "light", "logoUrl": null, "signageText": "Tesco" },
+  "signage": { "entrance": "Welcome", "produce": "Fresh fruit", "promo": "Fresh melons in store", "checkout": "Checkout", "parking": "Customer parking", "priceCard": "Ripe & ready", "shelfHeaders": ["Fruit", "Vegetables", "Salad"] }
+}
+```
+
+- `src/data/brands.js` holds the known retailers (`tesco`, `albert-heijn`, `sainsburys`). A known `id` fills in anything the block leaves out.
+- Any other retailer uses exactly what the block gives, with generic wording for the rest.
+- No block, or an unusable one, gives a plain generic supermarket.
+- `logoUrl` is drawn on the main signs only if it loads. Use only a logo you are licensed to use; otherwise leave it `null` and the name is set as styled text.
+- The three demo manifests use these retailers as fictional assignments (`fictionalAssignment: true`).

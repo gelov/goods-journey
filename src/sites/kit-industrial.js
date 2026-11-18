@@ -18,7 +18,7 @@ function glassI(fn){const o=V,m=MAT;V=GLV[CUR]||(GLV[CUR]=[]);MAT=4;C=[.78,.9,.9
 function plantI(x,z,kind){const r=prng((Math.abs(x*13+z*7)*10|0)+1);
  if(kind===2){SW=.3;for(let k=0;k<3;k++)ball(P.leaf2,x+Math.cos(k*2.1)*.25,.34,z+Math.sin(k*2.1)*.25,.3,.5,6,3);SW=0;return}
  const h=kind?1.6:2.3;cyl(P.leaf,x,.2,z,.05,h,4);SW=.3;for(let k=0;k<(kind?3:4);k++){const a=k*2.4+r()*2;Tm(mul(mul(tr(x,.65+k*.5,z),rY(a)),rZ(.3)),()=>ball(k%2?P.leaf:P.leaf2,.3,0,0,.34,.25,6,3))}SW=0;
- ball(kind?P.melG:P.melY,x+.22,kind?.95:1.3,z+.1,kind?.26:.34,.9,8,4);if(!kind&&r()>.4)ball(P.melY,x-.2,.8,z-.12,.3,.9,7,3)}
+ ball(kind?P.melG:P.melY,x+.22,kind?.95:1.3,z+.1,MELR,.9,8,4);if(!kind&&r()>.4)ball(P.melY,x-.2,.8,z-.12,MELR*.95,.9,7,3)}
 /* growing rows: raised gutter, drip line, trellis posts and top wire, a walkway between rows; large plots get a greenhouse over them */
 function plotI(x0,z0,x1,z1,dx){const cz=(z0+z1)/2,len=z1-z0-1.4;dx=dx||2.9;bb(P.dark,(x0+x1)/2,.2,z0+.4,x1-x0-1,.16,.16);
  for(let x=x0+1.5;x<x1-.8;x+=dx){bb(P.white,x,.18,cz,.8,.2,len);bb(P.dark,x-.5,.4,cz,.06,.06,len);bb(P.conc,x+dx/2,.185,cz,.9,.02,len);
@@ -67,7 +67,7 @@ function prodHouseI(x0,z0,x1,z1){const cx=(x0+x1)/2,cz=(z0+z1)/2,w=x1-x0,d=z1-z0
  bb(P.conc,cx,0,cz,w+5,.14,d+5);bb(P.floor,cx,.14,cz,w,.06,d);bb(P.concD,cx,.2,cz,w-1,.02,2.4);
  for(let x=x0+2.2;x<x1-1.4;x+=3.4)for(const sg of[-1,1]){const zc=cz+sg*(half/2+1.3);bb(P.white,x,.5,zc,.7,.22,half);mt(3,()=>{for(const q of[-.42,0,.42])bb(P.steel,x,.2,zc+q*half,.08,.3,.08);bb(P.steel,x,3.1,zc,.04,.04,half)});
   SW=.25;bb(P.leaf,x,.72,zc,.42,2.2,half-.4);bb(P.leaf2,x,1.1,zc,.6,1.2,half-.8);SW=0;
-  for(let q=-half/2+1;q<half/2-.6;q+=2.6+r()*.6)ball(r()>.25?P.melY:P.melG,x+(r()>.5?.38:-.38),1.1+r()*.9,zc+q,.3,.9,7,3)}
+  for(let q=-half/2+1;q<half/2-.6;q+=2.6+r()*.6)ball(r()>.25?P.melY:P.melG,x+(r()>.5?.38:-.38),1.1+r()*.9,zc+q,MELR,.9,7,3)}
  mt(3,()=>{bb(P.blue,cx,3.5,cz,w-1,.16,.16);for(let x=x0+2.2;x<x1-1.4;x+=6.8)bb(P.blue,x,3.5,cz,.1,.1,d-2);bb(P.white,x1-2.6,.2,cz,1.6,2,1);bb(P.dark,x1-2.6,1.2,cz+.52,1,.6,.04)});
  ghI(x0,z0,x1,z1);
  Tp(x1+5.2,0,cz-8,-Math.PI/2,1,()=>bldgI(7,5.5,3.6,P.chalk,{doors:1}));mt(3,()=>{for(const q of[0,3.4])cyl(P.white,x1+4.6,.14,cz+2+q,1.4,3.6,12);bb(P.steel,x1+2.4,.6,cz+3.7,3,.18,.18);bb(P.steel,x1+4.6,1.8,cz+3.7,.14,.14,3.4)})}
@@ -111,10 +111,10 @@ function contI(c,x,y0,z,L){L=L||8;const d=shade(c,.7);mt(5,()=>bb(c,x,y0+.08,z,2
   for(const sz of[-L/2+.06,L/2-.06])for(const y of[0,2.48])bb(d,x,y0+y,z+sz,2.6,.12,.12);for(const sx of[-.75,-.25,.25,.75])bb(P.steel,x+sx,y0+.15,z+L/2,.045,2.3,.045)})}
 function palletI(x,y0,z,lv,open,tag){for(const k of[-1,0,1])bb(P.wood,x+k,y0,z,.22,.14,2.3);for(let k=0;k<5;k++)bb(P.wood,x,y0+.14,z-1.04+k*.52,2.3,.07,.3);
  for(let l=0;l<lv;l++)for(const i of[-.57,.57])for(const k of[-.57,.57]){const y=y0+.22+l*.85;bb(l%2?P.card2:P.card,x+i,y,z+k,1.1,.82,1.1);bb(shade(P.card,.8),x+i,y+.82,z+k,.16,.012,1.1);bb(P.white,x+i+.3,y+.28,z+k+.556,.36,.24,.01)}
- const ty=y0+.22+lv*.85;if(open)for(const i of[-.57,.57])for(const k of[-.57,.57])ball((i*k>0)?P.melY:P.melG,x+i,ty+.2,z+k,.42,.9,8,4);
+ const ty=y0+.22+lv*.85;if(open)for(const i of[-.57,.57])for(const k of[-.57,.57])melonLayer(x+i,ty,z+k,3,3,(i*k>0)?0:1);
  mt(3,()=>{for(const sx of[-1.12,1.12])for(const sz of[-1.12,1.12])bb(P.steel,x+sx,y0+.2,z+sz,.05,lv*.85,.05)});if(tag){MAT=2;bb(tag,x,ty+(open?.7:.1),z,.7,.35,.7);MAT=0}}
 function crateI(x,y0,z,full){const c=P.crate;bb(c,x,y0,z,1.5,.08,1.1);for(const sz of[-.52,.52]){bb(c,x,y0,z+sz,1.5,.85,.06);bb(P.dark,x,y0+.5,z+sz*1.07,.5,.14,.02)}for(const sx of[-.72,.72])bb(c,x+sx,y0,z,.06,.85,1.1);
- if(full)for(const i of[-.42,0,.42])ball(i?P.melY:P.melG,x+i,y0+.62,z,.36,.9,8,4)}
+ if(full)crateMelons(x,y0,z,null)}
 function lampI(x,z,h){h=h||5;mt(3,()=>{cyl(P.steel,x,0,z,.13,h,8);cyl(P.steel,x,0,z,.24,.3,8);bb(P.steel,x,h,z+.5,.1,.1,1.2);bb(P.dark,x,h-.14,z+1,.5,.16,.7)});MAT=2;bb(LIT,x,h-.17,z+1,.42,.03,.6);MAT=0}
 function roadI(pts,w){if(w<4)return;for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1],dx=b[0]-a[0],dz=b[1]-a[1],l=Math.hypot(dx,dz);Tm(mul(tr((a[0]+b[0])/2,0,(a[1]+b[1])/2),rY(Math.atan2(dx,dz))),()=>{for(const s of[-1,1])bb(P.white,s*(w/2-.3),.21,0,.14,.02,l)})}}
 /* ship-to-shore gantry crane: same leg and boom positions as the cartoon crane, so the trolley and hoist line up */
@@ -187,6 +187,6 @@ function extrasI(k){PID=0;
   glassI(()=>{for(const[a,b]of[[206.3,221.8],[228.2,239.7]])Q([a,1.25,22.05],[b,1.25,22.05],[b,5.1,22.05],[a,5.1,22.05],[0,0,1])});
   /* supermarket: dock canopy, condensers, chillers, parking bays, trolley bay, sign */
   mt(3,()=>{for(const z of[9.5,18.5])for(const x of[196.8,203.2])bb(P.steel,x,.1,z,.25,5.4,.25);bb(P.steel,200,5.5,14,7.4,.25,10);bb(P.dark,205.6,.25,14,.12,4,5);
-   for(let i=0;i<3;i++){bb(P.white,214+i*8.5,.25,-21.5,3,1.8,1.6);cyl(P.dark,214+i*8.5,2.05,-21.5,.6,.1,10);bb(P.white,214+i*8.5,.25,-15.6,6.4,2.6,1.6)}
+   for(let i=0;i<3;i++){bb(P.white,214+i*8.5,.25,-21.5,3,1.8,1.6);cyl(P.dark,214+i*8.5,2.05,-21.5,.6,.1,10)}/* the chilled cabinets inside: store.js */
    for(let x=209;x<234;x+=3.6)bb(P.white,x,.215,28,.12,.02,5);for(const x of[236,239.5])bb(P.steel,x,.1,27,.1,1.3,.1);bb(P.steel,237.75,1.4,27,3.6,.08,.08);for(let i=0;i<4;i++)bb(P.steel,236.6+i*.7,.4,26.6,.5,.5,.8);
-   bb(P.steel,246,0,29,.4,7,.4)});mt(4,()=>{for(let i=0;i<3;i++)bb(P.glass,214+i*8.5,.9,-14.78,6,1.8,.05)});MAT=2;bb(P.melY,246,7,29,2.6,2.2,.4);MAT=0}}
+   bb(P.steel,246,0,29,.4,7,.4)});/* the sign panel on this pole is the retailer's (brand.js) */}}

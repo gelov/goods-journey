@@ -36,7 +36,7 @@ function plantD(x,z,kind){const r=hsh(x,z),L=LEAVES();SW=.45;
  if(kind===2){for(let k=0;k<4;k++)Tm(mul(mul(tr(x,.2,z),rY(k*1.57+r())),rZ(.7)),()=>ball(L[1+k%2],.35,0,0,.34,.3,6,3));SW=0;return}
  for(let k=0;k<6;k++){const a=k/6*TAU+r(),d=.25+r()*.55;Tm(mul(mul(tr(x+Math.cos(a)*d,.3+r()*.22,z+Math.sin(a)*d),rY(-a)),rZ(.25)),()=>ball(shade(L[k%3],.9+r()*.2),0,0,0,.46,.22,6,3))}
  SW=0;for(let k=0;k<2;k++){const l=.9+r()*.5;Tm(mul(tr(x,.2,z),rY(r()*TAU)),()=>{box(P.leaf,l/2,0,0,l,.05,.05);ball(L[2],l,.08,0,.26,.25,5,3)})}
- const a=r()*TAU,mc=kind?P.melG:P.melY;ball(mc,x+Math.cos(a)*.62,.42,z+Math.sin(a)*.62,.38,.92,8,4);if(r()>.5)ball(mc,x-Math.cos(a)*.5,.36,z-Math.sin(a)*.6,.3,.92,7,3)}
+ const a=r()*TAU,mc=kind?P.melG:P.melY;ball(mc,x+Math.cos(a)*.62,.07+MELR*.92,z+Math.sin(a)*.62,MELR,.92,8,4);if(r()>.5)ball(mc,x-Math.cos(a)*.5,.08+MELR*.9,z-Math.sin(a)*.6,MELR*.95,.92,7,3)}
 /* raised bed with a dark earth edge and one planting ridge per crop row */
 function plotD(x0,z0,x1,z1,dx){const cx=(x0+x1)/2,cz=(z0+z1)/2;bb(P.soilD,cx,-.02,cz,x1-x0+1,.3,z1-z0+1);
  for(let x=x0+1.5;x<x1-.8;x+=dx||2.9){bb(P.bed,x,.18,cz,1.8,.22,z1-z0-.7);bb(shade(P.bed,1.12),x,.4,cz,1.2,.12,z1-z0-1.1)}}

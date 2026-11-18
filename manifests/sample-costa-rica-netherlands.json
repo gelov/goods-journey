@@ -94,6 +94,36 @@
    }
   }
  ],
+ "retailer": {
+  "id": "albert-heijn",
+  "name": "Albert Heijn",
+  "fictionalAssignment": true,
+  "store": {
+   "name": "Albert Heijn Demo Supermarket",
+   "locationId": "NL-SM"
+  },
+  "brand": {
+   "primaryColor": "#00A0E2",
+   "secondaryColor": "#FFFFFF",
+   "accentColor": "#003F7D",
+   "signStyle": "dark",
+   "logoUrl": null,
+   "signageText": "Albert Heijn"
+  },
+  "signage": {
+   "entrance": "Welkom",
+   "produce": "Vers fruit",
+   "promo": "Verse meloenen",
+   "checkout": "Kassa",
+   "parking": "Parkeren",
+   "priceCard": "Lekker rijp",
+   "shelfHeaders": [
+    "Fruit",
+    "Groente",
+    "Salade"
+   ]
+  }
+ },
  "transport": {
   "vehicles": [
    {

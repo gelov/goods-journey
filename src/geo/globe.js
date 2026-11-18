@@ -35,10 +35,46 @@ buildRoutes([null,{pts:[[-36.5,-.5],[-28,13],[-19,29],[-13,42],[-7.5,48.2],[-2.5
    either side, and continues past the end, so the vehicle never spins when it reaches a stop or crosses a sharp kink. */
 function routeQ(r,u){const p=ROUTES[r],x=clamp(u,0,1)*(p.length-1),i=Math.min(p.length-2,Math.floor(x)),f=x-i,a=p[i],b=p[i+1];return nrm([lerp(a[0],b[0],f),lerp(a[1],b[1],f),lerp(a[2],b[2],f)])}
 function routeAt(r,u){u=clamp(u,0,1);const q=routeQ(r,u),d=4/(ROUTES[r].length-1),a=routeQ(r,Math.max(0,u-d)),b=routeQ(r,Math.min(1,u+d)),t=sub(b,a);return{q,g:ull(q),nx:nrm([q[0]+t[0],q[1]+t[1],q[2]+t[2]])}}
-const MKU=[()=>io(u01(tau(1),23.5,32.5)),()=>io(u01(tau(3),.5,21)),()=>io(u01(tau(5),15,24)),()=>io(u01(tau(9),9.5,17))];
-const RT=r=>()=>routeAt(r,MKU[r]()).g;
+/* ---- travel legs: one vehicle from its departure site, along the route, into the arrival site ----
+   Each leg is a single path on the globe: the departure site's road or channel, the route, the arrival site's approach.
+   One clock moves the vehicle along it without stopping (speeding up as it leaves, slowing as it arrives), and one draw
+   (render.js) shows it the whole way, so the camera can zoom out and in while it keeps moving. The vehicle's copies inside the
+   sites are hidden while the leg runs; the site movers use the same easing (ein / eout) so their matrices match. */
+const ein=x=>x*x,eout=x=>1-(1-x)*(1-x);
+const gAt=(i,t)=>{let g=t;for(let j=0;j<i;j++)g+=SCRIPT[j].dur;return g},gNow=()=>gAt(STATE.idx,STATE.t);
+const LEGS=[{r:0,dk:0,dp:()=>RDF,d:[1,19.5,25.5],dy:.12,ak:1,ap:()=>RDP,a:[2,1,6.5],ay:.12,mesh:()=>LORF},
+ {r:1,dk:1,dp:()=>SBR,d:[2,20.6,26],dy:-1.5,ak:2,ap:()=>SUK,a:[4,.5,9],ay:-1.5,mesh:()=>SHBR,ship:true},
+ {r:2,dk:2,dp:()=>RDU,d:[5,11.3,17.5],dy:.3,ak:3,ap:()=>RWA,a:[6,1,6.5],ay:.12,mesh:()=>LORW},
+ {r:3,dk:3,dp:()=>RWD,d:[9,4,11.5],dy:.12,ak:4,ap:()=>RSM,a:[9,16.5,22],ay:.12,mesh:()=>LORS}];
+const LEGON=[false,false,false,false];
+function legBuild(L){const R=ROUTES[L.r];if(L.R===R&&L.poly)return L;L.R=R;
+ const toU=(k,pa)=>pa.pts.map(p=>{const g=geoOf(k,p[0],p[2]);return llu(g[0],g[1])}),D=toU(L.dk,L.dp()),A=toU(L.ak,L.ap()),n=R.length,
+  near=(q,a,b)=>{let bi=a,bd=9;for(let i=a;i<b;i++){const d=angd(ull(R[i]),ull(q));if(d<bd){bd=d;bi=i}}return bi},i0=near(D[D.length-1],0,Math.ceil(n*.6)),i1=Math.max(i0+1,near(A[0],Math.floor(n*.4),n));
+ const poly=[...D,...R.slice(i0+1,i1),...A],cum=[0];for(let i=1;i<poly.length;i++)cum.push(cum[i-1]+Math.acos(clamp(dot(poly[i-1],poly[i]),-1,1)));
+ L.poly=poly;L.cum=cum;L.Ld=cum[D.length-1];L.La=cum[cum.length-1]-cum[poly.length-A.length];L.i0=i0;L.i1=i1;
+ /* cruise speed where the vehicle leaves one site and enters the next: no faster than either site path allows (from rest) and no faster
+    than the route's average, so a short road never makes it stop halfway; the site paths' end slopes (bd, ba) are set to meet it */
+ const Td=L.d[2]-L.d[1],Ta=L.a[2]-L.a[1],T=gAt(L.a[0],L.a[1])-gAt(L.d[0],L.d[2]),Lr=cum[cum.length-1]-L.Ld-L.La;
+ L.vc=Math.min(2*L.Ld/Td,2*L.La/Ta,Lr/T);L.bd=L.vc*Td/L.Ld;L.ba=L.vc*Ta/L.La;return L}
+/* ease from rest to slope b at x=1 (b=2 is x*x); the arrival is its mirror */
+const fB=(x,b)=>(3-b)*x*x+(b-2)*x*x*x,legE=(r,ph,x)=>{const L=LEGS[r];if(!ROUTES[r]||ROUTES[r].length<2)return ph==='d'?ein(x):eout(x);legBuild(L);return ph==='d'?fB(x,L.bd):1-fB(1-x,L.ba)};
+function legAt(L,s){const c=L.cum,P=L.poly;s=clamp(s,0,c[c.length-1]);let i=1;while(i<c.length-1&&c[i]<s)i++;const f=clamp((s-c[i-1])/Math.max(1e-12,c[i]-c[i-1]),0,1),a=P[i-1],b=P[i];return nrm([lerp(a[0],b[0],f),lerp(a[1],b[1],f),lerp(a[2],b[2],f)])}
+/* distance along the leg (radians) at global time g: ease in over the departure path, a Hermite curve over the route starting and
+   ending at the cruise speed, ease out over the arrival path */
+function legS(L,g){legBuild(L);const G0=gAt(L.d[0],L.d[1]),G1=gAt(L.d[0],L.d[2]),G2=gAt(L.a[0],L.a[1]),G3=gAt(L.a[0],L.a[2]),tot=L.cum[L.cum.length-1],Lr=tot-L.Ld-L.La;
+ if(g<=G0)return 0;if(g<G1)return L.Ld*fB((g-G0)/(G1-G0),L.bd);if(g>=G3)return tot;if(g>=G2)return L.Ld+Lr+L.La*(1-fB(1-(g-G2)/(G3-G2),L.ba));
+ const T=G2-G1,x=(g-G1)/T,m0=L.vc*T,m1=L.vc*T,x2=x*x,x3=x2*x;return L.Ld+(x3-2*x2+x)*m0+(-2*x3+3*x2)*Lr+(x3-x2)*m1}
+function legPose(L){const g=gNow(),s=legS(L,g),q=legAt(L,s),w=(L.ship?9:3.5)/RS,a=legAt(L,s-w),b=legAt(L,s+w),G1=gAt(L.d[0],L.d[2]),G2=gAt(L.a[0],L.a[1]);
+ return{q,g:ull(q),t:sub(b,a),y:g<G1?L.dy:g>=G2?L.ay:lerp(L.dy,L.ay,(g-G1)/(G2-G1)),ru:L.R.length>1?clamp((L.i0+(s-L.Ld)/Math.max(1e-9,L.cum[L.cum.length-1]-L.Ld-L.La)*(L.i1-L.i0))/(L.R.length-1),0,1):0}}
+/* the leg running now, if any (from the moment its vehicle leaves until it has stopped at the far site) */
+function activeLeg(){const g=gNow();for(const L of LEGS)if(g>=gAt(L.d[0],L.d[1])&&g<gAt(L.a[0],L.a[2]))return L;return null}
+/* after the movers update: hide the site copies of the travelling vehicle (and what rides on it), and note which leg runs */
+function legPost(){const L=activeLeg();for(let r=0;r<4;r++)LEGON[r]=!!L&&L.r===r;if(!L)return;for(const m of MOV)if(m.leg!=null&&(Array.isArray(m.leg)?m.leg.includes(L.r):m.leg===L.r))m.vis=false}
+const MKU=[0,1,2,3].map(r=>()=>{const L=LEGS[r],g=gNow();if(g<gAt(L.d[0],L.d[2]))return 0;if(g>=gAt(L.a[0],L.a[1]))return 1;return legPose(L).ru});
+/* the camera target for a leg: where its vehicle is */
+const RT=r=>()=>legPose(LEGS[r]).g;
 /* the vehicle drawn on the map; none on a leg whose route could not be validated */
-function activeMarker(){const i=STATE.idx,t=STATE.t,m=i===1&&t>=21.5?0:i===3?1:i===5&&t>=13.5?2:i===9&&t>=8.5&&t<18.5?3:-1;return m>=0&&typeof routeOK==='function'&&!routeOK(m)?-1:m}
+function activeMarker(){const L=activeLeg();return L?L.r:-1}
 let RN=[0,0,0];
 function buildRibbons(){const A=RARR,E=X.eyeG;let i=0;
  const rib=(pts,lift,p0,p1,col,wk,al)=>{const n=pts.length-1;let pl=null,pr=null,pt=0;for(let j=Math.floor(p0*n);j<=Math.ceil(p1*n);j++){const p=pts[j],t=nrm(sub(pts[Math.min(n,j+1)],pts[Math.max(0,j-1)])),s=nrm(cross(p,t)),h=1.0008+lift*Math.sin(j/n*Math.PI),w=wk*Math.hypot(E[0]-p[0],E[1]-p[1],E[2]-p[2]),L=[p[0]*h+s[0]*w,p[1]*h+s[1]*w,p[2]*h+s[2]*w],Rr=[p[0]*h-s[0]*w,p[1]*h-s[1]*w,p[2]*h-s[2]*w],tt=j/n;

@@ -8,6 +8,18 @@ const stripes=(x0,x1,z)=>{for(let x=x0;x<x1;x+=6)bb(P.white,x,.14,z,2.4,.02,.18)
 let OPENC=0;
 /* built as a mover (see tracking.js): it appears once the tracked container has been brought to the unloading bay */
 function openContainerModel(){const c=P.teal,d=shade(c,.8);bb(P.dark,0,0,0,2.4,.5,8.4);for(const z of[-2.6,2.6])for(const x of[-1.1,1.1])wheelX(x,.1,z,.5,.4);bb(c,0,.5,0,2.6,.16,8);bb(c,-1.24,.66,0,.12,2.5,8);bb(c,0,.66,-3.94,2.6,2.5,.12);bb(c,0,3.1,-1.9,2.6,.12,4.2);for(let k=0;k<5;k++)bb(d,-1.3,.8,-3.5+k*1.7,.14,2.2,.2);for(let k=0;k<2;k++)pallet(0,.66,-2.7+k*2.5,2,false)}/* the third pallet, at the doors, is the forklift's (tracking.js) */
+/* ---- melons at real size ----
+   One melon size for the whole journey: a large cantaloupe, about 22 cm across, so eight fill a crate. Characters are about
+   2.7 units tall (1 unit = 0.65 m), so its radius is 0.17 units. Plants, crates, pallets, QC, the store and the tracked melon all use it. */
+const MELR=.17,MSTEP=.36;
+/* one layer of melons resting on a surface at y, nx by nz, centred on x,z */
+function melonLayer(x,y,z,nx,nz,ph){for(let i=0;i<nx;i++)for(let k=0;k<nz;k++)ball((i+k+ph)%3?P.melY:P.melG,x+(i-(nx-1)/2)*MSTEP,y+MELR*.92,z+(k-(nz-1)/2)*MSTEP,MELR,.9,7,3)}
+/* a crate's eight melons, four by two (the crate is 0.85 deep, so they sit just below the rim); skip leaves one slot free for the tracked melon */
+const CRATE_SLOTS=[];for(const lx of[-.51,-.17,.17,.51])for(const lz of[-.22,.22])CRATE_SLOTS.push([lx,lz]);const CRATE_Y=.58,CRATE_TRK=[.51,.22];
+function crateMelons(x,y0,z,skip){CRATE_SLOTS.forEach(([lx,lz],n)=>{if(skip&&lx===skip[0]&&lz===skip[1])return;ball(n%4?P.melY:P.melG,x+lx,y0+CRATE_Y+MELR*.92,z+lz,MELR,.9,7,3)})}
+/* a store display: three low layers, each nested in the hollows of the one below (a melon's height above it) */
+const MSTACK={nx:14,nz:9,layers:3,dy:MELR*1.41};
+function melonStack(x,y,z){for(let l=0;l<MSTACK.layers;l++){const nx=MSTACK.nx-l,nz=MSTACK.nz-l;for(let i=0;i<nx;i++)for(let k=0;k<nz;k++)ball((i*3+k+l)%4?P.melY:P.melG,x+(i-(nx-1)/2)*MSTEP,y+MELR*.92+l*MSTACK.dy,z+(k-(nz-1)/2)*MSTEP,MELR,.9,7,3)}}
 function buildWorld(){R=prng(7);
  site(0);apron(0);
 /* ---------- 01 farm ---------- */
@@ -96,7 +108,7 @@ function buildWorld(){R=prng(7);
  
 /* ---------- 08 QC ---------- */
  ent('Quality control room',7,'A dedicated inspection area beside the warehouse.',()=>{bb(P.chalk,179,.02,8,20,.25,30);bb(P.white,179,.25,-7,20.6,5,.6);bb(P.white,189,.25,8,.6,3.2,30.6);bb(P.white,179,.25,23,20.6,1.3,.6);bb(P.green,179,4.4,-6.6,20.6,.8,.3)});
- const tbl=(nm,x,good)=>ent(nm,7,good?'Fruit on this table has passed inspection.':'Damaged fruit found on this table. This result leads to a claim.',()=>{bb(P.steel,x,1.25,8,6,.2,2.6);for(const a of[-2.7,2.7])for(const b of[-1,1])bb(P.steel,x+a,.25,8+b,.16,1,.16);bb(P.card,x-1.8,1.45,8,1.6,.6,1.3);for(const i of[-.4,.4])ball(P.melY,x-1.8+i,2.05,8,.4,.9,6,3);for(let k=0;k<3;k++)ball(good||k<2?P.melG:[.55,.42,.25],x+.4+k*.95,1.85,8.5,.42,.9,6,3);cyl(P.dark,x+2.4,1.45,7.4,.08,1.6,5);MAT=2;ball(good?[.4,.95,.55]:[1,.38,.3],x+2.4,3.25,7.4,.34,1,6,3);MAT=0});
+ const tbl=(nm,x,good)=>ent(nm,7,good?'Fruit on this table has passed inspection.':'Damaged fruit found on this table. This result leads to a claim.',()=>{bb(P.steel,x,1.25,8,6,.2,2.6);for(const a of[-2.7,2.7])for(const b of[-1,1])bb(P.steel,x+a,.25,8+b,.16,1,.16);bb(P.card,x-1.8,1.45,8,1.6,.6,1.3);melonLayer(x-1.8,2.05,8,4,3,0);for(let k=0;k<5;k++)ball(good||k<3?P.melG:[.55,.42,.25],x+.2+k*.38,1.45+MELR*.92,8.5,MELR,.9,6,3);cyl(P.dark,x+2.4,1.45,7.4,.08,1.6,5);MAT=2;ball(good?[.4,.95,.55]:[1,.38,.3],x+2.4,3.25,7.4,.34,1,6,3);MAT=0});
  tbl('Inspection table 1',174.5,true);tbl('Inspection table 2',183.5,false);
  ent('Pallets awaiting inspection',7,'Pallets brought from the QC bays for checking.',()=>{pallet(173,.27,17,2,true);pallet(177,.27,17,2,false);pallet(184,.27,17,3,false)});
  ent('Rejected fruit',7,'Fruit judged damaged or unsuitable is set aside.',()=>{bb(P.red,186,.27,0,3.4,.9,2.6);for(let k=0;k<4;k++)ball([.6,.46,.27],185+k*.7,1.2,0+(k%2)*.5-.2,.42,.9,6,3)});
@@ -115,10 +127,10 @@ function buildWorld(){R=prng(7);
  if(IND)extrasI(3);else extrasD(3);
  site(4);apron(4);
 /* ---------- 10 supermarket ---------- */
- ent('Supermarket',9,'Shown open at the front so the shop floor is visible.',()=>{bb(P.floor,223,.02,2,34,.25,40);bb(P.white,223,.25,-18,34.6,8,.6);bb(P.white,206,.25,-9,.6,5,18.6);bb(P.white,206,.25,16,.6,5,12.6);bb(P.white,206,4.2,5,.6,1.05,10);bb(P.white,240,.25,2,.6,5,40.6);bb(P.green,223,7.4,-17.6,34.6,2.2,.4);MAT=2;ball(P.melY,214,8.5,-17.2,.9,.9,8,4);MAT=0;bb(P.white,214,.25,22,15.6,1,.6);bb(P.white,234,.25,22,11.6,1,.6)});
- ent('Shelving',9,'Shelves of produce.',()=>{for(let i=0;i<3;i++){const x=214+i*8.5;bb(P.white,x,.25,-11,5.6,3.4,1.4);for(let l=0;l<3;l++){bb(P.steel,x,1+l*1.05,-10.25,5.6,.1,1.2);for(let k=0;k<6;k++)ball([P.red,P.orange,P.leaf3,P.yel][(k+l+i)%4],x-2.3+k*.92,1.35+l*1.05,-10.1,.3,1,5,3)}}});
- ent('Melon display',9,'The end of the journey: melons on display for shoppers.',()=>{for(const[x,z]of[[219,8],[226,8]]){bb(P.wood,x,.25,z,5,1.1,3.4);bb(P.green,x,1.35,z,5.2,.12,3.6);for(let l=0;l<3;l++)for(let i=0;i<5-l;i++)for(let k=0;k<3-l;k++)ball((i+k+l)%3?P.melY:P.melG,x-1.9+l*.48+i*.95,1.85+l*.72,z-.95+l*.48+k*.95,.48,.9,6,3)}});
- ent('Checkout',9,'Where the shopper pays.',()=>{for(const x of[232,236]){bb(P.table,x,.25,14,1.4,1.1,4);bb(P.dark,x,1.35,15.4,.9,.9,.1)}});
+ ent('Supermarket',9,'Shown open at the front so the shop floor is visible.',()=>{bb(P.floor,223,.02,2,34,.25,40);bb(P.white,223,.25,-18,34.6,8,.6);bb(P.white,206,.25,-9,.6,5,18.6);bb(P.white,206,.25,16,.6,5,12.6);bb(P.white,206,4.2,5,.6,1.05,10);bb(P.white,240,.25,2,.6,5,40.6);/* roof trim, signs and accents: brand.js */bb(P.white,214,.25,22,15.6,1,.6);bb(P.white,234,.25,22,11.6,1,.6)});
+ ent('Shop floor',9,'Chilled cabinets, grocery aisles, bakery, fruit and vegetables, and the checkouts.',storeInterior);
+ ent('Melon display',9,'The end of the journey: melons on display for shoppers.',()=>{for(const[x,z]of[[219,8],[226,8]]){bb(P.wood,x,.25,z,5,1.1,3.4);/* brand-coloured top: brand.js */melonStack(x,1.47,z)}});
+ /* checkout lanes: store.js */
  ent('Delivery bay',9,'Accepted melons arrive here by lorry.',()=>{bb(P.concD,200,.03,14,7,.12,10);pallet(203.6,.15,10,2,true)});
 
  /* cars */ for(const[x,c]of[[213,P.red],[222,P.blue],[229,P.white]]){bb(c,x,.45,28,2,.9,4.2);bb(P.glass,x,1.3,27.8,1.8,.8,2.2);for(const z of[26.6,29.4])for(const a of[-1,1])wheelX(x+a,.4,z,.4,.3)}

@@ -68,12 +68,17 @@ function showPanel(i,obj){const s=STAGES[i];STATE.panel=true;STATE.pi=i;STATE.ob
  $('#pBody').innerHTML=`<p class="eyebrow"><img class="lg" src="assets/contained-logo.png" alt="Contained Technologies" onerror="this.remove()">Stage ${String(ord(i)).padStart(2,'0')} / ${nStages()}</p><h2>${esc(stageName(i))}</h2>
  <div class="ctx">Following ${ships.length>1?`<select id="selShip" aria-label="Shipment to follow">${ships.map(x=>`<option${x.id===sh.id?' selected':''}>${esc(x.id)}</option>`).join('')}</select>`:sh?`<b>${esc(sh.id)}</b>`:'no shipment'}<em class="ds ${DATA.status}">${STATUS[DATA.status]}</em></div><div class="tnow" id="trkNow"></div>
  ${obj?`<div class="obj"><b>${obj.name}</b>${obj.note||''}${of.length?`<div class="tags">${chipsHTML(of)}</div>`:''}</div>`:''}
- <h3 style="--c:#f5f3ec">What’s happening</h3><p>${esc(stageWhat(i))}</p><h3 style="--c:var(--data)">Data captured</h3><div class="tags" id="stTags">${chipsHTML(FIELDS[i])}</div>
+ <h3 style="--c:#f5f3ec">What’s happening</h3><p>${esc(stageWhat(i))}</p><h3 style="--c:var(--data)">Data captured</h3><div class="tags" id="stTags">${chipsHTML(FIELDS[i])}</div>${i===9?destHTML():''}
  <h3 style="--c:#c9a8ff">Data source</h3><p>${esc(tx(s.src))}</p><h3 style="--c:var(--ok)">How it’s used</h3><p>${esc(tx(s.use))}</p><h3 style="--c:var(--acc)">What’s next</h3><p>${esc(tx(s.next))}</p>${s.note?`<p class="note">${esc(tx(s.note))}</p>`:''}`;
  $('#panel').classList.add('show');document.body.classList.add('pan');$('#panel').scrollTop=0;
  /* the first data field starts open, so every stage shows real values straight away */
  const b0=$('#pBody').querySelector(of.length?'.obj [data-f]':'#stTags [data-f]');if(b0)showField(b0)}
 /* a clicked chip opens its detail card right under its row of chips; clicking it again closes it */
+/* the supermarket stage: who and where the shipment ends up, from the active manifest only; fields it does not have are left out */
+function destHTML(){const N=DATA.man,c=context(),one=k=>c.one(k)||{},d=one('delivery'),q=one('qc'),bt=one('batch'),L=N&&N.loc.supermarket,R=N&&N.retailer,B=BRAND;
+ const rows=[['Retailer',R?B.name+(B.fictional?' (demo assignment)':''):null],['Store',R?B.storeName:null],['Destination',L?L.label+(L.country?', '+L.country:'')+(L.illustrative?' (illustrative location)':''):null],
+  ['Shipment',N&&N.ref],['Delivery date',d.date],['Delivery status',d.status],['Batch',bt.id],['QC report',q.id?q.id+(q.accepted!=null&&q.rejected!=null?` · ${q.accepted} accepted, ${q.rejected} rejected`:''):null]].filter(r=>r[1]!=null&&r[1]!=='');
+ return rows.length?`<h3 style="--c:${esc(B.primary)}">Destination</h3><dl class="dest">${rows.map(r=>`<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl>`:''}
 function showField(b){const was=b.classList.contains('on'),old=$('#fd');if(old)old.remove();$('#pBody').querySelectorAll('[data-f].on').forEach(x=>x.classList.remove('on'));if(was)return;
  const d=fieldInfo(PF[+b.dataset.f]),fd=el('div','fd');fd.id='fd';b.classList.add('on');
  fd.innerHTML=`<b>${esc(d.label)}</b><dl><dt>Value</dt><dd>${esc(d.value)}</dd><dt>Source</dt><dd>${esc(d.source)}</dd>${d.record?`<dt>Record</dt><dd>${esc(d.record)}</dd>`:''}${d.linked?`<dt>Linked to</dt><dd>${esc(d.linked)}</dd>`:''}<dt>Data status</dt><dd><em class="ds ${d.status}">${STATUS[d.status]}</em></dd></dl>

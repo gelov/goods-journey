@@ -84,6 +84,23 @@
    "coordinateSource": "illustrative"
   }
  ],
+ "retailer": {
+  "id": "sainsburys",
+  "name": "Sainsbury's",
+  "fictionalAssignment": true,
+  "store": {
+   "name": "Sainsbury's Demo Supermarket",
+   "locationId": "UK-SM2"
+  },
+  "brand": {
+   "primaryColor": "#F06C00",
+   "secondaryColor": "#FFFFFF",
+   "accentColor": "#7A3E00",
+   "signStyle": "dark",
+   "logoUrl": null,
+   "signageText": "Sainsbury's"
+  }
+ },
  "transport": {
   "vehicles": [
    {

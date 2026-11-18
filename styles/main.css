@@ -260,3 +260,6 @@ body.pan #pOpen,body.intro #pOpen{transform:translate(-110%,-50%);opacity:0;poin
 #panel::-webkit-scrollbar-track,#settings::-webkit-scrollbar-track,#impPrev::-webkit-scrollbar-track,#trkSum::-webkit-scrollbar-track{background:transparent}
 #panel::-webkit-scrollbar-thumb,#settings::-webkit-scrollbar-thumb,#impPrev::-webkit-scrollbar-thumb,#trkSum::-webkit-scrollbar-thumb{background:rgba(245,243,236,.22);border-radius:3px}
 #panel::-webkit-scrollbar-thumb:hover,#settings::-webkit-scrollbar-thumb:hover{background:rgba(245,243,236,.4)}
+
+/* supermarket stage: destination details from the manifest */
+#panel dl.dest{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:6px 0 4px;font-size:13px}#panel dl.dest dt{color:var(--ink3)}#panel dl.dest dd{margin:0;color:var(--ink)}

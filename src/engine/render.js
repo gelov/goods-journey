@@ -33,14 +33,19 @@ function render(){let LVP=ID;
  gl.enable(gl.DEPTH_TEST);gl.clear(gl.DEPTH_BUFFER_BIT);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
  MELL=LVP;const p=PR.main;gl.useProgram(p.p);gl.uniform3fv(p.u.uKey,KEY);gl.uniform1f(p.u.uFocus,FOCUS);gl.uniform1f(p.u.uSty,STYLE==='industrial'?1:0);gl.uniform1f(p.u.uHover,HOVER);gl.uniform1f(p.u.uTrk,TRK.pid);gl.uniform1f(p.u.uTrkA,1+TRK.pulse*1.6);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,FB.sh.t);gl.uniform1i(p.u.uSh,0);gl.uniformMatrix4fv(p.u.uL,false,f32(LVP));
  const mk=activeMarker(),ma=ss(1300,2800,X.d);MARK=null;
- if(mk>=0&&ma>.01){const r=routeAt(mk,MKU[mk]()),Qg=Qm(r.g[0],r.g[1]),Mm=mul(tr(0,-RS,0),mul(mul(X.Qf,tp(Qg)),tr(0,RS,0))),n=xp(Qg,r.nx),yaw=Math.atan2(n[0],n[2]),ship=mk===1,k=X.d*(ship?.0011:.0032);MARK={g:r.g,mk};
-  gl.uniform3fv(p.u.uEye,X.eye);gl.uniform2f(p.u.uCen,0,0);gl.uniform2f(p.u.uR,1e9,2e9);gl.uniform1f(p.u.uFade,ma);gl.uniform1f(p.u.uBias,10);gl.uniformMatrix4fv(p.u.uVP,false,f32(mul(X.PV,Mm)));gl.uniform1f(p.u.uT,T);gl.uniform1f(p.u.uGrow,1);
-  gl.uniformMatrix4fv(p.u.uM,false,f32(trs(0,ship?1.6*k:0,0,yaw,k)));const mo=ship?SHBR:LORF,m=mo.meshes[STYLE];gl.uniform1f(p.u.uTrk,mo.pid);bindMesh(p,m);gl.drawArrays(gl.TRIANGLES,0,m.n);gl.uniform1f(p.u.uTrk,TRK.pid)}
+ /* the travelling vehicle (globe.js legs): one object from site to site. Life size up close, so it matches the site it is leaving
+    or entering; growing with distance once the sites fade, so it stays visible on the globe */
+ if(mk>=0&&!(typeof routeOK==='function'&&!routeOK(mk)&&FADE<.05)){const L=LEGS[mk],r=legPose(L),Qg=Qm(r.g[0],r.g[1]),Mm=mul(tr(0,-RS,0),mul(mul(X.Qf,tp(Qg)),tr(0,RS,0))),n=xp(Qg,r.t),yaw=Math.atan2(n[0],n[2]),ship=!!L.ship,k=1+Math.max(0,X.d-700)*(ship?.0011:.0032);MARK={g:r.g,mk};
+  const y=lerp(r.y+(ship?Math.sin(T*1.1)*.12:0),ship?1.6*k:0,ss(1,3,k)),Mv=trs(0,y,0,yaw,k);
+  gl.uniform3fv(p.u.uEye,X.eye);gl.uniform2f(p.u.uCen,0,0);gl.uniform2f(p.u.uR,1e9,2e9);gl.uniform1f(p.u.uFade,1);gl.uniform1f(p.u.uBias,10);gl.uniformMatrix4fv(p.u.uVP,false,f32(mul(X.PV,Mm)));gl.uniform1f(p.u.uT,T);gl.uniform1f(p.u.uGrow,1);
+  const mo=L.mesh(),drawM=(o,M)=>{const m=o.meshes[STYLE];gl.uniformMatrix4fv(p.u.uM,false,f32(M));gl.uniform1f(p.u.uTrk,o.pid);bindMesh(p,m);gl.drawArrays(gl.TRIANGLES,0,m.n)};
+  drawM(mo,Mv);if(ship&&LEGCARGO)for(const[o,M]of LEGCARGO())drawM(o,mul(Mv,M));gl.uniform1f(p.u.uTrk,TRK.pid)}
  for(const S of SITES){if(!S.on)continue;gl.useProgram(p.p);gl.uniform3fv(p.u.uEye,S.eye);gl.uniform2f(p.u.uCen,S.c[0],S.c[1]);gl.uniform2f(p.u.uR,S.r0,S.r1);gl.uniform1f(p.u.uFade,FADE*S.a);gl.uniform1f(p.u.uBias,S===PRIM?.0016:10);drawSite(p,S,S.vp)}
+ drawBrandSigns();gl.useProgram(p.p);
  /* glass last, without writing depth, so what stands behind or inside it still shows */
  gl.depthMask(false);gl.uniform1f(p.u.uGls,1);for(const S of SITES){const gm=S.on&&S.glass&&S.glass[STYLE];if(!gm)continue;gl.uniform3fv(p.u.uEye,S.eye);gl.uniform2f(p.u.uCen,S.c[0],S.c[1]);gl.uniform2f(p.u.uR,S.r0,S.r1);gl.uniform1f(p.u.uFade,FADE*S.a);gl.uniform1f(p.u.uBias,10);
   gl.uniformMatrix4fv(p.u.uVP,false,f32(S.vp));gl.uniformMatrix4fv(p.u.uM,false,f32(ID));gl.uniform1f(p.u.uGrow,Math.max(.02,out(FADE)));bindMesh(p,gm);gl.drawArrays(gl.TRIANGLES,0,gm.n)}gl.uniform1f(p.u.uGls,0);gl.depthMask(true);
  if(VIEW.data&&PRIM&&FADE>.3){const n=stepData(PRIM.k),q=PR.pt;gl.useProgram(q.p);gl.uniformMatrix4fv(q.u.uVP,false,f32(PRIM.vp));gl.uniform1f(q.u.uPx,GLS.h/.51);gl.uniform1f(q.u.uA,FADE);gl.bindBuffer(gl.ARRAY_BUFFER,PVBO);gl.bufferData(gl.ARRAY_BUFFER,PARR.subarray(0,n*7),gl.DYNAMIC_DRAW);
   gl.enableVertexAttribArray(q.a.aP);gl.vertexAttribPointer(q.a.aP,3,gl.FLOAT,false,28,0);gl.enableVertexAttribArray(q.a.aA);gl.vertexAttribPointer(q.a.aA,4,gl.FLOAT,false,28,12);gl.depthMask(false);gl.drawArrays(gl.POINTS,0,n);gl.depthMask(true)}
  gl.disable(gl.BLEND)}
-let MARK=null;
+let MARK=null,LEGCARGO=null;

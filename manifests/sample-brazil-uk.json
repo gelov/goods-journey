@@ -94,6 +94,36 @@
    }
   }
  ],
+ "retailer": {
+  "id": "tesco",
+  "name": "Tesco",
+  "fictionalAssignment": true,
+  "store": {
+   "name": "Tesco Demo Supermarket",
+   "locationId": "LOC-SM"
+  },
+  "brand": {
+   "primaryColor": "#00539F",
+   "secondaryColor": "#EE1C2E",
+   "accentColor": "#FFFFFF",
+   "signStyle": "light",
+   "logoUrl": null,
+   "signageText": "Tesco"
+  },
+  "signage": {
+   "entrance": "Welcome",
+   "produce": "Fresh fruit",
+   "promo": "Fresh melons in store",
+   "checkout": "Checkout",
+   "parking": "Customer parking",
+   "priceCard": "Ripe & ready",
+   "shelfHeaders": [
+    "Fruit",
+    "Vegetables",
+    "Salad"
+   ]
+  }
+ },
  "transport": {
   "vehicles": [
    {

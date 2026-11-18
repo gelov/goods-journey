@@ -7,9 +7,9 @@
    What is real and what is not: carrier ids (batch, pallet, container, lorries, vessel) and dates come from the
    journey records through context(). The movements of the single melon and its crate are a simulated illustration;
    the records trace batches, not individual melons, and the UI says so. */
-let FARMER=null;const TID={},TRK={pid:0,pulse:0,step:null,key:''};
+let FARMER=null,MOV_TAG=0;const TID={},TRK={pid:0,pulse:0,step:null,key:''};
 const hop=(a,b,u,h)=>[lerp(a[0],b[0],u),lerp(a[1],b[1],u)+Math.sin(u*Math.PI)*h,lerp(a[2],b[2],u)],mixv=(a,b,u)=>hop(a,b,u,0);
-const M0=[-156.2,.75,12.2],CR0=[-154.6,.2,13.5],TBL=[176.9,1.45,7.3],HOV=[176.9,2.9,7.3],SHELF=[219.01,4.04,8.01],W0=[-79.7,.25,-10];
+const M0=[-156.2,.25+MELR*.92,12.2],CR0=[-154.6,.2,13.5],TBL=[176.9,1.45,7.3],HOV=[176.9,2.9,7.3],SHELF=[219,1.47+MELR*.92+MSTACK.layers*MSTACK.dy,8+MSTEP/2],W0=[-79.7,.25,-10];
 /* farm cart: route from the collection point outside the greenhouse door to the conveyor, and the picker's walks around it */
 /* export quay forklift routes: up to the lorry's rear, reverse out turning, round the lorry to the waiting container, into its door, back out and park */
 const PQ1=P2([[-84,20],[-88,18.6],[-91.4,16.6],[-92,15],[-92,13.25]]),PQR=P2([[-92,11.85],[-92,13.6],[-92.8,15.6],[-94.4,16.8]]),
@@ -101,7 +101,7 @@ function trkScene(){const i=STATE.idx,t=STATE.t,key=i+'|'+t+'|'+T;if(key===TSK)r
  /* the cart's other two crates, already loaded at the collection point */
  S.cc=[0,1].map(j=>{const o={k:0,vis:i<=1,p:onCart(j),yaw:cY,s:1};if(i===1)viaBelt(o,j,UNLOADS[j]);return o});
  /* the crate is full of melons; the followed one takes the free corner slot, at the size of its neighbours */
- const IS=.66,cy=Math.cos(cr.yaw||0),sy=Math.sin(cr.yaw||0),inCr=[cr.p[0]+(cy*.36+sy*.25)*cr.s,cr.p[1]+.6*cr.s,cr.p[2]+(-sy*.36+cy*.25)*cr.s],sz=u=>lerp(1,IS,u);
+ const IS=1,cy=Math.cos(cr.yaw||0),sy=Math.sin(cr.yaw||0),[tx,tz]=CRATE_TRK,ty=CRATE_Y+MELR*.92,inCr=[cr.p[0]+(cy*tx+sy*tz)*cr.s,cr.p[1]+ty*cr.s,cr.p[2]+(-sy*tx+cy*tz)*cr.s],sz=u=>lerp(1,IS,u);
  /* the melon */
  let me={k:cr.k,vis:cr.vis,p:inCr,s:cr.s*IS};
  if(i<1)me={k:0,vis:true,p:M0,s:1};
@@ -163,8 +163,11 @@ const TR=(k,x,z)=>()=>TRK.sm&&TRK.sm[0]===k?geoOf(k,TRK.sm[1],TRK.sm[2]):geoOf(k
 /* tracked objects are movers with their own ids, so they can be highlighted and picked like anything else */
 function buildTracking(){const note='Stands for the whole batch. Its own movements are a simulated illustration: the records trace batches, not single melons.';
  const dyn=(o,q,yaw)=>{o.k=q.k;o.vis=q.vis;const s=q.s==null?1:q.s;if(q.m){o.m=q.m;o.p=q.p}else{o.m=mul(trs(q.p[0],q.p[1],q.p[2],q.yaw||yaw||0,1),sc(s,s,s));o.p=q.p}ENT[o.pid]&&(ENT[o.pid].site=q.k)};
- TID.melon=EM(0,'Representative melon',1,note);mover(0,TID.melon,()=>ball(P.melY,0,0,0,.5,.92,10,5),o=>{const q=trkScene().melon;dyn(o,q,q.spin||0)});
- TID.crate=EM(0,'Crate carrying the melon',1,'The crate the representative melon travels in. Simulated illustration.');mover(0,TID.crate,()=>{crate(0,0,0,0);for(const[x,z,c]of[[-.36,-.25,P.melY],[.36,-.25,P.melG],[-.36,.25,P.melY]])ball(c,x,.6,z,.33,.92,8,4)},o=>dyn(o,trkScene().crate));
+ TID.melon=EM(0,'Representative melon',1,note);mover(0,TID.melon,()=>ball(P.melY,0,0,0,MELR,.92,10,5),o=>{const q=trkScene().melon;dyn(o,q,q.spin||0)});
+ /* the melon is life size, so a small glowing marker hovers over it; it grows with camera distance to stay visible */
+ mover(0,TID.melon,()=>{MAT=2;lathe([1,.8,.25],[[0,0],[.09,.12],[0,.24]],0,0,0,6);MAT=0},o=>{const q=trkScene().melon,s=clamp(X.d/30,1,4),p=q.m?[q.m[12],q.m[13],q.m[14]]:q.p;o.k=q.k;o.vis=!!q.vis&&STATE.started;
+  o.m=mul(tr(p[0],p[1]+MELR*(q.s||1)+(.1+.14*s)+.05*s*Math.sin(T*3),p[2]),mul(rY(T*1.6),sc(s,s,s)));o.p=p});
+ TID.crate=EM(0,'Crate carrying the melon',1,'The crate the representative melon travels in. Simulated illustration.');mover(0,TID.crate,()=>{crate(0,0,0,0);crateMelons(0,0,0,CRATE_TRK)},o=>dyn(o,trkScene().crate));
  /* the picker: walks to the plant, bends to cut the melon, stands with it, sets it in the crate, then carries the crate to the belt */
  FARMER=workerRig(0,EM(0,'Harvest worker',1,'Picks the representative melon, takes the crates to the conveyor on a farm cart and unloads them.'),P.teal,P.straw,'harvest',()=>{const q=trkScene().hw;
   return{vis:q.vis,p:[q.p[0],0,q.p[2]],yaw:q.yaw,s:1.35,phase:q.phase||0,amt:q.walk,bend:q.bend,reachR:q.reach,carry:q.carry,armPose:q.arm}});
@@ -180,15 +183,19 @@ function buildTracking(){const note='Stands for the whole batch. Its own movemen
  /* three crates on a base; the fourth place is the followed crate, which is its own object so it can carry the highlight */
  /* the pallet load: a pallet with four crates turned across it (the followed crate is its own object in the front right place), sized to
     fit inside the lorry's box and the container */
- mover(1,EM(1,'Cargo load',2,'The load from the lorry on one pallet: lifted out by the forklift and set inside the shipping container.'),()=>{bb(P.wood,0,0,0,2.3,.2,3.1);for(const z of[-1.2,0,1.2])bb(shade(P.wood,.8),0,-.02,z,2.3,.06,.3);for(const[x,z]of[[-.58,-.78],[.58,-.78],[-.58,.78]])Tp(x,.2,z,Math.PI/2,1,()=>crate(0,0,0,1))},o=>dyn(o,trkScene().cargo));
+ MOV_TAG=MOV.length;mover(1,EM(1,'Cargo load',2,'The load from the lorry on one pallet: lifted out by the forklift and set inside the shipping container.'),()=>{bb(P.wood,0,0,0,2.3,.2,3.1);for(const z of[-1.2,0,1.2])bb(shade(P.wood,.8),0,-.02,z,2.3,.06,.3);for(const[x,z]of[[-.58,-.78],[.58,-.78],[-.58,.78]])Tp(x,.2,z,Math.PI/2,1,()=>crate(0,0,0,1))},o=>dyn(o,trkScene().cargo));MOV[MOV_TAG].leg=0;
  /* the lorry's rear doors, hinged at the back corners of its box */
- for(const sd of[-1,1])mover(1,EM(1,'Lorry doors',2,'Open once the lorry has stopped.'),()=>{bb(LRED,-sd*.64,0,0,1.28,2.95,.06);for(const y of[.4,1.45,2.5])bb(P.steel,-sd*.64,y,-.05,1.2,.06,.04);bb(P.steel,-sd*1.18,.2,-.06,.06,2.6,.05)},o=>{const a=trkScene().doors.lorry*1.85;o.vis=LORP.vis;o.m=mul(LORP.m,mul(tr(sd*1.3,1.17,-4.83),rY(-sd*a)));o.p=LORP.p});
+ MOV_TAG=MOV.length;for(const sd of[-1,1])mover(1,EM(1,'Lorry doors',2,'Open once the lorry has stopped.'),()=>{bb(LRED,-sd*.64,0,0,1.28,2.95,.06);for(const y of[.4,1.45,2.5])bb(P.steel,-sd*.64,y,-.05,1.2,.06,.04);bb(P.steel,-sd*1.18,.2,-.06,.06,2.6,.05)},o=>{const a=trkScene().doors.lorry*1.85;o.vis=LORP.vis;o.m=mul(LORP.m,mul(tr(sd*1.3,1.17,-4.83),rY(-sd*a)));o.p=LORP.p});MOV[MOV_TAG].leg=MOV[MOV_TAG+1].leg=0;
  /* the shipping container: an open-ended shell (so the load is visible going in) with two doors at its +z end that swing round the hinges */
  TID.cont=EM(1,'Shipping container',2,'The container that carries the batch from Brazil to the UK.');const CW=2.44,CH=2.6,CL=8;
  const contO=mover(1,TID.cont,()=>{mt(5,()=>{for(const x of[-1,1])bb(P.teal,x*(CW/2-.03),.12,0,.06,CH-.2,CL);bb(P.teal,0,.12,-CL/2+.03,CW,CH-.2,.06)});bb(P.dark,0,0,0,CW,.12,CL);bb(P.teal,0,CH-.1,0,CW,.1,CL);
   mt(3,()=>{for(const x of[-1,1])for(const z of[-1,1])bb(shade(P.teal,.7),x*(CW/2-.08),0,z*(CL/2-.08),.16,CH,.16);for(const x of[-1,1])bb(shade(P.teal,.7),x*(CW/2-.06),CH-.16,0,.12,.16,CL)})},o=>dyn(o,trkScene().cont));
- for(const sd of[-1,1])mover(1,TID.cont,()=>{mt(5,()=>bb(P.teal,-sd*CW/4,0,0,CW/2-.02,CH-.24,.06));mt(3,()=>{for(const x of[.25,.75])bb(P.steel,-sd*CW/2*x,.1,.05,.05,CH-.44,.05);bb(P.dark,-sd*(CW/2-.12),CH*.45,.07,.08,.2,.04)})},
-  o=>{const a=trkScene().doors.cont*2.55;o.vis=contO.vis;o.k=contO.k;/* the doors travel with the container from site to site */o.m=mul(contO.m,mul(tr(sd*CW/2,.12,CL/2),rY(sd*a)));o.p=contO.p});
+ MOV_TAG=MOV.length;for(const sd of[-1,1])mover(1,TID.cont,()=>{mt(5,()=>bb(P.teal,-sd*CW/4,0,0,CW/2-.02,CH-.24,.06));mt(3,()=>{for(const x of[.25,.75])bb(P.steel,-sd*CW/2*x,.1,.05,.05,CH-.44,.05);bb(P.dark,-sd*(CW/2-.12),CH*.45,.07,.08,.2,.04)})},
+  o=>{const a=trkScene().doors.cont*2.55;o.vis=contO.vis;o.k=contO.k;/* the doors travel with the container from site to site */o.m=mul(contO.m,mul(tr(sd*CW/2,.12,CL/2),rY(sd*a)));o.p=contO.p});contO.leg=MOV[MOV_TAG].leg=MOV[MOV_TAG+1].leg=1;const CDOOR=[MOV[MOV_TAG],MOV[MOV_TAG+1]];
+ /* what rides on the vessel while it travels (drawn with it, render.js): the container and its closed doors */
+ LEGCARGO=()=>[[contO,tr(0,8.1,2)],...CDOOR.map((o,j)=>[o,mul(tr(0,8.1,2),tr((j?1:-1)*CW/2,.12,CL/2))])];
+ /* the travelling vehicles' site copies, hidden while their leg runs (globe.js) */
+ LORF.leg=LORP.leg=0;SHBR.leg=SHUK.leg=1;LORU.leg=2;LORW.leg=[2,3];LORS.leg=3;
  mover(2,0,()=>{bb(P.dark,0,0,0,2.4,.5,8.4);for(const z of[-2.6,2.6])for(const x of[-1.1,1.1])wheelX(x,.1,z,.5,.4);bb(P.steel,0,.12,4.2,.5,.22,.3)},o=>{const q=trkScene().ch;o.vis=q.vis;setM(o,q.p[0],q.p[1],q.p[2],q.yaw,1)});
  /* terminal tractor: open-sided one-man cab on the right, engine on the left, tow bar back to the trailer's hitch eye */
  TID.tug=EM(2,'Terminal tractor',4,'Tows the container on its trailer from the quay crane to the unloading area.');
@@ -201,8 +208,8 @@ function buildTracking(){const note='Stands for the whole batch. Its own movemen
  workerRig(2,TID.tug,[.24,.38,.62],null,'port',()=>{const d=trkScene().drv;return d.sit?{vis:d.vis,base:mul(TUG.m,tr(.4,0,0)),seat:[1.6-HIP*WK*1.35,.75,1.35],sit:1,p:[0,0,0]}:{vis:d.vis,p:d.p,yaw:d.yaw,s:1.35,phase:d.phase,amt:d.amt}});
  /* UK forklift's fork carriage and pallet, and the inland lorry's rear doors (hinged at the back corners of its box) */
  mover(2,FKA.pid,()=>mt(3,()=>{bb(P.dark,0,0,1.16,1.3,.9,.06);for(let k=0;k<5;k++)bb(P.dark,-.6+k*.3,.9,1.16,.04,1,.04);for(const x of[-.5,.5]){bb(P.steel,x,-.07,1.22,.14,.75,.07);bb(P.steel,x,-.07,2.05,.14,.07,1.7)}}),o=>{const q=trkScene().fu;o.vis=FKA.vis;o.m=trs(q.p[0],q.lift,q.p[2],q.yaw,1.15);o.p=q.p});
- mover(2,FKA.pid,()=>pallet(0,0,0,2,true),o=>dyn(o,trkScene().pu));
- for(const sd of[-1,1])mover(2,LORU.pid,()=>{bb(LRED,-sd*.64,0,0,1.28,2.95,.06);for(const y of[.4,1.45,2.5])bb(P.steel,-sd*.64,y,-.05,1.2,.06,.04);bb(P.steel,-sd*1.18,.2,-.06,.06,2.6,.05)},o=>{const a=trkScene().doorsU*1.85;o.vis=LORU.vis;o.m=mul(LORU.m,mul(tr(sd*1.3,1.17,-4.83),rY(-sd*a)));o.p=LORU.p});
+ MOV_TAG=MOV.length;mover(2,FKA.pid,()=>pallet(0,0,0,2,true),o=>dyn(o,trkScene().pu));MOV[MOV_TAG].leg=2;
+ MOV_TAG=MOV.length;for(const sd of[-1,1])mover(2,LORU.pid,()=>{bb(LRED,-sd*.64,0,0,1.28,2.95,.06);for(const y of[.4,1.45,2.5])bb(P.steel,-sd*.64,y,-.05,1.2,.06,.04);bb(P.steel,-sd*1.18,.2,-.06,.06,2.6,.05)},o=>{const a=trkScene().doorsU*1.85;o.vis=LORU.vis;o.m=mul(LORU.m,mul(tr(sd*1.3,1.17,-4.83),rY(-sd*a)));o.p=LORU.p});MOV[MOV_TAG].leg=MOV[MOV_TAG+1].leg=2;
  mover(2,OPENC,openContainerModel,o=>{o.vis=trkScene().open;setM(o,96,.25,16,Math.PI/2,1)});
  TID.pallet=EM(3,'Pallet carrying the batch',6,'The pallet the pick list sends to quality control.');mover(3,TID.pallet,()=>pallet(0,0,0,2,false,[.95,.78,.26]),o=>dyn(o,trkScene().pallet))}
 /* ---- marker, panel line, summary ---- */

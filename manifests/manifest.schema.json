@@ -442,6 +442,137 @@
      }
     }
    }
+  },
+  "retailer": {
+   "type": "object",
+   "description": "Optional. The retailer whose store ends the journey; it dresses the 3D supermarket (signage, colours) and the destination panel. A known id (tesco, albert-heijn, sainsburys) fills in anything left out; an unknown retailer uses what is given here; no retailer gives a plain generic store. Styling only: not shipment data.",
+   "required": [
+    "name"
+   ],
+   "properties": {
+    "id": {
+     "type": "string"
+    },
+    "name": {
+     "type": "string"
+    },
+    "fictionalAssignment": {
+     "type": "boolean",
+     "description": "true when the retailer is assigned for demonstration only"
+    },
+    "store": {
+     "type": "object",
+     "properties": {
+      "name": {
+       "type": [
+        "string",
+        "null"
+       ]
+      },
+      "locationId": {
+       "type": [
+        "string",
+        "null"
+       ],
+       "description": "id of the supermarket location"
+      }
+     }
+    },
+    "brand": {
+     "type": "object",
+     "properties": {
+      "primaryColor": {
+       "type": [
+        "string",
+        "null"
+       ],
+       "pattern": "^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$"
+      },
+      "secondaryColor": {
+       "type": [
+        "string",
+        "null"
+       ],
+       "pattern": "^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$"
+      },
+      "accentColor": {
+       "type": [
+        "string",
+        "null"
+       ],
+       "pattern": "^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$"
+      },
+      "signStyle": {
+       "enum": [
+        "light",
+        "dark",
+        null
+       ]
+      },
+      "logoUrl": {
+       "type": [
+        "string",
+        "null"
+       ],
+       "description": "only a logo you are licensed to use; otherwise leave null and the name is set as text"
+      },
+      "signageText": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "signage": {
+     "type": "object",
+     "properties": {
+      "entrance": {
+       "type": [
+        "string",
+        "null"
+       ]
+      },
+      "produce": {
+       "type": [
+        "string",
+        "null"
+       ]
+      },
+      "promo": {
+       "type": [
+        "string",
+        "null"
+       ]
+      },
+      "checkout": {
+       "type": [
+        "string",
+        "null"
+       ]
+      },
+      "parking": {
+       "type": [
+        "string",
+        "null"
+       ]
+      },
+      "priceCard": {
+       "type": [
+        "string",
+        "null"
+       ]
+      },
+      "shelfHeaders": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       },
+       "maxItems": 3
+      }
+     }
+    }
+   }
   }
  }
 }

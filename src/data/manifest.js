@@ -56,6 +56,6 @@ function normalizeManifest(m){const nil=v=>v==null||v===''?null:v,M=m.manifest,T
    date:nil(ev('delivery','delivered').timestamp),status:nil(ev('delivery','delivered').status),pod:nil(ev('delivery','delivered').proofOfDelivery),lorry:veh('warehouse-supermarket'),simulated:!!ev('delivery','delivered').simulated}],
   tracking:[{id:M.id,shipmentId:ship,batchId:bat,palletId:pal,containerId:con?con.id:null,level:TR.level==='item'?'item':'batch'}]};
  /* the linked-record helpers need pallets to tie container, pick list and QC together; without a pallet id they simply show nothing */
- return{id:M.id,ref:ship,demo:M.demo!==false,description:nil(M.description),loc,routes,records:R,origin:loc.farm.country||'Origin',dest:loc.supermarket.country||'Destination',
+ return{retailer:m.retailer&&typeof m.retailer==='object'&&!Array.isArray(m.retailer)?m.retailer:null,id:M.id,ref:ship,demo:M.demo!==false,description:nil(M.description),loc,routes,records:R,origin:loc.farm.country||'Origin',dest:loc.supermarket.country||'Destination',
   stageOn:STAGE_TYPES.map(t=>!!st[t]),stageOver:STAGE_TYPES.map(t=>st[t]?{title:nil(st[t].title),summary:nil(st[t].summary)}:{}),vessel:nil(ves.name),lorries:[veh('farm-exportPort'),veh('arrivalPort-warehouse'),veh('warehouse-supermarket')],
   customsSystem:nil(ev('customs','declared').system),warehouseSystem:nil(ev('warehouse','allocated').system)}}
