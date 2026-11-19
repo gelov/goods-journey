@@ -43,20 +43,22 @@ const trkCycle=side=>side==='br'?STATE.idx===2&&STATE.t>=16&&STATE.t<20.5:STATE.
 let TSC=null,TSK='';
 function trkScene(){const i=STATE.idx,t=STATE.t,key=i+'|'+t+'|'+T;if(key===TSK)return TSC;TSK=key;const S={},hide={vis:false,p:[0,-50,0],k:0};
  /* harvest worker (farm, stage 2) */
- /* the farm cart: waits loaded at the collection point, pushed to the conveyor (8.8-13), pulled back empty (16.9-24) */
- const cU=i!==1?0:t<8.8?0:t<13?io(u01(t,8.8,13)):t<16.9?1:1-io(u01(t,16.9,24)),cq=pathPose(CART_R,cU,2.5),cY=cq[3],cf=[Math.sin(cY),Math.cos(cY)];
+ /* the farm cart: waits loaded at the collection point, pushed to the conveyor (9.2-12.8), pulled back empty (17.1-21.3). The farmer's walks
+    are timed so every walk and push runs at about the same pace */
+ const cU=i!==1?0:t<9.2?0:t<12.8?trap(u01(t,9.2,12.8),.15):t<17.1?1:1-trap(u01(t,17.1,21.3),.12),cq=pathPose(CART_R,cU,2.5),cY=cq[3],cf=[Math.sin(cY),Math.cos(cY)];
  S.cart={p:[cq[0],0,cq[2]],yaw:cY,roll:cU*CART_R.len/.35};const onCart=j=>[cq[0]+cf[0]*CART_SLOT[j],CART_DECK,cq[2]+cf[1]*CART_SLOT[j]],reach=FARMER&&FARMER.charOn&&FARMER.cHandsL?Math.max(.3,(FARMER.cHandsL[0][2]+FARMER.cHandsL[1][2])/2*1.35):.87,behind=[cq[0]-cf[0]*(2.02+reach),0,cq[2]-cf[1]*(2.02+reach)];
  /* the picker: picks the melon (0-4), lifts the crate and walks it out to the cart (4-8), pushes the cart to the conveyor, unloads
     the three crates onto the belt as their slots come round, and pulls the empty cart back */
  let hw={k:0,vis:i===1,p:[-152,0,10],yaw:-Math.PI/2,walk:0,bend:0,carry:0,reach:0};
- if(i===1){const W=(pa,a,b)=>{const u=io(u01(t,a,b)),q=pathPose(pa,u,1);hw.p=[q[0],0,q[2]];hw.yaw=q[3];hw.walk=1;hw.phase=u*pa.len/.95*Math.PI};
+ if(i===1){/* walking: a short speed-up, a steady pace, a short slow-down (about half a second each), never a sprint mid-walk */
+ const wk=(a,b)=>trap(u01(t,a,b),clamp(.5/(b-a),.06,.35)),W=(pa,a,b)=>{const u=wk(a,b),q=pathPose(pa,u,1);hw.p=[q[0],0,q[2]];hw.yaw=q[3];hw.walk=1;hw.phase=u*pa.len/.95*Math.PI};
   if(t<1.5){hw.p=mixv([-152,0,10],[-155,0,12.5],io(t/1.5));hw.walk=1;hw.phase=io(t/1.5)*3.9/.95*Math.PI}else if(t<2.3){hw.p=[-155,0,12.5];hw.bend=ss(1.5,1.8,t)*(1-ss(2,2.3,t));hw.reach=1}
   else if(t<3.4){hw.p=mixv([-155,0,12.5],[-154.6,0,12.3],io((t-2.3)/1.1));hw.yaw=0;hw.walk=1}else if(t<4){hw.p=[-154.6,0,12.3];hw.yaw=0;hw.bend=.6}
   else if(t<4.6){hw.p=[-154.6,0,12.3];hw.yaw=0;hw.bend=.8*(1-ss(4.3,4.6,t));hw.carry=ss(4.2,4.6,t)}
   else if(t<7.4){W(PHC,4.6,7.4);hw.arm='carry';hw.yaw=dang(0,hw.yaw)*ss(4.6,5.1,t);hw.yaw+=dang(hw.yaw,0)*ss(6.95,7.4,t);hw.carry=1}else if(t<8){hw.p=[-145.65,0,18.4];hw.yaw=0;hw.arm=t<7.75?'carry':null;hw.carry=1-ss(7.7,8,t);hw.bend=.35*Math.sin(Math.PI*u01(t,7.4,8))}
-  else if(t<8.8){W(PHH,8,8.8);hw.yaw=hw.yaw+dang(hw.yaw,Math.PI/2)*ss(8.45,8.8,t)}else if(t<13){hw.p=behind;hw.yaw=cY;hw.walk=1;hw.carry=1;hw.arm='push';hw.phase=cU*CART_R.len/.95*Math.PI}else if(t<13.7)W(PHU,13,13.7)
+  else if(t<9.2){W(PHH,8,9.2);hw.yaw=hw.yaw+dang(hw.yaw,Math.PI/2)*ss(8.8,9.2,t)}else if(t<12.8){hw.p=behind;hw.yaw=cY;hw.walk=1;hw.carry=1;hw.arm='push';hw.phase=cU*CART_R.len/.95*Math.PI}else if(t<13.7)W(PHU,12.8,13.7)
   else if(t<16.2){hw.p=UNLOAD;const j=UNLOADS.findIndex(e=>t<e+.05),e=UNLOADS[Math.max(0,j)],u=u01(t,e-.75,e);hw.yaw=lerp(-Math.PI/2,Math.PI/2,ss(.36,.56,u));hw.bend=u<.45?.45*Math.sin(Math.PI*u/.45):0;hw.carry=u>.2&&u<.95?1:0;hw.arm=u>.3&&u<.92?'carry':null;hw.reach=0}
-  else if(t<16.9){const uu=io(u01(t,16.2,16.9)),q=pathPose(PHU,1-uu,1);hw.p=[q[0],0,q[2]];hw.yaw=q[3]+Math.PI;hw.walk=1;hw.phase=uu*PHU.len/.95*Math.PI}else{hw.p=behind;hw.yaw=cY+Math.PI;hw.walk=t<24?1:0;hw.carry=1;hw.arm='push';hw.phase=(1-cU)*CART_R.len/.95*Math.PI}}S.hw=hw;
+  else if(t<17.1){const uu=wk(16.2,17.1),q=pathPose(PHU,1-uu,1);hw.p=[q[0],0,q[2]];hw.yaw=q[3]+Math.PI;hw.walk=1;hw.phase=uu*PHU.len/.95*Math.PI}else{hw.p=behind;hw.yaw=cY+Math.PI;hw.walk=t<21.3?1:0;hw.carry=1;hw.arm='push';hw.phase=(1-cU)*CART_R.len/.95*Math.PI}}S.hw=hw;
  /* a crate held by the farmer hangs from his two hands (grip on the end boards, just under the rim), kept clear of his body.
     The hands are read from the drawn character each frame; before the first frame, a fixed point in front of him is used. */
  const hf=[Math.sin(hw.yaw),Math.cos(hw.yaw)],H=FARMER&&FARMER.hands?FARMER.hands():null,hand=H?[(H[0][0]+H[1][0])/2,(H[0][1]+H[1][1])/2,(H[0][2]+H[1][2])/2]:[hw.p[0]+hf[0]*.75,1.75,hw.p[2]+hf[1]*.75],
@@ -183,7 +185,7 @@ function buildTracking(){const note='Stands for the whole batch. Its own movemen
  /* three crates on a base; the fourth place is the followed crate, which is its own object so it can carry the highlight */
  /* the pallet load: a pallet with four crates turned across it (the followed crate is its own object in the front right place), sized to
     fit inside the lorry's box and the container */
- MOV_TAG=MOV.length;mover(1,EM(1,'Cargo load',2,'The load from the lorry on one pallet: lifted out by the forklift and set inside the shipping container.'),()=>{bb(P.wood,0,0,0,2.3,.2,3.1);for(const z of[-1.2,0,1.2])bb(shade(P.wood,.8),0,-.02,z,2.3,.06,.3);for(const[x,z]of[[-.58,-.78],[.58,-.78],[-.58,.78]])Tp(x,.2,z,Math.PI/2,1,()=>crate(0,0,0,1))},o=>dyn(o,trkScene().cargo));MOV[MOV_TAG].leg=0;
+ MOV_TAG=MOV.length;mover(1,TID.cargo=EM(1,'Cargo load',2,'The load from the lorry on one pallet: lifted out by the forklift and set inside the shipping container.'),()=>{bb(P.wood,0,0,0,2.3,.2,3.1);for(const z of[-1.2,0,1.2])bb(shade(P.wood,.8),0,-.02,z,2.3,.06,.3);for(const[x,z]of[[-.58,-.78],[.58,-.78],[-.58,.78]])Tp(x,.2,z,Math.PI/2,1,()=>crate(0,0,0,1))},o=>dyn(o,trkScene().cargo));MOV[MOV_TAG].leg=0;
  /* the lorry's rear doors, hinged at the back corners of its box */
  MOV_TAG=MOV.length;for(const sd of[-1,1])mover(1,EM(1,'Lorry doors',2,'Open once the lorry has stopped.'),()=>{bb(LRED,-sd*.64,0,0,1.28,2.95,.06);for(const y of[.4,1.45,2.5])bb(P.steel,-sd*.64,y,-.05,1.2,.06,.04);bb(P.steel,-sd*1.18,.2,-.06,.06,2.6,.05)},o=>{const a=trkScene().doors.lorry*1.85;o.vis=LORP.vis;o.m=mul(LORP.m,mul(tr(sd*1.3,1.17,-4.83),rY(-sd*a)));o.p=LORP.p});MOV[MOV_TAG].leg=MOV[MOV_TAG+1].leg=0;
  /* the shipping container: an open-ended shell (so the load is visible going in) with two doors at its +z end that swing round the hinges */
@@ -196,6 +198,10 @@ function buildTracking(){const note='Stands for the whole batch. Its own movemen
  LEGCARGO=()=>[[contO,tr(0,8.1,2)],...CDOOR.map((o,j)=>[o,mul(tr(0,8.1,2),tr((j?1:-1)*CW/2,.12,CL/2))])];
  /* the travelling vehicles' site copies, hidden while their leg runs (globe.js) */
  LORF.leg=LORP.leg=0;SHBR.leg=SHUK.leg=1;LORU.leg=2;LORW.leg=[2,3];LORS.leg=3;
+ /* what rides inside a closed lorry box or container while it travels: the tracked crate, the melon and its marker (farm lorry, vessel,
+    delivery lorry) and the cargo load (port lorry, then the container). Their own placement comes from the vehicle's site path, but the
+    vehicle is drawn on its leg, so they go with the leg: not drawn at a spot the vehicle has left, and the label follows the vehicle */
+ for(const m of MOV){if(m.pid===TID.crate||m.pid===TID.melon)m.leg=[0,1,3];else if(m.pid===TID.cargo)m.leg=[0,1]}
  mover(2,0,()=>{bb(P.dark,0,0,0,2.4,.5,8.4);for(const z of[-2.6,2.6])for(const x of[-1.1,1.1])wheelX(x,.1,z,.5,.4);bb(P.steel,0,.12,4.2,.5,.22,.3)},o=>{const q=trkScene().ch;o.vis=q.vis;setM(o,q.p[0],q.p[1],q.p[2],q.yaw,1)});
  /* terminal tractor: open-sided one-man cab on the right, engine on the left, tow bar back to the trailer's hitch eye */
  TID.tug=EM(2,'Terminal tractor',4,'Tows the container on its trailer from the quay crane to the unloading area.');

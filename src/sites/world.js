@@ -48,7 +48,7 @@ function buildWorld(){R=prng(7);
  /* the two packers at the shed are animated workers now (movers.js) */
 
  
- road([[-345,36],[5,36]],5);stripes(-340,0,36);
+ /* the lorry road here is generated along the lorry's own path (legroads.js) */
  /* around the farm: open fields in the Cartoon style; in the Industrial style only the three northern plots remain, as production greenhouses, and the rest is open ground */
  ent('Surrounding growing area',0,'More growing area around the farm.',()=>{const F=[[-250,-100,-196,-56,P.leaf3],[-186,-104,-122,-60,P.leaf],[-112,-92,-58,-52,P.leaf2],[-262,46,-204,92,P.leaf2],[-194,48,-130,96,P.leaf3],[-120,46,-64,88,P.leaf],[-300,-34,-244,22,P.leaf],[-98,-34,-44,22,P.leaf3]];if(IND)for(const[a,b,c,d]of F.slice(0,3))prodHouseI(a,b,c,d);else for(const[a,b,c,d,e]of F)patch(a,b,c,d,e)});
  scatter(0,70,(x,z,s)=>(R()>.5?palm:tree)(x,z,s),(x,z)=>!(x>-236&&x<-108&&z>-46&&z<46)&&!(z<-48&&z>-106&&x>-252&&x<-56)&&!(z>44&&z<98&&x>-264&&x<-62)&&!(x<-242&&z>-36&&z<24)&&!(x>-100&&z>-36&&z<24)&&!(IND&&x>-113&&x<-97&&z>-28&&z<8));
@@ -63,7 +63,7 @@ function buildWorld(){R=prng(7);
  for(let k=0;k<4;k++)lamp(-112+.5,-30+k*20,7);
 
  
- road([[-300,36],[-92,36]],5);road([[-92,36],[-92,20]],5);stripes(-296,-98,36);
+ /* the lorry road here is generated along the lorry's own path (legroads.js) */
  ent('Port warehouses',2,'Sheds where cargo is held before loading.',()=>{for(const z of[-18,10]){bb(P.white,-134,0,z,18,6,22);roof(P.blue,-134,6,z,19,2.6,23);bb(P.dark,-124.96,0,z,.1,4.2,8)}});
  ent('Container trucks',2,'Trucks that shuttle containers around the terminal.',()=>{for(const z of[4,10])Tp(-100,.25,z,Math.PI/2,1,()=>lorry(P.white,z>5?P.teal:P.orange,shade(z>5?P.teal:P.orange,.8)))});
 
@@ -86,7 +86,7 @@ function buildWorld(){R=prng(7);
 
 
  
- road([[100,34],[300,34]],5);road([[113,20],[113,34]],5);stripes(120,296,34);bb(P.concD,113,.26,13,5.4,.05,13);
+ /* the lorry road here is generated along the lorry's own path (legroads.js) */bb(P.concD,113,.26,13,5.4,.05,13);
  ent('Port shed',4,'Covered storage beside the terminal.',()=>{bb(P.white,146,0,-16,20,6,26);roof(P.blue,146,6,-16,21,2.6,27)});
 
  for(const[a,b]of[[30,-36],[-10,50],[40,-70]]){cyl(P.red,a,-1.9,b,.5,1.3,8);ball(P.white,a,-.3,b,.35,1,6,3)}
@@ -120,7 +120,7 @@ function buildWorld(){R=prng(7);
  road([[178,-19],[178,-8]],2.6,P.path);
 
  
- road([[20,34],[300,34]],5);road([[150,34],[150,32]],5);stripes(24,296,34);bb(P.concD,151,.02,29.5,24,.12,5);
+ /* the lorry road here is generated along the lorry's own path (legroads.js) */bb(P.concD,151,.02,29.5,24,.12,5);
  for(let k=0;k<7;k++)lamp(100+k*17,38,6);
  scatter(3,60,(x,z,s)=>(R()>.45?conifer:tree)(x,z,s),(x,z)=>!(x>118&&x<194&&z>-34&&z<30));
 
@@ -136,7 +136,7 @@ function buildWorld(){R=prng(7);
  /* cars */ for(const[x,c]of[[213,P.red],[222,P.blue],[229,P.white]]){bb(c,x,.45,28,2,.9,4.2);bb(P.glass,x,1.3,27.8,1.8,.8,2.2);for(const z of[26.6,29.4])for(const a of[-1,1])wheelX(x+a,.4,z,.4,.3)}
  ent('Houses',9,'The neighbourhood the supermarket serves.',()=>{for(let k=0;k<4;k++)house(204+k*9.5,-34,0,7,6,4.4,P.brick,P.dark)});
 
- road([[110,34],[335,34]],5);road([[200,34],[200,12]],5);stripes(114,330,34);
+ /* the lorry road here is generated along the lorry's own path (legroads.js) */
  for(let k=0;k<6;k++)lamp(190+k*12,38,6);for(let x=196;x<250;x+=2.6)ball(P.leaf,x,.5,42.5,1.1,.7,6,3);
  ent('More houses',9,'Homes around the store.',()=>{for(let k=0;k<4;k++)house(252+k*9.5,-12-k*4,-.3,7,6,4.4,P.brick,P.dark)});
  scatter(4,50,(x,z,s)=>(R()>.45?conifer:tree)(x,z,s),(x,z)=>!(x>196&&x<246&&z>-42&&z<32)&&!(x>246&&x<292&&z>-34&&z<-4));

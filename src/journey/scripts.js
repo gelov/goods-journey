@@ -7,7 +7,7 @@ const K=(t,g,ry,rx,d)=>({t,g,ry,rx,d});
    Shots are keyed so the camera is always going somewhere: it descends toward the destination while the vehicle is
    still on its route, and keeps orbiting once it is inside a site. */
 const SCRIPT=[
- {dur:18,home:13,k:[K(0,GV('start'),0,1.45,42000),K(2,GV('approach'),0,1.45,20000),K(5,AT(0,-198,8),0,1.2,2400),K(7.5,AT(0,-198,8),-.75,.62,135),K(13,AT(0,-184,10),-.3,.58,104),K(18,AT(0,-156.2,12.2),.2,.55,46)]},
+ {dur:18,home:13,k:[K(0,GV('start'),0,1.45,42000),K(2,GV('approach'),0,1.45,20000),K(4.6,AT(0,-198,8),0,1.45,6500),K(6.6,AT(0,-198,8),0,1.2,2400),K(8.6,AT(0,-198,8),-.75,.62,135),K(13,AT(0,-184,10),-.3,.58,104),K(18,AT(0,-156.2,12.2),.2,.55,46)]},
  {dur:34,home:2,w:[[0,25,.65],[25,32,.85],[23.6,26.6,1.7]],k:[K(0,AT(0,-156.2,12.2),.2,.55,46),K(4,TR(0,-154.6,13.5),.5,.56,34),K(8.6,TR(0,-147,19.5),.35,.6,40),K(13,TR(0,-133,16),.15,.6,44),K(16.6,TR(0,-129,19),.2,.6,50),K(19,AT(0,-128,28),-.25,.55,52),K(21.5,MV(0,()=>LORF),-.6,.5,60),K(25,RT(0),0,1.45,5200),K(32,RT(0),0,1.45,1900),K(34,RT(0),0,1.45,950)]},
  {dur:28,home:5,w:[[4,21.5,.6]],k:[K(0,RT(0),0,1.45,950),K(4,AT(1,-90,10),-.3,.56,112),K(7.5,TR(1,-92,12),.35,.48,56),K(11,TR(1,-88,10),.75,.5,62),K(14.2,TR(1,-77,-7),.95,.5,58),K(18.4,TR(1,-68,-10),1.15,.55,92),K(21.5,MV(1,()=>SHBR),1.5,.6,112),K(25,MV(1,()=>SHBR),0,.9,700),K(28,RT(1),0,1.45,5200)]},
  {dur:24,home:8,w:[[4,20,1.6]],k:[K(0,RT(1),0,1.45,5200),K(4,RT(1),0,1.45,22000),K(12,RT(1),0,1.45,38000),K(20,RT(1),0,1.45,12000),K(24,RT(1),0,1.45,2600)]},
@@ -18,7 +18,11 @@ const SCRIPT=[
  {dur:20,home:3.5,k:[K(0,AT(3,172,10),-.55,.5,56),K(3,AT(3,180,-18),-.95,.5,48),K(8,GV('claimA'),0,1.45,34000),K(14.5,GV('claimB'),0,1.45,44000),K(20,AT(3,150,26),.15,.58,60)]},
  {dur:31,home:23,w:[[4,11,.7],[11,16.5,.85],[16.5,23,.75],[9.8,12.6,1.8]],k:[K(0,AT(3,150,26),.15,.58,60),K(4,AT(3,151,28),.4,.5,50),K(8,MV(3,()=>LORW),.6,.5,60),K(11,RT(3),0,1.45,3400),K(16.5,RT(3),0,1.45,1500),K(19.5,AT(4,206,22),.2,.55,70),K(23,TR(4,208,11),.45,.5,46),K(27,AT(4,219,8),.8,.5,30),K(31,AT(4,219,8),1.25,.46,22)]}];
 /* clock rate inside a stage: 1 outside the w stretches, their multiplier inside, blended over 1.5 s at each edge so pace never jumps */
-const warp=(i,t)=>{let r=1;for(const q of SCRIPT[i].w||[])r+=(q[2]-1)*ss(q[0]-.75,q[0]+.75,t)*(1-ss(q[1]-.75,q[1]+.75,t));return r};
+/* stage-time rate. A stage plays at one steady pace while its 3D site is on screen (the slowest rate its w list asks for, at most 1),
+   and only runs faster (its fastest rate, at least 1) once the camera is high enough that the site has faded: so nothing visible ever
+   speeds up or slows down mid-shot, and long map and globe flights still pass quickly. The rate depends on camera height, never on stage
+   time, so scrubbing and every stage keep the same timeline. */
+const warp=i=>{const w=SCRIPT[i].w||[],lo=Math.min(1,...w.map(q=>q[2])),hi=Math.max(1,...w.map(q=>q[2]));return lerp(lo,hi,ss(2600,7000,X.d||0))};
 const STSITE=[0,0,1,-1,2,2,3,3,3,4];
 /* which 3D site belongs to a stage at a given stage time. Most stages have one; a stage that travels hands over to its
    destination once the camera is up at map level, so the destination can appear as the camera comes down. -1 = none. */

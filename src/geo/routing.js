@@ -15,7 +15,7 @@ const lmLL=i=>[(i%LM.W+.5)/LM.W*360-180,90-(Math.floor(i/LM.W)+.5)/LM.H*180];
 function buildLandMask(img){try{const c=document.createElement('canvas');c.width=LM.W;c.height=LM.H;const x=c.getContext('2d',{willReadFrequently:true});x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';x.drawImage(img,0,0,LM.W,LM.H);
   const d=x.getImageData(0,0,LM.W,LM.H).data,m=new Uint8Array(LM.W*LM.H);for(let i=0;i<m.length;i++){const r=d[i*4],g=d[i*4+1],b=d[i*4+2];m[i]=b>r*1.18&&b>g*.92&&!(r>165&&g>165&&b>165)?1:0}
   for(let y=0;y<LM.H;y++)for(let X=0;X<LM.W;X++){const i=y*LM.W+X;if(!m[i])continue;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const yy=y+dy;if(yy<0||yy>=LM.H)continue;if(!m[yy*LM.W+(X+dx+LM.W)%LM.W]){m[i]=2;dy=dx=2}}}
-  LMASK=m;if(DATA.man)routeManifest(DATA.man)}catch(e){LMASK=null;console.warn('Water mask unavailable: '+e.message)}}
+  LMASK=m;if(DATA.man){setPortRot(DATA.man);routeManifest(DATA.man)}}catch(e){LMASK=null;console.warn('Water mask unavailable: '+e.message)}}
 /* does the great-circle segment a-b stay on water? strict: open water only; otherwise coastal water counts too */
 /* the last ~35 km into each port (ports, near) may cross the coastline cells; everything else must be water */
 function segWater(a,b,strict,ports){const A=llu(a[0],a[1]),B=llu(b[0],b[1]),n=Math.max(2,Math.ceil(angd(a,b)/RAD/.08));for(let k=0;k<=n;k++){const q=ull(slerp(A,B,k/n));if(ports&&ports.some(p=>angd(p,q)<.32*RAD))continue;const v=LMASK[lmIdx(q[0],q[1])];if(!v||(strict&&v===2))return false}return true}
@@ -65,6 +65,18 @@ async function routeManifest(N){const gen=++ROUTEGEN,G=SITES.map(S=>S.g);
   else setLeg(r,{state:'invalid',gen,warn:`${LEGNAME[r]}: road route unavailable, ${res.err}. Shown as an illustrative connection; the lorry is not animated on this leg.`,retry:res.retry},null)};
  await Promise.all([sea(),road(0),road(2),road(3)]);if(gen===ROUTEGEN){ARCS=[arcPts(G[3],G[0]),arcPts(G[0],G[3])];syncRouteUI()}}
 const routeOK=r=>ROUTEINFO[r].state==='ok';
+/* ---- which way each port faces the sea, from the coastline itself ----
+   Around the port, points on rings 15 to 120 km out in every direction are looked up in the water mask; water pulls the facing toward
+   it, land pushes it away (nearer rings count more). The sum points out to sea, square to the local shoreline. If the mask is not
+   loaded, or the pull is too weak to trust (all water, all land, a narrow inlet), the manifest's seaBearingDeg (or its default) is kept. */
+const PORTSEA={};
+function seaBearing(lon,lat,fallback){if(!LMASK)return{deg:fallback,src:'manifest'};let vx=0,vy=0,tw=0;const R0=6371,la=lat*RAD,lo=lon*RAD;
+ for(let b=0;b<360;b+=5){const t=b*RAD;for(const d of[15,25,35,50,65,80,100,120]){const a=d/R0,la2=Math.asin(Math.sin(la)*Math.cos(a)+Math.cos(la)*Math.sin(a)*Math.cos(t)),lo2=lo+Math.atan2(Math.sin(t)*Math.sin(a)*Math.cos(la),Math.cos(a)-Math.sin(la)*Math.sin(la2));
+  const w=LMASK[lmIdx(lo2/RAD,la2/RAD)]?1:-1,k=1/Math.sqrt(d);vx+=w*k*Math.sin(t);vy+=w*k*Math.cos(t);tw+=k}}
+ const m=Math.hypot(vx,vy)/tw*Math.PI/2;return m<.12?{deg:fallback,src:'manifest'}:{deg:(Math.atan2(vx,vy)/RAD+360)%360,src:'coastline',strength:+m.toFixed(2)}}
+/* turn the two port sites so their quay's water side faces the sea (site 1's water is its +x side, site 2's its -x side) */
+function setPortRot(N){if(!N)return;const e=seaBearing(N.loc.exportPort.lon,N.loc.exportPort.lat,N.loc.exportPort.sea),a=seaBearing(N.loc.arrivalPort.lon,N.loc.arrivalPort.lat,N.loc.arrivalPort.sea);
+ PORTSEA.exportPort=e;PORTSEA.arrivalPort=a;const b1=e.deg*RAD,b2=a.deg*RAD;SITES[1].rot=Math.PI/2-b1;SITES[2].rot=Math.atan2(-Math.cos(b2),-Math.sin(b2))}
 function syncRouteUI(){const w=ROUTEINFO.map(i=>i.warn).filter(Boolean),el=$('#manRoutes');if(!el)return;const pend=ROUTEINFO.some(i=>i.state==='pending');
  el.innerHTML=(pend?'<p>Calculating routes…</p>':'')+(w.length?`<ul>${w.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>${ROUTEINFO.some(i=>i.retry)?'<button id="rtRetry" type="button">Try routing again</button>':''}`:(!pend?'<p>All legs routed: roads for lorries, water for the vessel.</p>':''));
  const b=$('#rtRetry');if(b)b.onclick=()=>{for(const k in RCACHE)if(RCACHE[k].retry)delete RCACHE[k];routeManifest(DATA.man)}}

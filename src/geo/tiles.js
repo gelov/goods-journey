@@ -15,9 +15,11 @@ function tileLoad(t){if(t.st||TLOAD>=8)return;t.st=1;TLOAD++;const im=new Image(
 function drawTiles(){const A=1-ss(9000,17000,X.d);if(A<.01||!CONFIG.tiles||!CONFIG.tiles.url)return;
  const lat=clamp(POSE.lat,-84,84),wdeg=(2*X.d*.2553*X.a)/(RS*Math.cos(lat*RAD))/RAD,z=clamp(Math.round(Math.log2(360*GLS.cw/(wdeg*(CONFIG.tiles.px||256)))),3,CONFIG.tiles.maxZoom),p=PR.tl;
  gl.useProgram(p.p);gl.uniformMatrix4fv(p.u.uVP,false,f32(X.gvp));gl.uniform3fv(p.u.uEye,X.eyeG);gl.activeTexture(gl.TEXTURE0);gl.uniform1i(p.u.uTex,0);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.enableVertexAttribArray(p.a.aP);gl.enableVertexAttribArray(p.a.aU);
- for(let L=Math.max(2,z-3);L<=z;L++){const n=1<<L,cx=Math.floor((POSE.lon+180)/360*n),cy=Math.floor((1-Math.asinh(Math.tan(lat*RAD))/Math.PI)/2*n);
+  for(let L=Math.max(2,z-3);L<=z;L++){const n=1<<L,cx=Math.floor((POSE.lon+180)/360*n),cy=Math.floor((1-Math.asinh(Math.tan(lat*RAD))/Math.PI)/2*n);
   for(const[dx,dy]of TORD){const t=tileGet(L,cx+dx,cy+dy);if(!t)continue;if(!t.st&&L>=z-2)tileLoad(t);if(t.st!==2)continue;
    gl.uniform1f(p.u.uA,A*Math.min(1,(NOW-t.t0)/350));gl.bindTexture(gl.TEXTURE_2D,t.tex);gl.bindBuffer(gl.ARRAY_BUFFER,t.vbo);gl.vertexAttribPointer(p.a.aP,3,gl.FLOAT,false,20,0);gl.vertexAttribPointer(p.a.aU,2,gl.FLOAT,false,20,12);gl.drawArrays(gl.TRIANGLES,0,t.n)}}
+ /* after the visible tiles have had their turn (8 downloads at a time): load the next two levels under the view centre ahead of time, so a zoom-in finds the street map ready instead of skipping to 3D */
+ for(let L=z+1;L<=Math.min(CONFIG.tiles.maxZoom,z+2);L++){const n=1<<L,cx=Math.floor((POSE.lon+180)/360*n),cy=Math.floor((1-Math.asinh(Math.tan(lat*RAD))/Math.PI)/2*n);for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const t=tileGet(L,cx+dx,cy+dy);if(t&&!t.st)tileLoad(t)}}
  gl.disableVertexAttribArray(p.a.aU);
  if(TILES.size>280)for(const[k,t]of TILES)if(NOW-t.used>6000&&t.st!==1){if(t.tex)gl.deleteTexture(t.tex);if(t.vbo)gl.deleteBuffer(t.vbo);TILES.delete(k)}}
 const TORD=(()=>{const o=[];for(let y=-2;y<=2;y++)for(let x=-2;x<=2;x++)o.push([x,y]);return o.sort((a,b)=>Math.hypot(a[0],a[1])-Math.hypot(b[0],b[1]))})();

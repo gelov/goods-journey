@@ -2,8 +2,8 @@
 /* ================= loop ================= */
 let last=0,scrubbing=false;
 function frame(t){requestAnimationFrame(frame);const dt=Math.min(.1,(t-last)/1000||.016);last=t;NOW=t;T=t/1000;stepTweens();
- if(STATE.started&&STATE.playing&&!STATE.hold){STATE.t+=dt*spd()*warp(STATE.idx,STATE.t);const D=SCRIPT[STATE.idx].dur;if(STATE.t>=D){STATE.t=D;if(STATE.mode==='guided'&&STATE.att&&STATE.idx<STAGES.length-1)goStage(STATE.idx+1);else{STATE.playing=false;syncCtl()}}}
- for(const m of MOV)m.upd(m);legPost();trackTick(dt);
+ if(STATE.started&&STATE.playing&&!STATE.hold){STATE.t+=dt*spd()*warp(STATE.idx);const D=SCRIPT[STATE.idx].dur;if(STATE.t>=D){STATE.t=D;if(STATE.mode==='guided'&&STATE.att&&STATE.idx<STAGES.length-1)goStage(STATE.idx+1);else{STATE.playing=false;syncCtl()}}}
+ for(const m of MOV)m.upd(m);legPost();legRoadsTick();trackTick(dt);
  resize();stepCam(dt);render();updateLabels();updateTrack();if(document.activeElement!==$('#scrub'))$('#scrub').value=STATE.t}
 /* draw every mesh once off-screen: some drivers only finish uploading a buffer on first use, which shows as a hitch when a site first appears */
 function warmGPU(){const F=FB.pick,p=PR.pick;if(!F)return;gl.bindFramebuffer(gl.FRAMEBUFFER,F.f);gl.viewport(0,0,F.w,F.h);gl.useProgram(p.p);gl.uniformMatrix4fv(p.u.uVP,false,f32(ID));gl.uniformMatrix4fv(p.u.uM,false,f32(ID));

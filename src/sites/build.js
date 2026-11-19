@@ -4,6 +4,6 @@
    only swaps which meshes are drawn. Entities, paths, stage time and the camera are untouched. */
 function buildStyle(name){if(SITES[0].meshes&&SITES[0].meshes[name])return;const first=!MOV.length;setBuild(name);
  REPLAY=!first;RI=1;GLV=[];SITES.forEach((S,k)=>{VV[k]=[]});MEL.sites=[];buildWorld();melSites(name);SITES.forEach((S,k)=>{buildNav(k,[VV[k],GLV[k]],name);(S.meshes=S.meshes||{})[name]=upload(VV[k]);VV[k]=null;(S.glass=S.glass||{})[name]=GLV[k]&&GLV[k].length?upload(GLV[k]):null});GLV=[];V=[];
- if(first){buildMovers();buildTracking();brandMovers()}else for(const o of MOV){V=[];PID=o.pid;MOVB=true;MAT=0;SW=0;XF=null;MEL.T=[];o.build();o.meshes[name]=upload(V);(o.mel=o.mel||{})[name]=melTake()}
+ if(first){buildMovers();buildTracking();brandMovers();legRoadMovers()}else for(const o of MOV){V=[];PID=o.pid;MOVB=true;MAT=0;SW=0;XF=null;MEL.T=[];o.build();o.meshes[name]=upload(V);(o.mel=o.mel||{})[name]=melTake()}
  MOVB=false;PID=0;MAT=0;SW=0;V=[];REPLAY=false}
 function setStyle(name){if(!STYLES[name])return;buildStyle(name);STYLE=name;document.body.dataset.style=name;try{localStorage.setItem('ffts.style.v2',name)}catch(e){}}

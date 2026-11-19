@@ -21,7 +21,9 @@ function buildMovers(){
   /* the route between the two ends goes round walls and equipment; it is planned once per style from the site's obstacles */
   const PC={},route=()=>{if(PC[STYLE])return PC[STYLE];const p=navPath(k,a,b)||[a,b],cum=[0];for(let i=1;i<p.length;i++)cum.push(cum[i-1]+Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]));return PC[STYLE]={p,cum,L:cum[cum.length-1]||1}};
   const at=(R,d)=>{d=clamp(d,0,R.L);let i=1;while(i<R.p.length-1&&R.cum[i]<d)i++;const A=R.p[i-1],B=R.p[i],u=(d-R.cum[i-1])/((R.cum[i]-R.cum[i-1])||1);return[lerp(A[0],B[0],u),lerp(A[1],B[1],u)]};
-  const o=workerRig(k,EM(k,nm,stage,note),shirt,hat,role,()=>{const R=route(),q=((T+ph)/per)%1,f=q<.5?q*2:2-q*2,e=io(f),d=e*R.L;S.f=f;const p=at(R,d),bk=q<.5?1:-1,p0=at(R,d-.6*bk),p1=at(R,d+.6*bk);
+  const o=workerRig(k,EM(k,nm,stage,note),shirt,hat,role,()=>{/* a steady walk (1.3 m/s: 2 units a second) out and back with a short pause at each end; the period comes from the route's length so
+     every walker keeps the same pace whatever its route */
+   const R=route(),pr=2*(R.L/2)/.86,q=((T+ph*pr/per)/pr)%1,f=q<.43?q/.43:q<.5?1:q<.93?1-(q-.5)/.43:0,e=trap(f,.12),d=e*R.L;S.f=f;const p=at(R,d),bk=q<.5?1:-1,p0=at(R,d-.6*bk),p1=at(R,d+.6*bk);
    return{p:[p[0],0,p[1]],yaw:Math.hypot(p1[0]-p0[0],p1[1]-p0[1])>.05?Math.atan2(p1[0]-p0[0],p1[1]-p0[1]):hd+(q<.5?0:Math.PI),s:1.35,phase:d/.95*Math.PI,amt:Math.min(1,Math.sin(Math.PI*f)*3)}});
   Object.defineProperty(o,'f',{get:()=>S.f});return o};
  walker(0,'Farm worker',0,'Inspects the crop as it grows.',[-214.35,4.6],[-214.35,26.4],16,P.blue,P.straw,0);
