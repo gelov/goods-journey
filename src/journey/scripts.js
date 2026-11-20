@@ -1,6 +1,9 @@
 'use strict';
 /* ================= stage scripts: duration, free-mode home time, camera keys ================= */
-const G=(lon,lat)=>()=>[lon,lat],GV=k=>()=>VIEWS[k],AT=(k,x,z)=>()=>geoOf(k,x,z),MV=(k,m)=>()=>{const o=m();return geoOf(k,o.p[0],o.p[2])},GS=k=>()=>SITES[k].g;
+/* a shot at a site carries the site (f.k): its heading is written for the site as designed (SITE_ROT0) and turns with the site when a
+   manifest rotates it (coastline, route), so every scene is still framed from the same side */
+const SIGN_TURN=1,SITE_ROT0=[0,.785,2.356,0,0],onSite=(k,f)=>(f.k=k,f),siteTurn=g=>g&&g.k!=null?(SITES[g.k].rot||0)-SITE_ROT0[g.k]:0;
+const G=(lon,lat)=>()=>[lon,lat],GV=k=>()=>VIEWS[k],AT=(k,x,z)=>onSite(k,()=>geoOf(k,x,z)),MV=(k,m)=>onSite(k,()=>{const o=m();return geoOf(k,o.p[0],o.p[2])}),GS=k=>onSite(k,()=>SITES[k].g);
 const K=(t,g,ry,rx,d)=>({t,g,ry,rx,d});
 /* w: stretches of a stage that run at their own pace (start, end, multiplier). Below 1 slows the clock for work that
    should read clearly: crane loading and unloading, forklifts, lorries pulling away and travelling.
@@ -36,7 +39,7 @@ const spd=()=>SPEEDS[SPEED];
    instead of easing to a stop there. The neighbouring key of the previous and next stage shapes the ends, so speed
    also carries across stage changes. A tangent is zero only where the motion really reverses or rests, and is
    limited so zoom and position never overshoot a key. */
-function stagePose(i){const S=SCRIPT[i],k=S.k,t=clamp(STATE.t,0,S.dur),P=[],add=(q,tt)=>{const g=q.g();P.push({t:tt,v:[g[0],g[1],q.ry,q.rx,Math.log(q.d)]})};
+function stagePose(i){const S=SCRIPT[i],k=S.k,t=clamp(STATE.t,0,S.dur),P=[],add=(q,tt)=>{const g=q.g();const h=q.ry+SIGN_TURN*siteTurn(q.g);P.push({t:tt,v:[g[0],g[1],Math.atan2(Math.sin(h),Math.cos(h)),q.rx,Math.log(q.d)]})};
  if(i>0){const pk=SCRIPT[i-1].k,q=pk[pk.length-2];add(q,q.t-SCRIPT[i-1].dur)}
  for(const q of k)add(q,q.t);
  if(i<SCRIPT.length-1){const q=SCRIPT[i+1].k[1];add(q,S.dur+q.t)}
@@ -53,5 +56,9 @@ function stagePose(i){const S=SCRIPT[i],k=S.k,t=clamp(STATE.t,0,S.dur),P=[],add=
  const dz=Math.abs(b.v[4]-a.v[4]),w=ss(.8,1.8,dz);
  if(w>0){const N=24;let I=0,Iu=0,pv=Math.exp(herm(4,0));for(let n=1;n<=N;n++){const x=n/N,cv=Math.exp(herm(4,x)),seg=(pv+cv)/2/N;if(x<=u+1e-9)Iu+=seg;else if(x-1/N<u)Iu+=seg*(u-(x-1/N))*N;I+=seg;pv=cv}
   const p=Iu/I,lo=a.v[4]<b.v[4]?a:b,hi=lo===a?b:a,g=ss(0,1,(o[4]-lo.v[4])/Math.min(dz,2.4)),mix=(c,k)=>lerp(o[c],k,w);
-  o[0]=mix(0,lerp(a.v[0],b.v[0],p));o[1]=mix(1,lerp(a.v[1],b.v[1],p));o[2]=mix(2,lerp(lo.v[2],hi.v[2],g));o[3]=mix(3,lerp(lo.v[3],hi.v[3],g))}
+  o[0]=mix(0,lerp(a.v[0],b.v[0],p));o[1]=mix(1,lerp(a.v[1],b.v[1],p));o[2]=mix(2,lerp(a.v[2],b.v[2],ss(0,1,p)));o[3]=mix(3,lerp(lo.v[3],hi.v[3],g))}
+ /* the map is always north-up: the scene's viewing heading fades in over the whole descent from map height (about 2300 units, where
+    the 3D scene takes over) down to about 150, and out again on the way up, so the turn is spread over the climb and never spins the map.
+    In a dive the heading moves evenly with the ground travelled, so it meets each key exactly and never jumps. */
+ o[2]*=1-ss(Math.log(150),Math.log(2300),o[4]);
  return{lon:o[0],lat:o[1],ry:o[2],rx:o[3],ld:o[4]}}

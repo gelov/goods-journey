@@ -63,12 +63,13 @@ function goStage(i,replay){const dir=i>=STATE.idx?1:-1;while(STAGES[i]&&STAGES[i
 /* stage details: text from STAGES, data chips from FIELDS, values through fieldInfo() for the shipment being followed */
 let PF=[];
 function esc(v){return String(v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
-function chipsHTML(list){return list.map(f=>`<button type="button" data-f="${PF.push(f)-1}"${fieldInfo(f).status==='unavailable'?' class="na"':''}>${esc(f.label)}</button>`).join('')}
+/* only fields the manifest actually holds get a chip (0 and false are values; missing, empty and placeholders are not); the data is untouched */
+function chipsHTML(list){return list.filter(f=>fieldInfo(f).status!=='unavailable').map(f=>`<button type="button" data-f="${PF.push(f)-1}">${esc(f.label)}</button>`).join('')}
 function showPanel(i,obj){const s=STAGES[i];STATE.panel=true;STATE.pi=i;STATE.obj=obj||null;PF=[];const ships=recs('shipments'),sh=context().one('shipment'),of=obj?entFields(obj):[];
  $('#pBody').innerHTML=`<p class="eyebrow"><img class="lg" src="assets/contained-logo.png" alt="Contained Technologies" onerror="this.remove()">Stage ${String(ord(i)).padStart(2,'0')} / ${nStages()}</p><h2>${esc(stageName(i))}</h2>
- <div class="ctx">Following ${ships.length>1?`<select id="selShip" aria-label="Shipment to follow">${ships.map(x=>`<option${x.id===sh.id?' selected':''}>${esc(x.id)}</option>`).join('')}</select>`:sh?`<b>${esc(sh.id)}</b>`:'no shipment'}<em class="ds ${DATA.status}">${STATUS[DATA.status]}</em></div><div class="tnow" id="trkNow"></div>
- ${obj?`<div class="obj"><b>${obj.name}</b>${obj.note||''}${of.length?`<div class="tags">${chipsHTML(of)}</div>`:''}</div>`:''}
- <h3 style="--c:#f5f3ec">What’s happening</h3><p>${esc(stageWhat(i))}</p><h3 style="--c:var(--data)">Data captured</h3><div class="tags" id="stTags">${chipsHTML(FIELDS[i])}</div>${i===9?destHTML():''}
+ <div class="ctx">Following ${ships.length>1?`<select id="selShip" aria-label="Shipment to follow">${ships.map(x=>`<option${x.id===sh.id?' selected':''}>${esc(x.id)}</option>`).join('')}</select>`:sh?`<b>${esc(sh.id)}</b>`:'no shipment'}<em class="ds ${DATA.status}">${STATUS[DATA.status]}</em></div><div class="tnow" id="trkNow"></div>${typeof shipAllocHTML==='function'?shipAllocHTML():''}
+ ${obj?`<div class="obj"><b>${obj.name}</b>${obj.note||''}${(h=>h?`<div class="tags">${h}</div>`:'')(of.length?chipsHTML(of):'')}</div>`:''}
+ <h3 style="--c:#f5f3ec">What’s happening</h3><p>${esc(stageWhat(i))}</p>${(h=>h?`<h3 style="--c:var(--data)">Data captured</h3><div class="tags" id="stTags">${h}</div>`:'')(chipsHTML(FIELDS[i]))}${i===9?destHTML():''}${typeof shipStageHTML==='function'?shipStageHTML(i):''}
  <h3 style="--c:#c9a8ff">Data source</h3><p>${esc(tx(s.src))}</p><h3 style="--c:var(--ok)">How it’s used</h3><p>${esc(tx(s.use))}</p><h3 style="--c:var(--acc)">What’s next</h3><p>${esc(tx(s.next))}</p>${s.note?`<p class="note">${esc(tx(s.note))}</p>`:''}`;
  $('#panel').classList.add('show');document.body.classList.add('pan');$('#panel').scrollTop=0;
  /* the first data field starts open, so every stage shows real values straight away */
@@ -81,8 +82,8 @@ function destHTML(){const N=DATA.man,c=context(),one=k=>c.one(k)||{},d=one('deli
  return rows.length?`<h3 style="--c:${esc(B.primary)}">Destination</h3><dl class="dest">${rows.map(r=>`<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl>`:''}
 function showField(b){const was=b.classList.contains('on'),old=$('#fd');if(old)old.remove();$('#pBody').querySelectorAll('[data-f].on').forEach(x=>x.classList.remove('on'));if(was)return;
  const d=fieldInfo(PF[+b.dataset.f]),fd=el('div','fd');fd.id='fd';b.classList.add('on');
- fd.innerHTML=`<b>${esc(d.label)}</b><dl><dt>Value</dt><dd>${esc(d.value)}</dd><dt>Source</dt><dd>${esc(d.source)}</dd>${d.record?`<dt>Record</dt><dd>${esc(d.record)}</dd>`:''}${d.linked?`<dt>Linked to</dt><dd>${esc(d.linked)}</dd>`:''}<dt>Data status</dt><dd><em class="ds ${d.status}">${STATUS[d.status]}</em></dd></dl>
- ${vizHTML(d.viz)}<div class="tr">${d.trace.map(t=>`<span class="${t.on?'on':''}${t.ids.length?'':' na'}">${t.k}${t.ids.length>3?' '+esc(t.ids[0]+' … '+t.ids[t.ids.length-1])+' ('+t.ids.length+')':t.ids.length?' '+esc(t.ids.join(', ')):': none'}</span>`).join('')}</div>`;b.parentNode.after(fd)}
+ fd.innerHTML=`<b>${esc(d.label)}</b><dl><dt>Value</dt><dd>${esc(d.value)}</dd>${d.source?`<dt>Source</dt><dd>${esc(d.source)}</dd>`:''}${d.record?`<dt>Record</dt><dd>${esc(d.record)}</dd>`:''}${d.linked?`<dt>Linked to</dt><dd>${esc(d.linked)}</dd>`:''}${d.status&&d.status!=='unavailable'?`<dt>Data status</dt><dd><em class="ds ${d.status}">${STATUS[d.status]}</em></dd>`:''}</dl>
+ ${vizHTML(d.viz)}<div class="tr">${d.trace.filter(t=>t.ids.length).map(t=>`<span class="${t.on?'on':''}${t.ids.length?'':' na'}">${t.k}${t.ids.length>3?' '+esc(t.ids[0]+' … '+t.ids[t.ids.length-1])+' ('+t.ids.length+')':t.ids.length?' '+esc(t.ids.join(', ')):': none'}</span>`).join('')}</div>`;b.parentNode.after(fd)}
 /* small visuals for fields that hold several values: a readings line chart, or a results table with bars */
 function vizHTML(v){if(!v)return'';const d=v[1];
  if(v[0]==='line'){const ys=d.map(p=>p[1]),lo=Math.min(...ys),hi=Math.max(...ys),W=280,H=64,x=i=>6+i*(W-12)/(d.length-1),y=t=>H-8-(t-lo)/((hi-lo)||1)*(H-18);

@@ -49,7 +49,20 @@ async function roadRoute(a,b){const key='ffts.road.'+[a,b].map(p=>p[0].toFixed(4
  let res;if(ferry)res={err:'the only road route uses a ferry crossing, so a lorry cannot drive it'};else if(Math.max(...far,0)>8000)res={err:`the ${far[0]>8000?'start':'end'} point is ${Math.round(Math.max(...far)/1000)} km from the nearest road`};
  else res={pts:j.routes[0].geometry.coordinates,km:Math.round(j.routes[0].distance/1000)};RCACHE[key]=res;try{localStorage.setItem(key,JSON.stringify(res))}catch(e){}return res}
 const LEGNAME=['Farm → export port','Export port → arrival port','Arrival port → warehouse','Warehouse → supermarket'];
-function setLeg(r,info,pts){ROUTEINFO[r]=info;if(pts)ROUTES[r]=resampleGC(despike(pts),r===1?240:140);else{const a=SITES[r].g,b=SITES[r+1].g;ROUTES[r]=resampleGC([a,b],60)}}
+function setLeg(r,info,pts){ROUTEINFO[r]=info;if(pts)ROUTES[r]=resampleGC(despike(pts),r===1?240:140);else{const a=SITES[r].g,b=SITES[r+1].g;ROUTES[r]=resampleGC([a,b],60)};alignSites()}
+/* ---- inland scenes face their route ----
+   The farm, warehouse and supermarket are turned as a whole (buildings, roads, people, one rotation) so the end of each static road
+   points where the real road route leaves or enters the site: the lorry drives out of the scene along its own road straight onto the
+   route on the map. Each road end is a fixed local vector from the site centre; the route's bearing is read where it crosses that same
+   distance. The warehouse has two (in from the port, out to the store), so it takes the rotation that best suits both. The ports are
+   not touched: they face the sea (setPortRot). */
+const SITE_EXITS={0:[[0,true,[-74,36]]],3:[[2,false,[108,34]],[3,true,[-134,34]]],4:[[3,false,[-110,34]]]};
+function routeBearing(k,r,fromStart,v){const R=ROUTES[r];if(!R||R.length<2)return null;const S=SITES[k],c=llu(S.g[0],S.g[1]),rex=Math.hypot(v[0],v[1])/RS,n=R.length;
+ for(let i=0;i<n;i++){const q=R[fromStart?i:n-1-i];if(Math.acos(clamp(dot(q,c),-1,1))>rex){const g=ull(q),e=(g[0]-S.g[0])*Math.cos(S.g[1]*RAD),no=g[1]-S.g[1];return Math.atan2(e,no)}}return null}
+function alignSites(){let ch=false;for(const[k,ex]of Object.entries(SITE_EXITS)){const C=ex.map(([r,fs,v])=>[v,routeBearing(+k,r,fs,v)]).filter(c=>c[1]!=null);if(!C.length)continue;
+  let best=0,bc=1e9;for(let d=0;d<360;d++){const rot=d*RAD,c=Math.cos(rot),s=Math.sin(rot);let cost=0;for(const[v,b]of C){const br=Math.atan2(c*v[0]+s*v[1],s*v[0]-c*v[1]);let df=Math.abs(((br-b)%(2*Math.PI)+3*Math.PI)%(2*Math.PI)-Math.PI);cost+=df*df}if(cost<bc){bc=cost;best=rot}}
+  if(Math.abs((SITES[k].rot||0)-best)>1e-6){SITES[k].rot=best;ch=true}}
+ if(ch&&typeof LEGS!=='undefined')for(const L of LEGS)L.R=null}
 /* route every leg of a manifest; later results from an older manifest are dropped */
 async function routeManifest(N){const gen=++ROUTEGEN,G=SITES.map(S=>S.g);
  for(let r=0;r<4;r++)if(ROUTEINFO[r].gen!==gen)setLeg(r,{state:'pending',gen,note:'Calculating route…'},null);syncRouteUI();

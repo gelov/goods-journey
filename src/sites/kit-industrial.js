@@ -139,7 +139,8 @@ function shipI(){mt(3,()=>{bb(P.hullR,0,-1.7,-1,7.4,1.2,26);bb(P.hull,0,-.5,-1,8
   for(const x of[-3.7,3.7])Tm(mul(tr(x,6.2,-12.6),sc(.6,.6,1.5)),()=>ball(P.orange,0,0,0,1,1,8,4));
   for(const zz of[-5.3,-1.2,2.95,7.3])for(const x of[-3.9,-1.35,1.35,3.9])bb(P.steel,x,2.9,zz,.1,5.6,.1)});
  mt(4,()=>{bb(P.glass,0,8.3,-10.08,7.3,.7,.05);for(const x of[-3.96,3.96])bb(P.glass,x,8.3,-11.4,.05,.7,2.2);for(const y of[3.7,4.7,6.2])bb(P.glass,0,y,-9.78,5.4,.4,.05)});
- const r=prng(3),bz=[-7.4,-3.25,.9,5.05];for(let iz=0;iz<4;iz++)for(let ix=0;ix<3;ix++){const n=(ix===1&&iz>1)?2:2+Math.floor(r()*1.9);for(let k=0;k<n;k++)contI(CC[Math.floor(r()*6)],-2.7+ix*2.7,2.9+k*2.6,bz[iz],3.9)}}
+ const r=prng(3),bz=[-7.4,-3.25,.9,5.05];for(let iz=0;iz<4;iz++)for(let ix=0;ix<3;ix++){const n=(ix===1&&iz>1)?2:2+Math.floor(r()*1.9);for(let k=0;k<n;k++)contI(CC[Math.floor(r()*6)],-2.7+ix*2.7,2.9+k*2.6,bz[iz],3.9)}
+ if(typeof vesselMarks==='function')vesselMarks()}
 
 /* ---- extra plant and equipment that only the industrial style has; nothing here is clickable ---- */
 function extrasI(k){PID=0;

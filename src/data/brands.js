@@ -11,6 +11,11 @@ const BRANDS={
   signage:{aisle:'Aisle',aisles:['Breakfast & cereal','Tins & jars','Pasta & rice','Snacks','Household','Drinks'],chilled:'Dairy & chilled',drinks:'Cold drinks',bakery:'Bakery',entrance:'Welcome',produce:'Fresh fruit',promo:'Fresh melons in store',checkout:'Checkout',parking:'Customer parking',price:'Ripe & ready',shelves:['Fruit','Vegetables','Salad']}},
  'albert-heijn':{name:'Albert Heijn',primary:'#00A0E2',secondary:'#FFFFFF',accent:'#003F7D',style:'dark',
   signage:{aisle:'Gang',aisles:['Ontbijt','Conserven','Pasta & rijst','Snacks','Huishouden','Dranken'],chilled:'Zuivel & gekoeld',drinks:'Koude dranken',bakery:'Bakkerij',entrance:'Welkom',produce:'Vers fruit',promo:'Verse meloenen',checkout:'Kassa',parking:'Parkeren',price:'Lekker rijp',shelves:['Fruit','Groente','Salade']}},
+ /* the Wild Cosmos manifest's two customers (colours approximate) */
+ aldi:{name:'ALDI',primary:'#00005F',secondary:'#FF7800',accent:'#00B4DC',style:'dark',
+  signage:{aisle:'Aisle',aisles:['Breakfast & cereal','Tins & jars','Pasta & rice','Snacks','Household','Drinks'],chilled:'Dairy & chilled',drinks:'Cold drinks',bakery:'Bakery',entrance:'Welcome',produce:'Fresh fruit & veg',promo:'Melons in season',checkout:'Checkout',parking:'Customer parking',price:'Ripe & ready',shelves:['Fruit','Vegetables','Salad']}},
+ asda:{name:'ASDA',primary:'#3E8E1F',secondary:'#FFFFFF',accent:'#78BE20',style:'dark',
+  signage:{aisle:'Aisle',aisles:['Breakfast & cereal','Tins & jars','Pasta & rice','Snacks','Household','Drinks'],chilled:'Dairy & chilled',drinks:'Cold drinks',bakery:'Bakery',entrance:'Welcome',produce:'Fresh fruit & veg',promo:'Melons in season',checkout:'Checkout',parking:'Customer parking',price:'Ripe & ready',shelves:['Fruit','Vegetables','Salad']}},
  sainsburys:{name:"Sainsbury's",primary:'#F06C00',secondary:'#FFFFFF',accent:'#7A3E00',style:'dark',
   signage:{aisle:'Aisle',aisles:['Breakfast & cereal','Tins & jars','Pasta & rice','Snacks','Household','Drinks'],chilled:'Dairy & chilled',drinks:'Cold drinks',bakery:'Bakery',entrance:'Welcome',produce:'Fresh fruit & veg',promo:'Melons in season',checkout:'Checkout',parking:'Customer parking',price:'Ripe & ready',shelves:['Fruit','Vegetables','Salad']}}};
 const brandKey=s=>String(s||'').toLowerCase().normalize('NFKD').replace(/[̀-ͯ']/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');

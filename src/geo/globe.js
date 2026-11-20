@@ -42,26 +42,31 @@ function routeAt(r,u){u=clamp(u,0,1);const q=routeQ(r,u),d=4/(ROUTES[r].length-1
    sites are hidden while the leg runs; the site movers use the same easing (ein / eout) so their matrices match. */
 const ein=x=>x*x,eout=x=>1-(1-x)*(1-x);
 const gAt=(i,t)=>{let g=t;for(let j=0;j<i;j++)g+=SCRIPT[j].dur;return g},gNow=()=>gAt(STATE.idx,STATE.t);
-const LEGS=[{r:0,dm:()=>LORF,am:()=>LORP,dj:[-137,31.4],aj:[-92,26],dk:0,dp:()=>RDF,d:[1,19.5,25.5],dy:.12,ak:1,ap:()=>RDP,a:[2,1,6.5],ay:.12,mesh:()=>LORF},
+const LEGS=[{r:0,dm:()=>LORF,am:()=>LORP,dk:0,dp:()=>RDF,dps:[()=>RDF,()=>RDF_E],d:[1,19.5,25.5],dy:.12,ak:1,ap:()=>RDP,a:[2,1,6.5],ay:.12,mesh:()=>LORF},
  {r:1,dm:()=>SHBR,am:()=>SHUK,dk:1,dp:()=>SBR,d:[2,20.6,26],dy:-1.5,ak:2,ap:()=>SUK,a:[4,.5,9],ay:-1.5,mesh:()=>SHBR,ship:true},
- {r:2,dm:()=>LORU,am:()=>LORW,dj:[113,24],aj:[156.5,29.5],dk:2,dp:()=>RDU,d:[5,11.3,17.5],dy:.3,ak:3,ap:()=>RWA,a:[6,1,6.5],ay:.12,mesh:()=>LORW},
- {r:3,dm:()=>LORW,am:()=>LORS,dj:[147.5,29.5],aj:[200,28],dk:3,dp:()=>RWD,d:[9,4,11.5],dy:.12,ak:4,ap:()=>RSM,a:[9,16.5,22],ay:.12,mesh:()=>LORS}];
+ {r:2,dm:()=>LORU,am:()=>LORW,dk:2,dp:()=>RDU,d:[5,11.3,17.5],dy:.3,ak:3,ap:()=>RWA,a:[6,1,6.5],ay:.12,mesh:()=>LORW},
+ {r:3,dm:()=>LORW,am:()=>LORS,dk:3,dp:()=>RWD,d:[9,4,11.5],dy:.12,ak:4,ap:()=>RSM,aps:[()=>RSM,()=>RSM_E],a:[9,16.5,22],ay:.12,mesh:()=>LORS}];
 const LEGON=[false,false,false,false];
-function legBuild(L){const R=ROUTES[L.r];if(L.R===R&&L.poly&&L.sty===STYLE)return L;L.R=R;L.sty=STYLE;
+/* a leg whose site road can be driven either way (dps / aps: the farm's and the supermarket's through-roads) is built for each way and
+   keeps the shortest whole drive, so the lorry starts out (or arrives) already heading toward the route: no turn-round outside the site.
+   Chosen once per route, by distance plus a penalty for turning; the site movers park and drive on the chosen road (L.dp / L.ap). */
+const LEGKEYS=['poly','cum','Ld','La','i0','i1','cut','vc','bd','ba'];
+function legBuild(L){const R=ROUTES[L.r];if(L.R===R&&L.poly&&L.sty===STYLE)return L;L.R=R;L.sty=STYLE;const D=L.dps||[L.dp],A=L.aps||[L.ap];if(D.length*A.length===1){L.dp=D[0];L.ap=A[0];return legBuild1(L)}
+ /* cost: distance (site units) plus 0.6 units per degree of turning, so a turn-round of ~180° counts like ~110 units of extra road */
+ const turnDeg=P=>{let t=0;for(let i=1;i<P.length-1;i++){const u=nrm(sub(P[i],P[i-1])),v=nrm(sub(P[i+1],P[i]));t+=Math.acos(clamp(dot(u,v),-1,1))}return t/RAD};
+ let best=null;for(const d of D)for(const a of A){L.dp=d;L.ap=a;legBuild1(L);const len=L.cum[L.cum.length-1]*RS+.6*turnDeg(L.poly);if(!best||len<best.len)best={len,d,a,snap:Object.fromEntries(LEGKEYS.map(k=>[k,L[k]]))}}
+ L.dp=best.d;L.ap=best.a;Object.assign(L,best.snap);return L}
+function legBuild1(L){const R=ROUTES[L.r];
  const toU=(k,pa)=>pa.pts.map(p=>{const g=geoOf(k,p[0],p[2]);return llu(g[0],g[1])}),n=R.length,ang=(p,q)=>Math.acos(clamp(dot(p,q),-1,1)),dir=(a,b)=>nrm(sub(b,a));
  const cD=llu(SITES[L.dk].g[0],SITES[L.dk].g[1]),cA=llu(SITES[L.ak].g[0],SITES[L.ak].g[1]),near=.32*RAD;
  /* water test from the coarse mask the sea routing uses (0 land, 1 open water, 2 coastal water, cells about 28 km): a vessel may not
     touch land, a lorry may not run over open water. Within about 35 km of a port the mask is too coarse to judge, so that is allowed. */
- const wet=q=>{if(typeof LMASK==='undefined'||!LMASK)return null;const g=ull(q);return LMASK[lmIdx(g[0],g[1])]},bad=q=>{if(ang(q,cD)<near||ang(q,cA)<near)return false;const w=wet(q);return w!=null&&(L.ship?w===0:w===1)},okPath=P=>!P.some(bad);
+ const wet=q=>{if(typeof LMASK==='undefined'||!LMASK)return null;const g=ull(q);return LMASK[lmIdx(g[0],g[1])]},bad=q=>{if(ang(q,cD)<near||ang(q,cA)<near)return false;/* a lorry always keeps its static road inside the site's built area */if(!L.ship&&(ang(q,cD)<SITES[L.dk].r0/RS||ang(q,cA)<SITES[L.ak].r0/RS))return false;const w=wet(q);return w!=null&&(L.ship?w===0:w===1)},okPath=P=>!P.some(bad);
  /* A site unit is about 510 m, so a site's own road or channel can run 60 to 90 km out, far enough to cross a real coastline (a port's
     approach channel from Dover reaching France). The leg keeps each site path up to the first point where it would go somewhere its
     vehicle cannot (counted outward from the quay or farm), and lets the validated route carry the vehicle from there. */
  const Df=toU(L.dk,L.dp()),Af=toU(L.ak,L.ap());let de=1;while(de<Df.length-1&&!bad(Df[de+1]))de++;let as=Af.length-2;while(as>0&&!bad(Af[as-1]))as--;
- /* a lorry leaves its site where the facility road reaches the site's edge road (dj) and arrives where that road turns in (aj): the site's
-    old through-road is gone, and the road out to the route is generated along the leg itself (legroads.js). Unvalidated routes keep the
-    whole site path, so the lorry at least stays on its site road. */
- const okR=typeof routeOK!=='function'||routeOK(L.r),nearPt=(pa,c)=>{let bi=0,bd=1e9;pa.pts.forEach((p,i)=>{const d=Math.hypot(p[0]-c[0],p[2]-c[1]);if(d<bd){bd=d;bi=i}});return bi};
- if(okR&&L.dj)de=Math.max(1,Math.min(de,nearPt(L.dp(),L.dj)));if(okR&&L.aj)as=Math.min(Af.length-2,Math.max(as,nearPt(L.ap(),L.aj)));
+ const okR=typeof routeOK!=='function'||routeOK(L.r);/* lorries keep their site's whole static road; the route joins it at the site's edge */
  const kr=(L.ship?10:5)/RS,cand=(a,b,c,r,q)=>{const o=[];for(let j=a;j<=b;j++)if(ang(R[j],c)>=r)o.push(j);return o.sort((u,v)=>ang(R[u],q)-ang(R[v],q)).slice(0,16)},tR=j=>dir(R[Math.max(0,j-1)],R[Math.min(n-1,j+1)]);
  /* joins: from the end of the kept site path to a route point outside that site path's reach (nearest first to a point lined up with
     the road), by the shortest drivable path (dubins, below). If none passes the water test, the site path is cut back further toward
@@ -70,26 +75,17 @@ function legBuild(L){const R=ROUTES[L.r];if(L.R===R&&L.poly&&L.sty===STYLE)retur
  /* among the candidates, the join that makes the whole drive shortest (join plus the rest of the route) is tried first, so the road never
     loops to reach a nearer point */
  const rc=[0];for(let j=1;j<n;j++)rc.push(rc[j-1]+ang(R[j-1],R[j]));const allIn=(a,b,c,r)=>{const o=[];for(let j=a;j<=b;j++)if(ang(R[j],c)>=r)o.push(j);return o};
- for(let d=de;d>=1&&!J0;d-=stepD){const De=Df[d],t=dir(Df[d-1],De),r=ang(cD,De);const C=allIn(0,Math.floor((n-1)*.6),cD,r).map(j=>[j,dubins(De,t,R[j],tR(j),kr,true)+rc[n-1]-rc[j]]).sort((u,v)=>u[1]-v[1]).slice(0,16);
+ /* a lorry never leaves its static road inside the site's built area: the search stops backing off at the site's edge */
+ const r0D=SITES[L.dk].r0/RS,r0A=SITES[L.ak].r0/RS;let dMin=1,aMax=Af.length-2;if(!L.ship){while(dMin<de&&ang(cD,Df[dMin])<r0D)dMin++;while(aMax>as&&ang(cA,Af[aMax])<r0A)aMax--}
+ for(let d=de;d>=dMin&&!J0;d-=stepD){const De=Df[d],t=dir(Df[d-1],De),r=ang(cD,De);const C=allIn(0,Math.floor((n-1)*.6),cD,r).map(j=>[j,dubins(De,t,R[j],tR(j),kr,true)+rc[n-1]-rc[j]]).sort((u,v)=>u[1]-v[1]).slice(0,16);
   for(const[j]of C){const P=dubins(De,t,R[j],tR(j),kr);if(okPath(P)){J0=P;i0=j;de=d;break}}}
  if(!J0){i0=0;while(i0<n-2&&ang(R[i0],cD)<ang(cD,Df[de]))i0++;J0=dubins(Df[de],dir(Df[de-1],Df[de]),R[i0],tR(i0),kr)}
- for(let a=as;a<=Af.length-2&&!J1;a+=stepA){const A0=Af[a],t=dir(A0,Af[a+1]),r=ang(cA,A0);const C=allIn(Math.min(n-1,i0+1),n-1,cA,r).map(j=>[j,rc[j]-rc[i0]+dubins(R[j],tR(j),A0,t,kr,true)]).sort((u,v)=>u[1]-v[1]).slice(0,16);
+ for(let a=as;a<=aMax&&!J1;a+=stepA){const A0=Af[a],t=dir(A0,Af[a+1]),r=ang(cA,A0);const C=allIn(Math.min(n-1,i0+1),n-1,cA,r).map(j=>[j,rc[j]-rc[i0]+dubins(R[j],tR(j),A0,t,kr,true)]).sort((u,v)=>u[1]-v[1]).slice(0,16);
   for(const[j]of C){const P=dubins(R[j],tR(j),A0,t,kr);if(okPath(P)){J1=P;i1=j;as=a;break}}}
  if(!J1){i1=n-1;while(i1>i0+1&&ang(R[i1],cA)<ang(cA,Af[as]))i1--;J1=dubins(R[i1],tR(i1),Af[as],dir(Af[as],Af[as+1]),kr)}
  const D=Df.slice(0,de+1),A=Af.slice(as);
  L.cut={de,as,nD:Df.length,nA:Af.length,sec:[D.length,J0.length,i1-i0+1,J1.length,A.length]};
  let poly=[...D,...J0,...R.slice(i0,i1+1),...J1,...A];
- /* inside the farm, port, warehouse and supermarket, the stretch between the facility road and the site's built-up edge is re-planned
-    round the buildings (siteroute.js); the lorry and the generated road (legroads.js) both follow the result */
- if(!L.ship&&okR&&typeof siteDetour==='function'){const loc=(k,q)=>{const g=ull(q);return siteOfGeo(k,g[0],g[1])},geo=(k,p)=>{const g=geoOf(k,p[0],p[1]);return llu(g[0],g[1])},hd=(k,p,q)=>{const u=loc(k,p),v=loc(k,q),l=Math.hypot(v[0]-u[0],v[1]-u[1])||1;return[(v[0]-u[0])/l,(v[1]-u[1])/l]};
-  const out=(k,q)=>{const S=SITES[k],p=loc(k,q);return Math.hypot(p[0]-S.c[0],p[1]-S.c[1])>S.r0-8};let dEnd=D.length;
-  {const k=L.dk;let e=D.length;while(e<poly.length-A.length&&!out(k,poly[e]))e++;if(e<poly.length-A.length-1){const P=siteDetour(k,loc(k,D[D.length-1]),hd(k,D[D.length-2],D[D.length-1]),loc(k,poly[e]),hd(k,poly[e],poly[e+1]));
-   if(P){const mid=P.slice(1,-1).map(p=>geo(k,p));poly=[...poly.slice(0,D.length),...mid,...poly.slice(e)];dEnd=D.length+mid.length}}}
-  {const k=L.ak,a0=poly.length-A.length;let e=a0-1;while(e>dEnd&&!out(k,poly[e]))e--;
-   /* sites close together (the whole route inside both): start from the first point past the departure detour that this site's grid covers */
-   if(e<=dEnd){e=Math.max(dEnd,1);const S=SITES[k];while(e<a0-1){const p=loc(k,poly[e]);if(Math.hypot(p[0]-S.c[0],p[1]-S.c[1])<S.r0-2)break;e++}}
-   if(e>=dEnd&&e<a0-1){const P=siteDetour(k,loc(k,poly[e]),hd(k,poly[e-1],poly[e]),loc(k,A[0]),hd(k,A[0],A[1]));
-   if(P){const mid=P.slice(1,-1).map(p=>geo(k,p));poly=[...poly.slice(0,e+1),...mid,...poly.slice(a0)]}}}}
  const cum=[0];for(let i=1;i<poly.length;i++)cum.push(cum[i-1]+ang(poly[i-1],poly[i]));
  L.poly=poly;L.cum=cum;L.Ld=cum[D.length-1];L.La=cum[cum.length-1]-cum[poly.length-A.length];L.i0=i0;L.i1=i1;
  /* cruise speed where the vehicle leaves one site and enters the next: no faster than either site path allows (from rest) and no faster
@@ -118,7 +114,7 @@ function dubins(P0,t0,P1,t1,rho,lenOnly){const up=Math.abs(P0[1])<.99?[0,1,0]:[1
  t2=-2+d*d+2*cab-2*d*(sa+sb);if(t2>=0){const p=Math.sqrt(t2),at=Math.atan2(ca+cb,d-sa-sb)-Math.atan2(2,p);C.push(['RSL',md(a-at),p,md(b-at)])}
  t2=(6-d*d+2*cab+2*d*(sa-sb))/8;if(Math.abs(t2)<=1){const p=md(TAU-Math.acos(t2)),t=md(a-Math.atan2(ca-cb,d-sa+sb)+p/2);C.push(['RLR',t,p,md(a-b-t+p)])}
  t2=(6-d*d+2*cab+2*d*(sb-sa))/8;if(Math.abs(t2)<=1){const p=md(TAU-Math.acos(t2)),t=md(-a-Math.atan2(ca-cb,d+sa-sb)+p/2);C.push(['LRL',t,p,md(md(b)-a-t+p)])}
- if(!C.length)return lenOnly?9:[];C.sort((u,v)=>(u[1]+u[2]+u[3])-(v[1]+v[2]+v[3]));if(lenOnly)return(C[0][1]+C[0][2]+C[0][3])*rho;const [w,...L]=C[0],tot=L[0]+L[1]+L[2],N=Math.max(8,Math.ceil(tot*rho/(1.2/RS))),o=[];
+ if(!C.length)return lenOnly?9:[];C.sort((u,v)=>(u[1]+u[2]+u[3])-(v[1]+v[2]+v[3]));/* as a cost: length plus 12 units per radian of turning, so a circle to reach a nearby point loses to a slightly longer straight join */if(lenOnly){const c=C[0];return(c[1]+c[2]+c[3])*rho+(c[0][1]==='S'?c[1]+c[3]:c[1]+c[2]+c[3])*12/RS}const [w,...L]=C[0],tot=L[0]+L[1]+L[2],N=Math.max(8,Math.ceil(tot*rho/(1.2/RS))),o=[];
  let x=0,y=0,th=th0;const step=tot/N;let seg=0,left=L[0];for(let i=0;i<N-1;i++){let r=step;while(r>1e-12&&seg<3){const dd=Math.min(r,left),c=w[seg];
    if(c==='S'){x+=rho*dd*Math.cos(th);y+=rho*dd*Math.sin(th)}else if(c==='L'){x+=rho*(Math.sin(th+dd)-Math.sin(th));y+=rho*(-Math.cos(th+dd)+Math.cos(th));th+=dd}else{x+=rho*(-Math.sin(th-dd)+Math.sin(th));y+=rho*(Math.cos(th-dd)-Math.cos(th));th-=dd}
    r-=dd;left-=dd;if(left<=1e-12){seg++;left=L[seg]||0}}o.push(nrm(P0.map((v,j)=>v+x*e[j]+y*nn[j])))}

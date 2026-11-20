@@ -7,8 +7,8 @@ const introView=()=>({lon:GLOBE_VIEW.lon-10,lat:clamp(GLOBE_VIEW.lat-14,-60,60),
 function applyManifest(N){const gc=(p,q,t)=>ull(slerp(llu(p[0],p[1]),llu(q[0],q[1]),t));
  SITES.forEach((S,k)=>{const l=N.loc[ROLES[k]];S.g=[l.lon,l.lat];S.n=l.label;S.note=l.illustrative?'illustrative location':''});
  /* a port's 3D quay is turned so its water faces the bearing given in the manifest */
- setPortRot(N);
- buildRoutes(N.routes);routeManifest(N);applyBrand(N);
+ setPortRot(N);for(const k of[0,3,4])SITES[k].rot=0;/* re-aimed at their routes as the routes arrive (alignSites) */
+ buildRoutes(N.routes);routeManifest(N);applyBrand(N);applyVessel(N);
  const f=SITES[0].g,a=SITES[2].g,w=SITES[3].g,e=SITES[4].g,mdl=gc(f,a,.5);
  VIEWS.start=[f[0]-16,clamp(f[1]-9,-70,70)];VIEWS.approach=[f[0]-7,clamp(f[1]-4,-75,75)];VIEWS.claimA=gc(w,f,.42);VIEWS.claimB=gc(w,f,.58);GLOBE_VIEW.lon=mdl[0];GLOBE_VIEW.lat=mdl[1];
  LBL[0]={t:N.origin.toUpperCase(),g:[f[0]-13,clamp(f[1]-8,-70,70)]};LBL[1]=N.dest===N.origin?null:{t:N.dest.toUpperCase(),g:[e[0]-2,clamp(e[1]+4.5,-70,78)]};

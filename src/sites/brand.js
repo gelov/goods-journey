@@ -67,3 +67,31 @@ function brandSigns(){if(!BRSIGN){const pr=prog(`attribute vec3 aP;attribute vec
 function drawBrandSigns(){const S=SITES[4];if(!S.on||!(FADE*S.a>.01))return;const B=brandSigns(),p=B.pr;gl.useProgram(p.p);gl.uniformMatrix4fv(p.u.uVP,false,f32(S.vp));gl.uniform1f(p.u.uA,FADE*S.a);gl.uniform2f(p.u.uCen,S.c[0],S.c[1]);gl.uniform2f(p.u.uR,S.r0,S.r1);
  gl.bindBuffer(gl.ARRAY_BUFFER,B.buf);gl.enableVertexAttribArray(p.a.aP);gl.vertexAttribPointer(p.a.aP,3,gl.FLOAT,false,20,0);gl.enableVertexAttribArray(p.a.aU);gl.vertexAttribPointer(p.a.aU,2,gl.FLOAT,false,20,12);
  gl.activeTexture(gl.TEXTURE0);gl.uniform1i(p.u.uTex,0);for(let i=0;i<SIGNS.length;i++){gl.bindTexture(gl.TEXTURE_2D,B.tex[i]);gl.drawArrays(gl.TRIANGLES,i*6,6)}gl.disableVertexAttribArray(p.a.aU)}
+/* ================= vessel identity =================
+   The cargo ship carries the vessel named by the manifest: the name in white letters on both sides of the bow, and on the stern the name
+   with whatever IMO number, voyage and shipping line the manifest gives (left out when missing; nothing is invented). The letters are
+   geometry in the ship's own mesh (quads just off the hull, from the name drawn on a small canvas), so they move, light and shade with the
+   ship at the ports, on the globe and through every zoom; they are rebuilt only when the vessel changes (applyVessel). */
+let VESSEL={name:null,imo:null,voyage:null,line:null},VESKEY='';
+/* the lit pixels of a text as horizontal runs, rows top to bottom: [{y,x0,x1}], with the bitmap size */
+function textRuns(t,px){const cv=document.createElement('canvas'),x=cv.getContext('2d'),f=`700 ${px}px "Arial Narrow","Helvetica Neue",Arial,sans-serif`;x.font=f;const w=Math.ceil(x.measureText(t).width)+4,h=Math.ceil(px*1.15);
+ cv.width=w;cv.height=h;x.font=f;x.fillStyle='#fff';x.textBaseline='middle';x.fillText(t,2,h/2+1);const d=x.getImageData(0,0,w,h).data,R=[];
+ for(let y=0;y<h;y++){let s=-1;for(let i=0;i<=w;i++){const on=i<w&&d[(y*w+i)*4+3]>110;if(on&&s<0)s=i;else if(!on&&s>=0){R.push({y,x0:s,x1:i});s=-1}}}return{R,w,h}}
+/* lay a text on a flat face: origin o (top-left corner as seen by a viewer), along u (reading direction), down v, normal n, letter height H */
+/* the length a text takes at letter height H, capped at maxL */
+const textLen=(t,H,maxL)=>{const T=textRuns(t,18);return Math.min(maxL,T.w*H/T.h)};
+function textOn(t,o,u,v,n,H,maxL,col){if(!t||typeof document==='undefined')return;const T=textRuns(t,18);let s=H/T.h;if(T.w*s>maxL)s=maxL/T.w;C=col;
+ for(const r of T.R){const a=[r.x0*s,r.y*s],b=[r.x1*s,(r.y+1)*s],P=(x,y)=>[o[0]+u[0]*x+v[0]*y,o[1]+u[1]*x+v[1]*y,o[2]+u[2]*x+v[2]*y];
+  Q(P(a[0],a[1]),P(b[0],a[1]),P(b[0],b[1]),P(a[0],b[1]),n)}}
+/* called at the end of the ship model: name on both bows (reading correctly from outside each side), details on the stern */
+function vesselMarks(){const V=VESSEL;if(!V.name)return;const nm=V.name.toUpperCase(),W=[.95,.95,.92];
+ /* port side reads from the bow aft; starboard reads toward the bow, so it starts one name-length aft and ends at the bow too */
+ const L=textLen(nm,1.05,10.2);textOn(nm,[4.03,2.25,11.3],[0,0,-1],[0,-1,0],[1,0,0],1.05,10.2,W);textOn(nm,[-4.03,2.25,11.3-L],[0,0,1],[0,-1,0],[-1,0,0],1.05,10.2,W);
+ const sub=[V.imo&&'IMO '+V.imo,V.voyage&&'Voyage '+V.voyage,V.line].filter(Boolean).join(' · ');
+ textOn(nm,[3.6,2.2,-14.03],[-1,0,0],[0,-1,0],[0,0,-1],.75,7.2,W);if(sub)textOn(sub,[3.6,1.25,-14.03],[-1,0,0],[0,-1,0],[0,0,-1],.42,7.2,W)}
+/* the manifest's vessel: name (without a "(fictional)" note), IMO, voyage, shipping line if given */
+function applyVessel(N){const sh=N&&N.records&&N.records.shipments&&N.records.shipments[0]||{},raw=typeof ACTIVE!=='undefined'&&ACTIVE&&ACTIVE.obj&&ACTIVE.obj.transport&&ACTIVE.obj.transport.vessel||{},cl=v=>v==null||String(v).trim()===''?null:String(v).trim();
+ VESSEL={name:cl(sh.vessel)&&cl(sh.vessel).replace(/\s*\(fictional\)\s*/i,'').replace(/\s*\(demo\)\s*/i,''),imo:cl(sh.imo),voyage:cl(sh.voyage)&&cl(sh.voyage).replace(/\s*\(demo\)\s*/i,''),line:cl(raw.shippingLine||raw.operator||raw.line)};
+ const key=JSON.stringify(VESSEL);if(key===VESKEY)return;VESKEY=key;if(typeof SHBR==='undefined'||!SHBR)return;const cur=BUILD;
+ for(const o of[SHBR,SHUK])for(const name of Object.keys(o.meshes)){setBuild(name);V=[];PID=o.pid;MOVB=true;MAT=0;SW=0;XF=null;MEL.T=[];o.build();const old=o.meshes[name];o.meshes[name]=upload(V);if(old&&old.b)gl.deleteBuffer(old.b);melTake()}
+ MOVB=false;PID=0;MAT=0;SW=0;V=[];setBuild(cur)}

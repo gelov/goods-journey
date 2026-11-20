@@ -3,7 +3,7 @@
 let last=0,scrubbing=false;
 function frame(t){requestAnimationFrame(frame);const dt=Math.min(.1,(t-last)/1000||.016);last=t;NOW=t;T=t/1000;stepTweens();
  if(STATE.started&&STATE.playing&&!STATE.hold){STATE.t+=dt*spd()*warp(STATE.idx);const D=SCRIPT[STATE.idx].dur;if(STATE.t>=D){STATE.t=D;if(STATE.mode==='guided'&&STATE.att&&STATE.idx<STAGES.length-1)goStage(STATE.idx+1);else{STATE.playing=false;syncCtl()}}}
- for(const m of MOV)m.upd(m);legPost();legRoadsTick();trackTick(dt);
+ for(const m of MOV)m.upd(m);legPost();trackTick(dt);
  resize();stepCam(dt);render();updateLabels();updateTrack();if(document.activeElement!==$('#scrub'))$('#scrub').value=STATE.t}
 /* draw every mesh once off-screen: some drivers only finish uploading a buffer on first use, which shows as a hitch when a site first appears */
 function warmGPU(){const F=FB.pick,p=PR.pick;if(!F)return;gl.bindFramebuffer(gl.FRAMEBUFFER,F.f);gl.viewport(0,0,F.w,F.h);gl.useProgram(p.p);gl.uniformMatrix4fv(p.u.uVP,false,f32(ID));gl.uniformMatrix4fv(p.u.uM,false,f32(ID));
@@ -15,7 +15,7 @@ function main(){gl=cv.getContext('webgl',{antialias:true,alpha:false})||cv.getCo
  setStyle(STYLE);buildData();buildGlobe();buildUI();initTrackUI();initSettings();
  /* build the other style in the background so the first switch is instant */
  setTimeout(()=>{for(const n in STYLES)buildStyle(n);warmGPU()},300);initControls();resize();
- initManifestUI();initCharacters();APPLY_READY=true;if(DATA.man)applyManifest(DATA.man);flyTo(()=>introView(),2800);syncTL();
+ initManifestUI();if(typeof initExplorer==='function')initExplorer();initCharacters();APPLY_READY=true;if(DATA.man)applyManifest(DATA.man);flyTo(()=>introView(),2800);syncTL();
  let h='';try{h=location.hash.slice(1)}catch(e){}const m=/^s(\d+)(?:@([\d.]+))?$/.exec(h);
  if(m){start('guided');goStage(+m[1]-1);if(m[2]){STATE.t=+m[2];STATE.playing=false;STATE.hold=false;FLY=null;STATE.att=true;syncCtl()}}else if(h==='free')$('#bExplore').click();
  requestAnimationFrame(t=>{last=t;frame(t)})}

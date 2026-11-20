@@ -161,7 +161,7 @@ function trkIds(){const c=context(),b=c.one('batch'),co=c.one('container'),sh=c.
  return{batch:v(b&&b.id),pallet:v(tk.palletId||(c.one('pallet')||{}).id),cont:v(co&&co.id),vessel:v(sh&&sh.vessel),lorryBR:v(b&&b.lorry),lorryUK:v(co&&co.truck),lorryDel:(c.one('delivery')||{}).lorry||null,level:tk.level||'batch',c}}
 /* camera target that follows the tracked object while it is in site k, and a fixed spot otherwise */
 /* it reads a smoothed position (TRK.sm, eased in trackTick), so a handoff between carriers glides instead of nudging the view */
-const TR=(k,x,z)=>()=>TRK.sm&&TRK.sm[0]===k?geoOf(k,TRK.sm[1],TRK.sm[2]):geoOf(k,x,z);
+const TR=(k,x,z)=>onSite(k,()=>TRK.sm&&TRK.sm[0]===k?geoOf(k,TRK.sm[1],TRK.sm[2]):geoOf(k,x,z));
 /* tracked objects are movers with their own ids, so they can be highlighted and picked like anything else */
 function buildTracking(){const note='Stands for the whole batch. Its own movements are a simulated illustration: the records trace batches, not single melons.';
  const dyn=(o,q,yaw)=>{o.k=q.k;o.vis=q.vis;const s=q.s==null?1:q.s;if(q.m){o.m=q.m;o.p=q.p}else{o.m=mul(trs(q.p[0],q.p[1],q.p[2],q.yaw||yaw||0,1),sc(s,s,s));o.p=q.p}ENT[o.pid]&&(ENT[o.pid].site=q.k)};
@@ -221,12 +221,13 @@ function buildTracking(){const note='Stands for the whole batch. Its own movemen
 /* ---- marker, panel line, summary ---- */
 let TEL=null,TSUMX=-1;
 function initTrackUI(){TEL=el('div','trk');LAB.appendChild(TEL);$('#tsX').onclick=()=>{TSUMX=STATE.idx;$('#trkSum').classList.remove('show')}}
-function trkText(){const s=trkStep(),id=trkIds(),ca=CARRIER[s[2]],rep=id.level==='item'?'Tracked melon':'Representative melon';return{rep,where:ca.txt(id),sim:!!ca.sim,id}}
+function trkText(){const s=trkStep(),id=trkIds(),ca=CARRIER[s[2]],al=typeof shipAlloc==='function'?shipAlloc():null,rep=al?al.name+' allocation':id.level==='item'?'Tracked melon':'Representative melon';/* for a whole allocation: no single melon, and ids the manifest lacks are simply left out */
+ const w=ca.txt(id),where=al?(s[2]==='melon'?'at the farm':w.replace(/ \(not recorded\)/g,'').replace(/\s+/g,' ')):w;return{rep,where,sim:!!ca.sim,id,al}}
 function trackTick(dt){const s=trkStep(),pid=CARRIER[s[2]].pid();if(pid!==TRK.pid){TRK.pid=pid;TRK.pulse=1}TRK.pulse=Math.max(0,TRK.pulse-dt*1.3);TRK.step=s;
  const p=CARRIER[s[2]].pos(),a=1-Math.exp(-dt*4);if(!TRK.sm||TRK.sm[0]!==p[0])TRK.sm=[p[0],p[1],p[3]];else{TRK.sm[1]+=(p[1]-TRK.sm[1])*a;TRK.sm[2]+=(p[3]-TRK.sm[2])*a}}
 function updateTrack(){if(!TEL||!TRK.step)return;const tx=trkText(),key=tx.where+DATA.status;
  if(key!==TRK.key){TRK.key=key;TEL.innerHTML=`<i></i><b>${tx.rep}</b><span>${esc(tx.where)}</span>`;TEL.classList.remove('swap');void TEL.offsetWidth;TEL.classList.add('swap')}
- const n=$('#trkNow');if(n&&n.dataset.k!==key){n.dataset.k=key;n.innerHTML=`<b>${tx.rep}</b> of batch ${esc(tx.id.batch)}: now ${esc(tx.where)}.<small>${tx.sim?'This step is a simulated illustration.':'Carrier and ids from the journey records ('+STATUS[DATA.status]+').'} Single melons are not tracked; this one stands for its batch.</small>`}
+ const n=$('#trkNow');if(n&&n.dataset.k!==key){n.dataset.k=key;n.innerHTML=tx.al?`<div class="alh"><b>${esc(tx.al.name)}</b><span>${esc(tx.where)}</span></div><div class="alk"><div><em>${fmtN(tx.al.cartons,0)}</em><small>cartons</small></div><div><em>${fmtP(tx.al.pallets)}</em><small>pallets</small></div><div><em>${tx.al.varieties}</em><small>varieties</small></div></div><small>Intended customer allocation from the manifest, not a confirmed delivery.</small>`:`<b>${tx.rep}</b> of batch ${esc(tx.id.batch)}: now ${esc(tx.where)}.<small>${tx.sim?'This step is a simulated illustration.':'Carrier and ids from the journey records ('+STATUS[DATA.status]+').'} Single melons are not tracked; this one stands for its batch.</small>`}
  /* position: over the object in a visible site, or over the travelling vehicle on the map */
  let q=null;const p=CARRIER[TRK.step[2]].pos();
  if(MARK&&X.d>1500)q=dot(llu(MARK.g[0],MARK.g[1]),X.eyeG)>1.004?proj(X.gvp,llu(MARK.g[0],MARK.g[1])):null;

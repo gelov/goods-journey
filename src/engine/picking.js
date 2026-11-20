@@ -6,4 +6,4 @@ function pickAt(cx,cy){if(!PRIM||FADE<.5)return 0;const F=FB.pick;gl.bindFramebu
 function hoverAt(x,y){if(NOW-hovT<110||!STATE.started)return;hovT=NOW;HOVER=pickAt(x,y);cv.classList.toggle('hov',!!HOVER)}
 function focusEnt(id,close){const e=ENT[id];if(!e)return;FOCUS=id;const b=e.bb,m=e.mover,size=m?16:Math.max(b[3]-b[0],b[5]-b[2],8),d=clamp(size*(close?1.5:2.1),22,260),pos=()=>m?geoOf(e.site,m.p[0],m.p[2]):geoOf(e.site,(b[0]+b[3])/2,(b[2]+b[5])/2);
  userTook();const ry=POSE.ry,rx=clamp(POSE.rx,.4,.9);flyTo(()=>{const g=pos();return{lon:g[0],lat:g[1],ry,rx,ld:Math.log(d)}},1100,()=>{FOLLOW=m?pos:null});showPanel(e.stage,e)}
-function clickAt(x,y){const id=pickAt(x,y);if(id)focusEnt(id);else{FOCUS=0;if(STATE.mode==='free')hidePanel()}}
+function clickAt(x,y){const id=pickAt(x,y);if(id){focusEnt(id);if(typeof shipOnPick==='function')shipOnPick(ENT[id])}else{FOCUS=0;if(STATE.mode==='free')hidePanel()}}

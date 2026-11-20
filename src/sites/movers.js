@@ -15,7 +15,7 @@ const BELT={z0:15.5,L:11.7,n:3,v:4.5,t0:16.2,y:.9};
 function beltSlot(k){const c=STATE.idx===1?STATE.t:T*.35+100,d=BELT.v*(c-BELT.t0)+k*BELT.L/BELT.n,m=((d%BELT.L)+BELT.L)%BELT.L;return{z:BELT.z0+m,u:m/BELT.L,cyc:Math.floor(d/BELT.L)}}
 function buildMovers(){
  /* ---- farm ---- */
- LORF=mover(0,EM(0,'Collection lorry',1,'Carries the packed crates from the farm to the export port.'),()=>lorry(LRED,LRED,P.white),o=>{const t=tau(1);o.vis=t<25.4;onPath(o,RDF,legE(0,'d',u01(t,19.5,25.5)),.12);if(t<19.5)setM(o,-128,.12,30.5,-Math.PI/2,1)});
+ LORF=mover(0,EM(0,'Collection lorry',1,'Carries the packed crates from the farm to the export port.'),()=>lorry(LRED,LRED,P.white),o=>{const t=tau(1);o.vis=t<25.4;/* the farm road it leaves by (globe.js picks the way toward the route); parked on it, already facing that way */const L=typeof LEGS!=='undefined'?LEGS[0]:null;if(L&&ROUTES[0]&&ROUTES[0].length>1)legBuild(L);const pa=L?L.dp():RDF;onPath(o,pa,legE(0,'d',u01(t,19.5,25.5)),.12);if(t<19.5){const q=pathPose(pa,0,3.5);setM(o,q[0],.12,q[2],q[3],1)}});
  /* a worker walking between two points and back, pausing at each end; the stride follows the distance actually covered */
  const walker=(k,nm,stage,note,a,b,per,shirt,hat,ph)=>{const role=/Shopper/.test(nm)?'shopper':/colleague/.test(nm)?'store':/Harvest|Loader/.test(nm)?'harvest':/Farm/.test(nm)?'farm':null,L=Math.hypot(b[0]-a[0],b[1]-a[1]),hd=Math.atan2(b[0]-a[0],b[1]-a[1]),S={f:0};
   /* the route between the two ends goes round walls and equipment; it is planned once per style from the site's obstacles */
@@ -85,7 +85,7 @@ function buildMovers(){
  for(const[x,ph,c]of[[174.5,0,P.melY],[183.5,1.5,[.6,.46,.27]]])mover(3,0,()=>ball(c,0,0,0,MELR,.9,8,4),o=>{const q=(T/4+ph)%1;o.m=mul(mul(tr(x-.3,2+Math.sin(q*Math.PI)*1.1,7.6),rY(T*2)),rZ(.4))});
  for(let k=0;k<6;k++)mover(3,0,()=>ball(k%3?P.melY:P.melG,0,0,0,MELR,.9,6,3),o=>{const u=(T/9+k/6)%1;setM(o,lerp(172,186,u),1.37,13,T+k,Math.min(1,u*12,(1-u)*12))});
  /* ---- supermarket ---- */
- LORS=mover(4,EM(4,'Delivery lorry',9,'Carries accepted melons from the warehouse to the supermarket.'),()=>lorry(LRED,LRED,P.white),o=>{const t=tau(9);o.vis=t>=16;onPath(o,RSM,legE(3,'a',u01(t,16.5,22)),.12)});
+ LORS=mover(4,EM(4,'Delivery lorry',9,'Carries accepted melons from the warehouse to the supermarket.'),()=>lorry(LRED,LRED,P.white),o=>{const t=tau(9);o.vis=t>=16;const L=typeof LEGS!=='undefined'?LEGS[3]:null;if(L&&ROUTES[3]&&ROUTES[3].length>1)legBuild(L);onPath(o,L?L.ap():RSM,legE(3,'a',u01(t,16.5,22)),.12)});
  for(let k=0;k<3;k++)mover(4,0,()=>crate(0,0,0,1),o=>{const t=tau(9),u=((t-24.9)/1.6+k/3)%1;o.vis=t>=24.9&&t<28.5;setM(o,lerp(201.5,214.5,u),.5+Math.sin(u*Math.PI)*4,lerp(13,10.6,u),0,Math.min(1,u*8,(1-u)*8))});
  const sh=walker(4,'Shopper',9,'Chooses a melon from the display.',[226.5,19.6],[223.5,11.2],14,P.red,null,0);
  /* more of the store at work: a shopper walking the aisles, two browsing the produce, a colleague restocking an aisle */

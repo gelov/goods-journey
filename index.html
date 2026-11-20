@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>From Farm to Shelf</title>
-<link rel="stylesheet" href="styles/main.css?v=103">
+<link rel="stylesheet" href="styles/main.css?v=128">
 </head>
 <body class="intro guided">
 <canvas id="stage" tabindex="0" aria-label="Miniature 3D world: melon supply chain from Brazil to the UK"></canvas>
@@ -18,12 +18,16 @@
     <button id="bData" class="chip on" aria-pressed="true" title="Show or hide data moving between places">Data flow</button>
     <button id="bOrbit" class="chip" aria-pressed="false" title="Slowly rotate the view on its own">Auto-orbit</button>
     <button id="bFollow" class="chip" title="Hand the camera back to the guided journey">Follow</button>
+    <button id="bShip" class="chip" title="Explore the shipment manifest">Shipment</button>
     <button id="bGlobe" class="chip" title="Back to the whole globe">Globe</button>
     <button id="bReset" class="chip" title="Back to this stage's view">Reset view</button>
     <button id="bMore" class="chip" aria-label="More controls" aria-expanded="false" title="More controls">☰</button>
     <button id="bSet" class="chip" aria-label="Settings" aria-expanded="false" title="Settings">⚙</button>
   </nav>
 </header>
+<aside id="shipX" class="glass" aria-label="Shipment Explorer"><button id="shX" class="x" aria-label="Close">×</button><p class="eyebrow">Shipment Explorer</p>
+  <div class="shh"><select id="shSel" aria-label="Shipment"></select><button id="shImp" type="button" class="chip">Import Excel manifest</button><input id="shFile" type="file" accept=".xlsx" hidden></div>
+  <p id="shErr" class="bad" hidden></p><div id="shBody"></div></aside>
 
 <section id="hero">
   <p class="eyebrow">Brazil → United Kingdom · melons · ten stages</p>
@@ -74,46 +78,46 @@
   <div id="tlRow"><button class="nav" id="bPrev">← Prev</button><div id="track"><div class="rail"></div><div class="fill" id="fill"></div></div><button class="nav" id="bNext">Next →</button></div>
 </nav>
 <div id="nogl" hidden>This experience needs WebGL. Open it in a current browser with hardware acceleration on.</div>
-<script src="src/config.js?v=103"></script>
-<script src="src/data/manifest.js?v=103"></script>
-<script src="src/data/adapters.js?v=103"></script>
-<script src="src/data/providers.js?v=103"></script>
-<script src="src/data/model.js?v=103"></script>
-<script src="src/data/brands.js?v=103"></script>
-<script src="src/engine/math.js?v=103"></script>
-<script src="src/engine/tween.js?v=103"></script>
-<script src="src/engine/geometry.js?v=103"></script>
-<script src="src/sites/styles.js?v=103"></script>
-<script src="src/journey/stages.js?v=103"></script>
-<script src="src/sites/kit.js?v=103"></script>
-<script src="src/sites/kit-industrial.js?v=103"></script>
-<script src="src/sites/kit-diorama.js?v=103"></script>
-<script src="src/sites/people.js?v=103"></script>
-<script src="src/sites/nav.js?v=103"></script>
-<script src="src/geo/sites.js?v=103"></script>
-<script src="src/sites/store.js?v=103"></script>
-<script src="src/sites/world.js?v=103"></script>
-<script src="src/sites/paths.js?v=103"></script>
-<script src="src/engine/gl.js?v=103"></script>
-<script src="src/engine/gltf.js?v=103"></script>
-<script src="src/engine/melons.js?v=103"></script>
-<script src="src/sites/movers.js?v=103"></script>
-<script src="src/sites/brand.js?v=103"></script>
-<script src="src/sites/siteroute.js?v=103"></script>
-<script src="src/sites/legroads.js?v=103"></script>
-<script src="src/journey/tracking.js?v=103"></script>
-<script src="src/sites/build.js?v=103"></script>
-<script src="src/sites/data-layer.js?v=103"></script>
-<script src="src/geo/globe.js?v=103"></script>
-<script src="src/geo/routing.js?v=103"></script>
-<script src="src/geo/tiles.js?v=103"></script>
-<script src="src/journey/scripts.js?v=103"></script>
-<script src="src/engine/camera.js?v=103"></script>
-<script src="src/engine/picking.js?v=103"></script>
-<script src="src/engine/render.js?v=103"></script>
-<script src="src/journey/ui.js?v=103"></script>
-<script src="src/journey/settings.js?v=103"></script>
-<script src="src/journey/manifest-ui.js?v=103"></script>
-<script src="src/main.js?v=103"></script>
+<script src="src/config.js?v=128"></script>
+<script src="src/data/manifest.js?v=128"></script>
+<script src="src/data/adapters.js?v=128"></script>
+<script src="src/data/providers.js?v=128"></script>
+<script src="src/data/model.js?v=128"></script>
+<script src="src/data/brands.js?v=128"></script>
+<script src="src/data/shipment.js?v=128"></script>
+<script src="src/engine/math.js?v=128"></script>
+<script src="src/engine/tween.js?v=128"></script>
+<script src="src/engine/geometry.js?v=128"></script>
+<script src="src/sites/styles.js?v=128"></script>
+<script src="src/journey/stages.js?v=128"></script>
+<script src="src/sites/kit.js?v=128"></script>
+<script src="src/sites/kit-industrial.js?v=128"></script>
+<script src="src/sites/kit-diorama.js?v=128"></script>
+<script src="src/sites/people.js?v=128"></script>
+<script src="src/sites/nav.js?v=128"></script>
+<script src="src/geo/sites.js?v=128"></script>
+<script src="src/sites/store.js?v=128"></script>
+<script src="src/sites/world.js?v=128"></script>
+<script src="src/sites/paths.js?v=128"></script>
+<script src="src/engine/gl.js?v=128"></script>
+<script src="src/engine/gltf.js?v=128"></script>
+<script src="src/engine/melons.js?v=128"></script>
+<script src="src/sites/movers.js?v=128"></script>
+<script src="src/sites/brand.js?v=128"></script>
+<script src="src/journey/tracking.js?v=128"></script>
+<script src="src/sites/build.js?v=128"></script>
+<script src="src/sites/data-layer.js?v=128"></script>
+<script src="src/geo/globe.js?v=128"></script>
+<script src="src/geo/routing.js?v=128"></script>
+<script src="src/geo/tiles.js?v=128"></script>
+<script src="src/journey/scripts.js?v=128"></script>
+<script src="src/engine/camera.js?v=128"></script>
+<script src="src/engine/picking.js?v=128"></script>
+<script src="src/engine/render.js?v=128"></script>
+<script src="src/journey/ui.js?v=128"></script>
+<script src="src/journey/settings.js?v=128"></script>
+<script src="src/journey/manifest-ui.js?v=128"></script>
+<script src="src/journey/explorer.js?v=128"></script>
+<script src="src/main.js?v=128"></script>
 </body>
 </html>
