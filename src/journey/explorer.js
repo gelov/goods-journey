@@ -56,7 +56,7 @@ function shipRender(){const box=$('#shBody');if(!box)return;const S=SHIP.active;
   <dt>Departure week</dt><dd>${sh.departureWeek?esc(`${sh.departureWeek.raw} (week ${sh.departureWeek.week}, ${sh.departureWeek.year})`):'not recorded'}</dd><dt>Supermarket</dt><dd>${esc(SHIP.f.customer||'—')} <span class="na">(intended customer)</span></dd>
   <dt>Cartons</dt><dd>${fmtN(t.cartons,0)}</dd><dt>Pallets</dt><dd>${fmtP(t.pallets)}</dd><dt>Varieties</dt><dd>${vars.length}</dd>
   <dt>Melons</dt><dd>${mel!=null?fmtN(mel,0)+' <span class="na">(Count × Cartons; each record\'s Count matches its product size)</span>':'<span class="na">not calculable from the manifest</span>'}</dd><dt>Records</dt><dd>${t.records} of ${A.length}</dd></dl>
-  <p class="shv">Checked against the manifest summary: cartons ${v.cartons.ok?'match':'differ'} (${fmtN(v.cartons.stated,0)}), pallets ${v.pallets.ok?'match':'differ'} (${fmtP(v.pallets.stated)}); ${v.skipped.length} subtotal or empty rows left out. ${cust.map(c=>{const x=SHIPMENT.totals(A.filter(r=>r.finalCustomer===c));return`${esc(c)} ${fmtN(x.cartons,0)} cartons`}).join(' + ')} = ${fmtN(SHIPMENT.totals(A).cartons,0)}. Source: ${esc(S.source.file||'')}, sheet ${esc(S.source.sheet||'')}.</p>`}
+  <p class="shv">Checked against the manifest summary: cartons ${v.cartons.ok?'match':'differ'} (${fmtN(v.cartons.stated,0)}), pallets ${v.pallets.ok?'match':'differ'} (${fmtP(v.pallets.stated)}); ${v.skipped.length} subtotal or empty rows left out. ${cust.map(c=>{const x=SHIPMENT.totals(A.filter(r=>r.finalCustomer===c));return`${esc(c)} ${fmtN(x.cartons,0)} cartons`}).join(' + ')} = ${fmtN(SHIPMENT.totals(A).cartons,0)}. Source: ${esc(S.source.file||'')}, sheet ${esc(S.source.sheet||'')}.</p>${srcStatusHTML()}`}
 /* switching customer: the journey's data, labels and store change in place; the journey keeps playing where it is */
 function shipSet(f,v){if(f!=='customer')return;SHIP.f.customer=v;shipRefresh();shipRender();if(STATE.panel)showPanel(STATE.pi,STATE.obj);TRK.key=''}
 function shipRefresh(){if(!SHIP.active||!DATA.man||DATA.man.id!==SHIP.active.id)return;const J=shipJourney(SHIP.active);if(J.error)return;const P=prepareManifest(J);if(P.errors.length)return;
@@ -65,22 +65,22 @@ function shipBrand(){if(!DATA.man||!SHIP.active||DATA.man.id!==SHIP.active.id)re
 /* a click on cargo in the 3D scene opens the explorer on the records it carries (all of them: a pallet or container is not one record) */
 function shipOnPick(e){if(!SHIP.active||!e)return;const cargo=[TID.crate,TID.pallet,TID.cont,TID.cargo,TID.melon].includes(e.id)||/lorry|vessel|container|pallet|crate|forklift/i.test(e.name||'');if(cargo)shipOpen(true)}
 function initExplorer(){const sel=$('#shSel');if(!sel)return;$('#bShip').onclick=()=>shipOpen();$('#shX').onclick=()=>shipOpen(false);sel.onchange=()=>sel.value&&shipSelect(sel.value);
- $('#shImp').onclick=()=>$('#shFile').click();$('#shFile').onchange=async()=>{const f=$('#shFile').files[0];$('#shFile').value='';if(!f)return;try{const S=await shipReadXlsx(f),k='x:'+f.name;SHIP.list=SHIP.list.filter(x=>x.key!==k).concat([{key:k,label:'Imported · '+f.name,data:S}]);SHIP.key=k;shipUI();shipUse(S,k)}catch(x){shipMsg(`"${f.name}" could not be read: ${x.message}`)}};
+ $('#shImp').onclick=()=>$('#shFile').click();$('#shFile').onchange=async()=>{const f=$('#shFile').files[0];$('#shFile').value='';if(!f)return;if(/\.csv$/i.test(f.name)){srcImport(f);return}try{const S=await shipReadXlsx(f),k='x:'+f.name;SHIP.list=SHIP.list.filter(x=>x.key!==k).concat([{key:k,label:'Imported · '+f.name,data:S}]);SHIP.key=k;shipUI();shipUse(S,k)}catch(x){shipMsg(`"${f.name}" could not be read: ${x.message}`)}};
  const b=$('#shBody');b.addEventListener('change',e=>{const f=e.target.dataset&&e.target.dataset.f;if(f)shipSet(f,e.target.value)});
- shipInit()}
+ shipInit();srcInit()}
 /* ---- the shipment block in each stage panel: the filtered records, and what this stage can and cannot say from the manifest ---- */
 function shipStageHTML(i){const S=SHIP.active;if(!S||!DATA.man||DATA.man.id!==S.id)return'';const R=shipRecs(),t=SHIPMENT.totals(R),sh=S.shipment,who=SHIP.f.customer||'All customers',mel=shipMelons(R),row=(k,v)=>`<dt>${k}</dt><dd>${v}</dd>`;
  const bd=(f,n)=>SHIPMENT.breakdown(R,f).slice(0,n||4).map(b=>`${esc(b.key)}: ${fmtN(b.cartons,0)} cartons`).join('<br>'),traces=SHIPMENT.distinct(R,'trace'),nr='<span class="na">not in the manifest</span>';
  /* every stage speaks for the whole allocation */
- const per={0:[row('Origin',esc((sh.portOfDeparture||'').split(',').pop().trim()||'not recorded')),row('Farm',nr),row('Harvest date',nr)],
+ const per={0:[row('Origin',esc((sh.portOfDeparture||'').split(',').pop().trim()||'not recorded')),row('Harvest date',nr)],
   1:[row('Products',bd('description')),row('Varieties',esc(SHIPMENT.distinct(R,'variety').join(', '))),row('Brands',esc(SHIPMENT.distinct(R,'brand').join(', '))),row('Trace codes',`${traces.length}: ${esc(traces.slice(0,6).join(', '))}${traces.length>6?'…':''}`)],
   2:[row('Port',esc(sh.portOfDeparture||'not recorded')),row('Departure week',sh.departureWeek?esc(sh.departureWeek.raw):'not recorded'),row('Containers (Nº CNTR)',SHIPMENT.distinct(R,'container').length?esc(SHIPMENT.distinct(R,'container').join(', ')):nr)],
   3:[row('Vessel',esc(sh.vessel||'not recorded')),row('Route',esc(`${sh.portOfDeparture} → ${sh.portOfEntry}`)),row('Sailing dates',nr),row('Allocation',bd('finalCustomer'))],
   4:[row('Port of entry',esc(sh.portOfEntry||'not recorded')),row('Customs status',nr)],5:[row('Cargo records',`${t.records} (open the Shipment Explorer to inspect them)`)],
   6:[row('Allocation',bd('finalCustomer')),row('Varieties',esc(SHIPMENT.distinct(R,'variety').join(', '))),row('Note','The intended customer from the manifest; not proof of stock, picking or dispatch.')],
-  7:[row('QC report',nr+' (ready for Prometheus QC reports)'),row('Trace codes',String(traces.length))],8:[row('Claims',nr)],
+  7:[row('Trace codes',String(traces.length))],8:[row('Claims',nr)],
   9:[row('Intended customer',esc(SHIP.f.customer||SHIPMENT.distinct(R,'finalCustomer').join(' / '))),row('Arriving',bd('variety',8)),row('Delivery records',nr),row('Note','The store shows the intended destination, not a confirmed delivery.')]}[i]||[];
- return`<h3 style="--c:#f2b33d">Shipment manifest</h3><dl class="dest">${row('Shipment',esc(`${sh.vessel} · ${sh.departureWeek?sh.departureWeek.raw:''}`))}${row('Customer',esc(who))}${row('Cartons',fmtN(t.cartons,0))}${row('Pallets',fmtP(t.pallets))}${row('Varieties',String(SHIPMENT.distinct(R,'variety').length))}${mel!=null?row('Melons',fmtN(mel,0)+' (Count × Cartons)'):''}${per.join('')}</dl><p><button class="chip" onclick="shipOpen(true)">Open Shipment Explorer</button></p>`}
+ return`<h3 style="--c:#f2b33d">Shipment manifest</h3><dl class="dest">${row('Shipment',esc(`${sh.vessel} · ${sh.departureWeek?sh.departureWeek.raw:''}`))}${row('Customer',esc(who))}${row('Cartons',fmtN(t.cartons,0))}${row('Pallets',fmtP(t.pallets))}${row('Varieties',String(SHIPMENT.distinct(R,'variety').length))}${mel!=null?row('Melons',fmtN(mel,0)+' (Count × Cartons)'):''}${per.join('')}</dl>${i===0?farmHTML():i===7?qcHTML():''}<p><button class="chip" onclick="shipOpen(true)">Open Shipment Explorer</button></p>`}
 
 /* ---- the allocation's full contents, under the tracker in the stage panel ----
    Variety cards (collapsible) > products (totals, record count, trace-code chips) > a compact record list; a record opens a detail view
@@ -109,3 +109,39 @@ document.addEventListener('click',e=>{const box=e.target.closest&&e.target.close
    view; choosing a shipment or customer inside the explorer does not */
 document.addEventListener('click',e=>{if(!SHIP.open||!e.target.closest)return;const t=e.target.closest('#bPlay,#bExplore,#bRe,#bPrev,#bNext,#tl button,#bPP');if(!t)return;
  if(t.id==='bPP'&&STATE.playing&&STATE.t<SCRIPT[STATE.idx].dur-.01)return;/* pausing keeps it open */shipOpen(false)},true);
+
+/* ================= Farm List and QC Report (src/data/sources.js) =================
+   Loaded from manifests/sources/ (scripts/csv-to-sources.mjs) or a CSV picked in the explorer; each dataset is optional and independent.
+   Stage 1 shows a farm only through a verified link; Stage 8 shows QC reports for the followed allocation, verified ones apart from
+   possible ones (with the reasons and conflicts). Nothing here changes the manifest, the allocation, or the 3D journey. */
+const SRC={farms:null,qc:null,msg:''};
+async function srcInit(){for(const k of['farms','qc'])try{const r=await fetch('manifests/sources/'+k+'.json',{cache:'no-cache'});if(r.ok)SRC[k]=await r.json()}catch(e){}srcChanged()}
+async function srcImport(f){try{const t=await f.text(),k=SOURCES.detect(t);if(!k)throw new Error('the header row is neither a Farm List nor a QC Report');
+  SRC[k]=k==='farms'?SOURCES.farmsFromCSV(t,{file:f.name}):SOURCES.qcFromCSV(t,{file:f.name});SRC.msg=`${f.name}: ${SRC[k].validation.records} ${k==='farms'?'farm areas':'QC records'} imported.`;shipMsg('')}
+ catch(x){shipMsg(`"${f.name}" could not be read: ${x.message}`)}srcChanged()}
+function srcChanged(){shipRender();if(STATE.panel)showPanel(STATE.pi,STATE.obj)}
+const srcQC=()=>SHIP.active&&SRC.qc?SOURCES.matchQC(SHIP.active,SRC.qc,SHIP.f.customer):null;
+function srcStatusHTML(){const F=SRC.farms,Q=SRC.qc,m=srcQC(),fv=F&&F.validation,qv=Q&&Q.validation;
+ return`<h4 class="srh">Data sources</h4>${SRC.msg?`<p class="shv">${esc(SRC.msg)}</p>`:''}<dl class="shs">
+  <dt>Farm List</dt><dd>${F?`${fv.records} farm areas, ${fv.farms} farms <span class="na">(${esc(F.source.file||'')})</span>${fv.duplicateRows.length?`<br><span class="na">Repeated rows kept: ${fv.duplicateRows.join(', ')}</span>`:''}${fv.noArea.length?`<br><span class="na">Rows without areas: ${fv.noArea.join(', ')}</span>`:''}`:'<span class="na">not loaded (import farm_list.csv)</span>'}</dd>
+  <dt>QC Report</dt><dd>${Q?`${qv.records} records, ${qv.vessels} vessels <span class="na">(${esc(Q.source.file||'')})</span><br><span class="na">Status values (not interpreted): ${esc(Object.entries(qv.byStatus).map(([k,v])=>k+' '+v).join(', '))}</span>`:'<span class="na">not loaded (import the QC Report CSV)</span>'}</dd>
+  <dt>Farm link</dt><dd>${esc(SOURCES.linkFarm(SHIP.active,F).status==='verified'?'verified':'not linked')}</dd>
+  <dt>QC links</dt><dd>${m?`${m.verified.length} verified, ${m.possible.length} possible (same vessel) for ${esc(SHIP.f.customer||'all customers')}`:'<span class="na">—</span>'}</dd></dl>`}
+const srcRow=(k,v)=>`<dt>${k}</dt><dd${v==null?' class="na"':''}>${v==null?'not recorded':esc(v)}</dd>`,srcOp=k=>SHIP.openK.has(k)?' open':'';
+function farmHTML(){const F=SRC.farms,L=SOURCES.linkFarm(SHIP.active,F),f=L.farm;
+ const body=L.status==='verified'?`<dl class="dest">${srcRow('Farm name',f.farmName)}${srcRow('Farm code',f.farmCode)}${srcRow('Area name',f.areaName)}${srcRow('Area code',f.areaCode)}${srcRow('Location',f.location)}</dl>`
+  :`<p class="na">Farm origin not yet linked to this shipment.</p><p class="na">${esc(L.reason)}</p>`;
+ const dir=F?`<details class="srd" data-k="fdir"${srcOp('fdir')}><summary>View available farms <i>${F.validation.farms} farms · ${F.validation.records} areas</i></summary><ul class="srl">${F.farms.map(x=>`<li><b>${esc(x.farmName||'—')}</b><span>code ${esc(x.farmCode||'—')}</span><span>${x.areas} area${x.areas===1?'':'s'}</span><span>${esc(x.locations.join(', ')||'location not recorded')}</span></li>`).join('')}</ul><p class="na">Reference directory only; not linked to this shipment.</p></details>`:'';
+ return`<details class="srs" data-k="farm"${srcOp('farm')}><summary>Farm Details</summary>${body}${dir}</details>`}
+function qcCard(e,poss){const q=e.rec,k='qc:'+q.id,v=x=>x&&x!=='FALSE'?x:null;
+ return`<details class="srq" data-k="${k}"${srcOp(k)}><summary><b>${esc(v(q.dateInspected)||'Not inspected')}</b><span>${esc(q.product||'')} · ${esc(q.variety||'')}</span><span class="na">status ${esc(q.status||'—')}</span></summary>
+  <dl class="dest">${srcRow('Inspection date',v(q.dateInspected))}${srcRow('Product',q.product)}${srcRow('Variety',q.variety)}${srcRow('Supplier',q.supplier)}${srcRow('Customer',q.customer)}${srcRow('Inspector',q.inspector)}
+  ${srcRow('Pallet traceability',q.palletTrace)}${srcRow('Box traceability',q.boxTrace)}${srcRow('Brix',q.brix)}${srcRow('Fruit weights',q.fruitWeights)}${srcRow('Boxes tested',q.boxesTested)}${srcRow('Boxes with defects',q.boxesWithDefects)}
+  ${srcRow('Progressive defects',[q.progressiveDefects,q.progressiveDefectsNo].filter(Boolean).join(' · ')||null)}${srcRow('Non-progressive defects',[q.nonProgressiveDefects,q.nonProgressiveDefectsNo].filter(Boolean).join(' · ')||null)}${srcRow('Total defects %',q.totalDefectsPct)}${srcRow('Notes',q.notes)}${srcRow('Report status',q.status)}</dl>
+  ${poss?`<p class="srw"><b>Why related:</b> ${esc(e.reasons.join('; '))}</p><p class="srw bad"><b>Conflicts:</b> ${esc(e.conflicts.join('; ')||'none')}</p>`:''}
+  <details class="srd" data-k="${k}:raw"${srcOp(k+':raw')}><summary>All original fields (CSV row ${q.row})</summary><dl class="dest">${Object.entries(q.raw).map(([h,x])=>srcRow(esc(h),x===''?null:x)).join('')}</dl></details></details>`}
+function qcHTML(){const m=srcQC();if(!m)return`<details class="srs" data-k="qc"${srcOp('qc')}><summary>Quality Control Reports</summary><p class="na">No QC Report loaded.</p></details>`;
+ const V=m.verified,P=m.possible;
+ return`<details class="srs" data-k="qc"${srcOp('qc')}><summary>Quality Control Reports <i>${V.length} verified</i></summary>${V.length?V.map(e=>qcCard(e,false)).join(''):'<p class="na">No QC report is verified for this allocation. A verified report needs a pallet ID in this allocation and no conflicting shipment details.</p>'}
+  <p class="na">The report Status field is shown as recorded; it is not read as QC approval.</p></details>
+  ${P.length?`<details class="srs" data-k="qcp"${srcOp('qcp')}><summary>Potentially Related QC Records <i>${P.length}</i></summary><p class="srw">Same vessel, but not conclusively this shipment; not counted in confirmed QC totals.${P.some(e=>e.conflicts.some(c=>c.startsWith('arrival port')))?` These inspections record arrival at ${esc([...new Set(P.map(e=>e.rec.portOfArrival))].join(', '))}; the manifest's port of entry is ${esc(SHIP.active.shipment.portOfEntry||'not recorded')}.`:''}</p>${P.map(e=>qcCard(e,true)).join('')}</details>`:''}`}
