@@ -19,25 +19,14 @@ function plantI(x,z,kind){const r=prng((Math.abs(x*13+z*7)*10|0)+1);
  if(kind===2){SW=.3;for(let k=0;k<3;k++)ball(P.leaf2,x+Math.cos(k*2.1)*.25,.34,z+Math.sin(k*2.1)*.25,.3,.5,6,3);SW=0;return}
  const h=kind?1.6:2.3;cyl(P.leaf,x,.2,z,.05,h,4);SW=.3;for(let k=0;k<(kind?3:4);k++){const a=k*2.4+r()*2;Tm(mul(mul(tr(x,.65+k*.5,z),rY(a)),rZ(.3)),()=>ball(k%2?P.leaf:P.leaf2,.3,0,0,.34,.25,6,3))}SW=0;
  ball(kind?P.melG:P.melY,x+.22,kind?.95:1.3,z+.1,MELR,.9,8,4);if(!kind&&r()>.4)ball(P.melY,x-.2,.8,z-.12,MELR*.95,.9,7,3)}
-/* growing rows: raised gutter, drip line, trellis posts and top wire, a walkway between rows; large plots get a greenhouse over them */
+/* growing rows: raised gutter, drip line, trellis posts and top wire, a walkway between rows; open-air (no greenhouse) */
 function plotI(x0,z0,x1,z1,dx){const cz=(z0+z1)/2,len=z1-z0-1.4;dx=dx||2.9;bb(P.dark,(x0+x1)/2,.2,z0+.4,x1-x0-1,.16,.16);
  for(let x=x0+1.5;x<x1-.8;x+=dx){bb(P.white,x,.18,cz,.8,.2,len);bb(P.dark,x-.5,.4,cz,.06,.06,len);bb(P.conc,x+dx/2,.185,cz,.9,.02,len);
   mt(3,()=>{for(let z=z0+1;z<z1-.6;z+=4.4)bb(P.steel,x,.2,z,.08,2.7,.08);bb(P.steel,x,2.86,cz,.04,.04,len)})}
  if(!XF&&(x1-x0)*(z1-z0)>200)ghI(x0-.6,z0-.6,x1+.6,z1+.6)}
-/* greenhouse: white frame in spans along x, pitched glass roofs, glass walls, a door bay left open on the east side, vents, fans, overhead pipes */
-function ghI(x0,z0,x1,z1){const w=x1-x0,d=z1-z0,cz=(z0+z1)/2,n=Math.max(1,Math.round(w/11)),sw=w/n,e=4.3,r=2.4,F=P.white,L=Math.hypot(sw/2,r),a=Math.atan2(r,sw/2),zs=[];
- for(let z=z0;z<z1-.1;z+=5.4)zs.push(z);zs.push(z1);
- for(const[x,z,ww,dd]of[[(x0+x1)/2,z0,w+.5,.4],[(x0+x1)/2,z1,w+.5,.4],[x0,cz,.4,d],[x1,cz,.4,d]])bb(P.conc,x,0,z,ww,.4,dd);
- mt(3,()=>{for(let i=0;i<=n;i++){const x=x0+i*sw;bb(F,x,e,cz,.2,.2,d);for(const z of zs)bb(F,x,.2,z,.2,e,.2)}
-  for(let i=0;i<n;i++){const xm=x0+(i+.5)*sw;bb(F,xm,e+r-.08,cz,.2,.2,d);for(const z of zs)for(const sg of[-1,1])Tm(mul(tr(xm+sg*sw/4,e+r/2+.05,z),rZ(-sg*a)),()=>box(F,0,0,0,L,.14,.14));
-   for(const z of[z0,z1]){bb(F,xm,.2,z,.14,e+r-.2,.14);bb(F,xm,2.3,z,sw,.12,.12)}
-   bb(P.steel,xm,e-.5,cz,.14,.14,d-1);for(let z=z0+4;z<z1-3;z+=8)Tm(mul(tr(xm+1.3,e+r-.55,z),rZ(-.5)),()=>box(F,0,0,0,1.9,.08,2.6));
-   cyl(P.dark,xm,e+.9,z0-.12,.9,.2,12);bb(P.steel,xm,e+.5,z0-.2,2.2,.12,.12)}
-  bb(F,x1,2.6,z0+13.5,.2,.14,5.4);bb(P.white,x0+2.4,.4,z1+.9,1.5,1.7,.7);bb(P.dark,x0+2.4,1.3,z1+1.27,.9,.5,.04)});
- glassI(()=>{const up=[0,1,0];for(let i=0;i<n;i++){const xa=x0+i*sw,xm=xa+sw/2,xb=xa+sw;Q([xa,e,z1],[xm,e+r,z1],[xm,e+r,z0],[xa,e,z0],nrm([-r,sw/2,0]));Q([xm,e+r,z1],[xb,e,z1],[xb,e,z0],[xm,e+r,z0],nrm([r,sw/2,0]));
-   tri([xa,e,z1],[xb,e,z1],[xm,e+r,z1],[0,0,1]);tri([xb,e,z0],[xa,e,z0],[xm,e+r,z0],[0,0,-1])}
-  Q([x0,.4,z1],[x1,.4,z1],[x1,e,z1],[x0,e,z1],[0,0,1]);Q([x1,.4,z0],[x0,.4,z0],[x0,e,z0],[x1,e,z0],[0,0,-1]);Q([x0,.4,z0],[x0,.4,z1],[x0,e,z1],[x0,e,z0],[-1,0,0]);
-  const da=z0+10.8,db=z0+16.2;Q([x1,.4,z1],[x1,.4,db],[x1,e,db],[x1,e,z1],[1,0,0]);Q([x1,.4,da],[x1,.4,z0],[x1,e,z0],[x1,e,da],[1,0,0]);Q([x1,2.7,db],[x1,2.7,da],[x1,e,da],[x1,e,db],[1,0,0])})}
+/* former greenhouse site: the structure (frame, glass roof and walls, kerb footings, vents, fans, roof pipes) has been removed so the
+   growing areas stand in the open; only the free-standing control cabinet beside the old door bay remains */
+function ghI(x0,z0,x1,z1){mt(3,()=>{bb(P.white,x0+2.4,0,z1+.9,1.5,2.1,.7);bb(P.dark,x0+2.4,1.3,z1+1.27,.9,.5,.04)})}
 /* operations hub on flat ground, replacing the terraced rise in this style. part 0: water treatment and irrigation station,
    equipment store, utility and control building, climate station, service road and pads. part 1: fertigation facility. */
 function opsHubI(part){const pipe=(x0,z0,x1,z1,y,c)=>mt(3,()=>bb(c||P.steel,(x0+x1)/2,y,(z0+z1)/2,Math.abs(x1-x0)+.18,.18,Math.abs(z1-z0)+.18)),cab=(x,z,w)=>mt(3,()=>{bb(P.chalk,x,.12,z,w,1.5,.7);bb(P.dark,x,1.62,z,w+.1,.06,.8);for(let q=-w/2+.5;q<w/2;q+=.9)bb(P.steel,x+q,.5,z+.36,.5,.8,.02)});
@@ -62,7 +51,7 @@ function opsHubI(part){const pipe=(x0,z0,x1,z1,y,c)=>mt(3,()=>bb(c||P.steel,(x0+
  mt(3,()=>{bb(P.conc,-189.6,0,-6.6,6,.12,4);bb(P.chalk,-190.6,.12,-7,2.4,2.4,2);bb(P.dark,-190.6,2.52,-7,2.6,.08,2.2);bb(P.dark,-190.6,.5,-5.98,.9,1.5,.04);cyl(P.steel,-188.4,.12,-7.4,.08,5,6);bb(P.steel,-188.4,4.6,-7.4,1.6,.06,.06);for(const q of[-.8,.8])ball(P.dark,-188.4+q,4.75,-7.4,.16,1,6,3);
   for(let y=3.2;y<4;y+=.22)cyl(P.white,-188.4,y,-7.4,.24,.08,8);cyl(P.steel,-191.4,2.6,-7.6,.04,2,5)});MAT=2;ball([.4,.95,.55],-190.6,2.75,-6.2,.12,1,6,3);MAT=0}
 /* large production greenhouse: concrete floor, hydroponic gutters with trained vine rows and fruit, a central service aisle,
-   supply pipes, then the same glass-and-frame shell as the farm houses; outside, a service path, a plant room and feed tanks */
+   supply pipes, open to the sky (no greenhouse shell); outside, a service path, a plant room and feed tanks */
 function prodHouseI(x0,z0,x1,z1){const cx=(x0+x1)/2,cz=(z0+z1)/2,w=x1-x0,d=z1-z0,r=prng((Math.abs(x0*7+z0)|0)+1),half=d/2-2.2;
  bb(P.conc,cx,0,cz,w+5,.14,d+5);bb(P.floor,cx,.14,cz,w,.06,d);bb(P.concD,cx,.2,cz,w-1,.02,2.4);
  for(let x=x0+2.2;x<x1-1.4;x+=3.4)for(const sg of[-1,1]){const zc=cz+sg*(half/2+1.3);bb(P.white,x,.5,zc,.7,.22,half);mt(3,()=>{for(const q of[-.42,0,.42])bb(P.steel,x,.2,zc+q*half,.08,.3,.08);bb(P.steel,x,3.1,zc,.04,.04,half)});
