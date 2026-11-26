@@ -3,16 +3,16 @@
    One chain links every stage: Farm > Harvest batch > Shipment > Container > Pallet > Pick list > QC report > Claim / Delivery.
    SEL is the shipment being followed; context() walks the links from it. FIELDS says which record field each stage shows. */
 const SEL={shipment:null};
-const KIND={farm:'Farm',batch:'Harvest batch',shipment:'Shipment',container:'Container',customs:'Customs declaration',pallet:'Pallet',allocation:'Pick list',qc:'QC report',claim:'Claim',delivery:'Delivery'};
-const PARENT={batch:'farm',shipment:'batch',container:'shipment',customs:'shipment',pallet:'container',allocation:'pallet',qc:'pallet',claim:'qc',delivery:'shipment'};
-const CHAIN=['farm','batch','shipment','container','pallet','allocation','qc','claim','delivery'];
+const KIND={farm:'Farm',batch:'Harvest batch',shipment:'Shipment',container:'Container',customs:'Customs declaration',pallet:'Pallet',allocation:'Pick list',qc:'QC report',claim:'Claim',invoice:'Invoice',delivery:'Delivery'};
+const PARENT={batch:'farm',shipment:'batch',container:'shipment',customs:'shipment',pallet:'container',allocation:'pallet',qc:'pallet',claim:'qc',invoice:'shipment',delivery:'shipment'};
+const CHAIN=['farm','batch','shipment','container','pallet','allocation','qc','claim','invoice','delivery'];
 function recs(c){return DATA.records&&DATA.records[c]||[]}
 function context(){const sh=recs('shipments').find(s=>s.id===SEL.shipment)||recs('shipments')[0],sid=sh&&sh.id,mine=x=>x.shipmentId!=null&&x.shipmentId===sid;
  const cons=recs('containers').filter(c=>c.shipmentId===sid),cid=cons.map(c=>c.id),pals=recs('pallets').filter(p=>cid.includes(p.containerId)),pid=pals.map(p=>p.id);
  const bats=recs('batches').filter(b=>mine(b)||pals.some(p=>(p.batchIds||[]).includes(b.id))),farms=recs('farms').filter(f=>bats.some(b=>b.farmId===f.id));
  const allocs=recs('allocations').filter(a=>mine(a)||(a.palletIds||[a.palletId]).some(p=>pid.includes(p))),qcs=recs('qcReports').filter(q=>mine(q)||(q.palletIds||[]).some(p=>pid.includes(p)));
  const all={farm:farms.length?farms:recs('farms'),batch:bats,shipment:sh?[sh]:[],container:cons,customs:recs('customs').filter(c=>c.shipmentId===sid),pallet:pals,allocation:allocs,qc:qcs,
-  claim:recs('claims').filter(c=>qcs.some(q=>q.id===c.qcReportId)),delivery:recs('deliveries').filter(d=>d.shipmentId===sid)};
+  claim:recs('claims').filter(c=>qcs.some(q=>q.id===c.qcReportId)),invoice:recs('invoices').filter(v=>v.shipmentId==null||v.shipmentId===sid),delivery:recs('deliveries').filter(d=>d.shipmentId===sid)};
  return{all,one:k=>all[k][0]}}
 const F=(label,rec,key,source,viz)=>({label,rec,key,source,viz});
 /* viz: a field can also carry a small dataset for the detail card: ['line',key] = readings chart, ['split',key] = results table */
@@ -26,6 +26,8 @@ const FIELDS=[
  [F('Warehouse','allocation','warehouse','Warehouse records'),F('Pick list','allocation','id','Prometheus'),F('System','allocation','system','Prometheus'),F('Total pallets','allocation','totalPallets','Warehouse records'),F('QC allocation','allocation','qcPallets','Prometheus'),F('Allocation date','allocation','date','Prometheus'),F('Allocation status','allocation','status','Prometheus')],
  [F('QC report','qc','id','Third-party QC report'),F('Inspection date','qc','date','Inspection records'),F('Inspection type','qc','type','Third-party QC report'),F('Inspected quantity','qc','inspected','Third-party QC report',['split','results']),F('Accepted','qc','accepted','Third-party QC report',['split','results']),F('Rejected','qc','rejected','Third-party QC report',['split','results']),F('Damage rate','qc','damageRate','Third-party QC report',['split','results']),F('QC status','qc','status','Third-party QC report'),F('Report','qc','report','Third-party QC report')],
  [F('Claim reference','claim','id','Claims records'),F('Related QC report','qc','id','QC reports'),F('Affected quantity','claim','quantity','QC reports'),F('Reason','claim','reason','QC reports'),F('Claim status','claim','status','Claims records'),F('Claim value','claim','value','Financial records'),F('Settlement date','claim','settled','Financial records'),F('Grower reference','claim','growerRef','Claims records')],
+ [F('Invoice number','invoice','id','Invoice'),F('Invoice date','invoice','date','Invoice'),F('Purchase order','invoice','purchaseOrder','Purchase order'),F('Supplier','invoice','supplier','Purchase order'),F('Customer','invoice','customer','Invoice'),F('Shipment reference','invoice','shipmentRef','Invoice'),
+  F('Purchase quantity','invoice','purchaseQty','Purchase records'),F('Sales quantity','invoice','salesQty','Sales records'),F('Purchase cost','invoice','purchaseCost','Purchase records'),F('Sales value','invoice','salesValue','Sales records'),F('Currency','invoice','currency','Financial records'),F('Invoice amount','invoice','amount','Invoice'),F('Payment due date','invoice','dueDate','Invoice'),F('Reconciliation status','invoice','reconciliation','Reconciliation'),F('Invoice status','invoice','status','Invoice'),F('Payment status','invoice','payment','Sage (via Hawkeye)')],
  [F('Delivery reference','delivery','id','Delivery documentation'),F('Customer','delivery','customer','Customer allocation'),F('Delivery destination','delivery','destination','Distribution records'),F('Dispatched quantity','delivery','quantity','Distribution records'),F('Delivery date','delivery','date','Delivery documentation'),F('Delivery status','delivery','status','Delivery documentation'),F('Related QC report','qc','id','QC reports'),F('Proof of delivery','delivery','pod','Delivery documentation')]];
 /* everything the detail view shows about one field, for the shipment being followed */
 function fieldInfo(f){const c=context(),all=c.all[f.rec],r=all[0],v=r?r[f.key]:null,has=v!=null&&v!=='',p=PARENT[f.rec],pr=p?[...new Set(c.all[p].map(x=>x.id).filter(x=>x!=null))]:[];
@@ -36,6 +38,6 @@ const STATUS={sample:'Demo Data',manifest:'From manifest',live:'Live data',unava
 /* a clicked 3D object shows the records it stands for */
 const ENTREC=[[/lorry|truck/i,null],[/vessel|ship/i,['shipment']],[/container/i,['container','shipment']],[/pallet|racking|intake/i,['pallet','allocation']],[/prometheus|warehouse/i,['allocation']],
  [/quality|inspect|sorting|rejected/i,['qc']],[/claim/i,['claim']],[/customs/i,['customs']],[/supermarket|shelv|display|delivery|checkout/i,['delivery']],[/harvest|packing|crate/i,['batch']],[/farm|field|crop|tunnel|weather|fertiliser/i,['farm']]];
-const LORRYREC=['farm','batch','shipment','shipment','shipment','pallet','pallet','pallet','pallet','delivery'];
+const LORRYREC=['farm','batch','shipment','shipment','shipment','pallet','pallet','pallet','pallet','pallet','delivery'];
 function entFields(e){const m=ENTREC.find(x=>x[0].test(e.name));if(!m)return[];const kinds=m[1]||[LORRYREC[e.stage]],seen={},out=[];
  for(const st of FIELDS)for(const f of st){const id=f.rec+'.'+f.key;if(kinds.includes(f.rec)&&!seen[id]&&(m[1]||/transport|destination|lorry|collection|batch|pallets|delivery/i.test(f.label))){seen[id]=1;out.push(f)}}return out}

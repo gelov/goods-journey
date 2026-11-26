@@ -67,7 +67,7 @@ function shipOnPick(e){if(!SHIP.active||!e)return;const cargo=[TID.crate,TID.pal
 function initExplorer(){const sel=$('#shSel');if(!sel)return;$('#bShip').onclick=()=>shipOpen();$('#shX').onclick=()=>shipOpen(false);sel.onchange=()=>sel.value&&shipSelect(sel.value);
  $('#shImp').onclick=()=>$('#shFile').click();$('#shFile').onchange=async()=>{const f=$('#shFile').files[0];$('#shFile').value='';if(!f)return;if(/\.csv$/i.test(f.name)){srcImport(f);return}try{const S=await shipReadXlsx(f),k='x:'+f.name;SHIP.list=SHIP.list.filter(x=>x.key!==k).concat([{key:k,label:'Imported · '+f.name,data:S}]);SHIP.key=k;shipUI();shipUse(S,k)}catch(x){shipMsg(`"${f.name}" could not be read: ${x.message}`)}};
  const b=$('#shBody');b.addEventListener('change',e=>{const f=e.target.dataset&&e.target.dataset.f;if(f)shipSet(f,e.target.value)});
- shipInit();srcInit()}
+ shipInit();srcInit();if(typeof hkLoad==='function')hkLoad()}
 /* ---- the shipment block in each stage panel: the filtered records, and what this stage can and cannot say from the manifest ---- */
 function shipStageHTML(i){const S=SHIP.active;if(!S||!DATA.man||DATA.man.id!==S.id)return'';const R=shipRecs(),t=SHIPMENT.totals(R),sh=S.shipment,who=SHIP.f.customer||'All customers',mel=shipMelons(R),row=(k,v)=>`<dt>${k}</dt><dd>${v}</dd>`;
  const bd=(f,n)=>SHIPMENT.breakdown(R,f).slice(0,n||4).map(b=>`${esc(b.key)}: ${fmtN(b.cartons,0)} cartons`).join('<br>'),traces=SHIPMENT.distinct(R,'trace'),nr='<span class="na">not in the manifest</span>';
@@ -79,7 +79,8 @@ function shipStageHTML(i){const S=SHIP.active;if(!S||!DATA.man||DATA.man.id!==S.
   4:[row('Port of entry',esc(sh.portOfEntry||'not recorded')),row('Customs status',nr)],5:[row('Cargo records',`${t.records} (open the Shipment Explorer to inspect them)`)],
   6:[row('Allocation',bd('finalCustomer')),row('Varieties',esc(SHIPMENT.distinct(R,'variety').join(', '))),row('Note','The intended customer from the manifest; not proof of stock, picking or dispatch.')],
   7:[row('Trace codes',String(traces.length))],8:[row('Claims',nr)],
-  9:[row('Intended customer',esc(SHIP.f.customer||SHIPMENT.distinct(R,'finalCustomer').join(' / '))),row('Arriving',bd('variety',8)),row('Delivery records',nr),row('Note','The store shows the intended destination, not a confirmed delivery.')]}[i]||[];
+  9:[row('Total Amount (manifest)',t.totalAmount?esc(fmtN(t.totalAmount,2)+' '+(sh.currency||'')):nr),row('Note','The manifest\'s line amounts for this allocation, as recorded; not an invoice. Invoice, purchase and sales records are not in the manifest, so nothing is reconciled.')],
+  10:[row('Intended customer',esc(SHIP.f.customer||SHIPMENT.distinct(R,'finalCustomer').join(' / '))),row('Arriving',bd('variety',8)),row('Delivery records',nr),row('Note','The store shows the intended destination, not a confirmed delivery.')]}[i]||[];
  return`<h3 style="--c:#f2b33d">Shipment manifest</h3><dl class="dest">${row('Shipment',esc(`${sh.vessel} · ${sh.departureWeek?sh.departureWeek.raw:''}`))}${row('Customer',esc(who))}${row('Cartons',fmtN(t.cartons,0))}${row('Pallets',fmtP(t.pallets))}${row('Varieties',String(SHIPMENT.distinct(R,'variety').length))}${mel!=null?row('Melons',fmtN(mel,0)+' (Count × Cartons)'):''}${per.join('')}</dl>${i===0?farmHTML():i===7?qcHTML():''}<p><button class="chip" onclick="shipOpen(true)">Open Shipment Explorer</button></p>`}
 
 /* ---- the allocation's full contents, under the tracker in the stage panel ----

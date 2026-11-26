@@ -11,25 +11,26 @@ const K=(t,g,ry,rx,d)=>({t,g,ry,rx,d});
    still on its route, and keeps orbiting once it is inside a site. */
 const SCRIPT=[
  {dur:18,home:13,k:[K(0,GV('start'),0,1.45,42000),K(2,GV('approach'),0,1.45,20000),K(4.6,AT(0,-198,8),0,1.45,6500),K(6.6,AT(0,-198,8),0,1.2,2400),K(8.6,AT(0,-198,8),-.75,.62,135),K(13,AT(0,-184,10),-.3,.58,104),K(18,AT(0,-156.2,12.2),.2,.55,46)]},
- {dur:34,home:2,w:[[0,25,.65],[25,32,.85],[23.6,26.6,1.7]],k:[K(0,AT(0,-156.2,12.2),.2,.55,46),K(4,TR(0,-154.6,13.5),.5,.56,34),K(8.6,TR(0,-147,19.5),.35,.6,40),K(13,TR(0,-133,16),.15,.6,44),K(16.6,TR(0,-129,19),.2,.6,50),K(19,AT(0,-128,28),-.25,.55,52),K(21.5,MV(0,()=>LORF),-.6,.5,60),K(25,RT(0),0,1.45,5200),K(32,RT(0),0,1.45,1900),K(34,RT(0),0,1.45,950)]},
- {dur:28,home:5,w:[[4,21.5,.6]],k:[K(0,RT(0),0,1.45,950),K(4,AT(1,-90,10),-.3,.56,112),K(7.5,TR(1,-92,12),.35,.48,56),K(11,TR(1,-88,10),.75,.5,62),K(14.2,TR(1,-77,-7),.95,.5,58),K(18.4,TR(1,-68,-10),1.15,.55,92),K(21.5,MV(1,()=>SHBR),1.5,.6,112),K(25,MV(1,()=>SHBR),0,.9,700),K(28,RT(1),0,1.45,5200)]},
+ {dur:34,home:2,w:[[0,25,.65],[25,32,.85],[23.6,26.6,1.7]],k:[K(0,AT(0,-156.2,12.2),.2,.55,46),K(4,TR(0,-154.6,13.5),.5,.56,34),K(8.6,TR(0,-147,19.5),.35,.6,40),K(13,TR(0,-133,16),.15,.6,44),K(16.6,TR(0,-129,19),.2,.6,50),K(19,AT(0,-128,28),-.25,.55,52),K(21.5,MV(0,()=>LORF),-.6,.5,60),K(25,RT(0),0,1.45,LD(0,5200)),K(32,RT(0),0,1.45,LD(0,1900)),K(34,RT(0),0,1.45,LD(0,950))]},
+ {dur:28,home:5,w:[[4,21.5,.6]],k:[K(0,RT(0),0,1.45,LD(0,950)),K(4,AT(1,-90,10),-.3,.56,112),K(7.5,TR(1,-92,12),.35,.48,56),K(11,TR(1,-88,10),.75,.5,62),K(14.2,TR(1,-77,-7),.95,.5,58),K(18.4,TR(1,-68,-10),1.15,.55,92),K(21.5,MV(1,()=>SHBR),1.5,.6,112),K(25,MV(1,()=>SHBR),0,.9,700),K(28,RT(1),0,1.45,5200)]},
  {dur:24,home:8,w:[[4,20,1.6]],k:[K(0,RT(1),0,1.45,5200),K(4,RT(1),0,1.45,22000),K(12,RT(1),0,1.45,38000),K(20,RT(1),0,1.45,12000),K(24,RT(1),0,1.45,2600)]},
  {dur:24,home:7,w:[[4.5,24,.6]],k:[K(0,RT(1),0,1.45,2600),K(4.5,AT(2,56,8),3.4,.55,128),K(10,TR(2,64,-12),3,.56,96),K(19,TR(2,84,2),2.4,.55,72),K(24,AT(2,104,17),2.05,.5,56)]},
- {dur:26,home:2,w:[[0,12.5,.65],[12.5,17,.7],[17,24,.85],[15.6,18.6,1.7]],k:[K(0,AT(2,104,17),2.05,.5,56),K(8.5,AT(2,108,17),2.95,.55,48),K(12.5,MV(2,()=>LORU),3.2,.5,60),K(17,RT(2),0,1.45,4200),K(24,RT(2),0,1.45,1700),K(26,RT(2),0,1.45,900)]},
- {dur:20,home:8,k:[K(0,RT(2),0,1.45,900),K(4,AT(3,150,22),.1,.6,72),K(8.5,TR(3,146,14),.25,.66,70),K(13,TR(3,138,0),.6,.7,64),K(20,TR(3,160,6),1.15,.66,78)]},
+ {dur:26,home:2,w:[[0,12.5,.65],[12.5,17,.7],[17,24,.85],[15.6,18.6,1.7]],k:[K(0,AT(2,104,17),2.05,.5,56),K(8.5,AT(2,108,17),2.95,.55,48),K(12.5,MV(2,()=>LORU),3.2,.5,60),K(17,RT(2),0,1.45,LD(2,4200)),K(24,RT(2),0,1.45,LD(2,1700)),K(26,RT(2),0,1.45,LD(2,900))]},
+ {dur:20,home:8,k:[K(0,RT(2),0,1.45,LD(2,900)),K(4,AT(3,150,22),.1,.6,72),K(8.5,TR(3,146,14),.25,.66,70),K(13,TR(3,138,0),.6,.7,64),K(20,TR(3,160,6),1.15,.66,78)]},
  {dur:16,home:4,k:[K(0,TR(3,160,6),1.15,.66,78),K(3.5,AT(3,179,10),.45,.56,46),K(16,AT(3,172,10),-.55,.5,56)]},
  {dur:20,home:3.5,k:[K(0,AT(3,172,10),-.55,.5,56),K(3,AT(3,180,-18),-.95,.5,48),K(8,GV('claimA'),0,1.45,34000),K(14.5,GV('claimB'),0,1.45,44000),K(20,AT(3,150,26),.15,.58,60)]},
- {dur:31,home:23,w:[[4,11,.7],[11,16.5,.85],[16.5,23,.75],[9.8,12.6,1.8]],k:[K(0,AT(3,150,26),.15,.58,60),K(4,AT(3,151,28),.4,.5,50),K(8,MV(3,()=>LORW),.6,.5,60),K(11,RT(3),0,1.45,3400),K(16.5,RT(3),0,1.45,1500),K(19.5,AT(4,206,22),.2,.55,70),K(23,TR(4,208,11),.45,.5,46),K(27,AT(4,219,8),.8,.5,30),K(31,AT(4,219,8),1.25,.46,22)]}];
+ {dur:20,home:9,k:[K(0,AT(3,150,26),.15,.58,60),K(3.5,AT(3,204,4),.65,.55,52),K(9,AT(3,202,-1),.3,.5,38),K(14.5,AT(3,206,-3),-.25,.5,36),K(20,AT(3,150,26),.15,.58,60)]},
+ {dur:31,home:23,w:[[4,11,.7],[11,16.5,.85],[16.5,23,.75],[9.8,12.6,1.8]],k:[K(0,AT(3,150,26),.15,.58,60),K(4,AT(3,151,28),.4,.5,50),K(8,MV(3,()=>LORW),.6,.5,60),K(11,RT(3),0,1.45,LD(3,3400)),K(16.5,RT(3),0,1.45,LD(3,1500)),K(19.5,AT(4,206,22),.2,.55,70),K(23,TR(4,208,11),.45,.5,46),K(27,AT(4,219,8),.8,.5,30),K(31,AT(4,219,8),1.25,.46,22)]}];
 /* clock rate inside a stage: 1 outside the w stretches, their multiplier inside, blended over 1.5 s at each edge so pace never jumps */
 /* stage-time rate. A stage plays at one steady pace while its 3D site is on screen (the slowest rate its w list asks for, at most 1),
    and only runs faster (its fastest rate, at least 1) once the camera is high enough that the site has faded: so nothing visible ever
    speeds up or slows down mid-shot, and long map and globe flights still pass quickly. The rate depends on camera height, never on stage
    time, so scrubbing and every stage keep the same timeline. */
 const warp=i=>{const w=SCRIPT[i].w||[],lo=Math.min(1,...w.map(q=>q[2])),hi=Math.max(1,...w.map(q=>q[2]));return lerp(lo,hi,ss(2600,7000,X.d||0))};
-const STSITE=[0,0,1,-1,2,2,3,3,3,4];
+const STSITE=[0,0,1,-1,2,2,3,3,3,3,4];
 /* which 3D site belongs to a stage at a given stage time. Most stages have one; a stage that travels hands over to its
    destination once the camera is up at map level, so the destination can appear as the camera comes down. -1 = none. */
-const STSITES={1:[[0,0],[25,1]],3:[[0,-1]],5:[[0,2],[17,3]],9:[[0,3],[13,4]]};
+const STSITES={1:[[0,0],[25,1]],3:[[0,-1]],5:[[0,2],[17,3]],10:[[0,3],[13,4]]};
 function stageSite(i,t){const q=STSITES[i];if(!q)return STSITE[i];let k=q[0][1];for(const e of q)if(t>=e[0])k=e[1];return k}
 const dlon=(a,b)=>((b-a+540)%360)-180,dang=(a,b)=>((b-a+Math.PI)%TAU+TAU)%TAU-Math.PI;
 /* journey speed: one factor for stage time, so camera, vehicles and routes stay in step. Saved per browser. */
@@ -39,7 +40,7 @@ const spd=()=>SPEEDS[SPEED];
    instead of easing to a stop there. The neighbouring key of the previous and next stage shapes the ends, so speed
    also carries across stage changes. A tangent is zero only where the motion really reverses or rests, and is
    limited so zoom and position never overshoot a key. */
-function stagePose(i){const S=SCRIPT[i],k=S.k,t=clamp(STATE.t,0,S.dur),P=[],add=(q,tt)=>{const g=q.g();const h=q.ry+SIGN_TURN*siteTurn(q.g);P.push({t:tt,v:[g[0],g[1],Math.atan2(Math.sin(h),Math.cos(h)),q.rx,Math.log(q.d)]})};
+function stagePose(i){const S=SCRIPT[i],k=S.k,t=clamp(STATE.t,0,S.dur),P=[],add=(q,tt)=>{const g=q.g();const h=q.ry+SIGN_TURN*siteTurn(q.g);P.push({t:tt,v:[g[0],g[1],Math.atan2(Math.sin(h),Math.cos(h)),q.rx,Math.log(typeof q.d==='function'?q.d():q.d)]})};
  if(i>0){const pk=SCRIPT[i-1].k,q=pk[pk.length-2];add(q,q.t-SCRIPT[i-1].dur)}
  for(const q of k)add(q,q.t);
  if(i<SCRIPT.length-1){const q=SCRIPT[i+1].k[1];add(q,S.dur+q.t)}

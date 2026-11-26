@@ -118,27 +118,48 @@ function buildWorld(){R=prng(7);
 /* ---------- 09 claims ---------- */
  ent('Claims office',8,'Claims are raised here from QC reports and sent back to the grower or originator.',()=>{bb(P.white,180,0,-24,12,7,9);for(const y of[1.6,4.6])bb(P.glass,180,y,-19.48,10.4,1.5,.06);bb(P.dark,180,7,-24,12.6,.4,9.6);cyl(P.steel,184,7.4,-26,.1,4,5);Tm(mul(tr(177,9.3,-24),rX(-.25)),()=>{box(P.white,0,0,0,3,3.8,.2);for(let k=0;k<4;k++)box(k?P.steel:P.red,-.2+(k?0:-.5),1.1-k*.7,.12,k?2:1,.2,.04)})});
  road([[178,-19],[178,-8]],2.6,P.path);
+/* ---------- 10 invoice ---------- */
+ /* the logistics finance office beside QC, open-roofed like the warehouse so the desks are visible; the animated documents and data
+    (movers.js) appear only during the Invoice stage */
+ ent('Finance office',9,'Shown without its roof: the logistics finance team that invoices shipments and reconciles purchases with sales.',()=>{bb(P.chalk,204,.02,2,20,.25,26);bb(P.white,204,.25,-11,20.6,4.2,.6);bb(P.white,194,.25,2,.6,4.2,26.6);bb(P.white,214,.25,-6,.6,4.2,10.6);bb(P.white,214,.25,9.5,.6,1.3,11.6);bb(P.white,199,.25,15,10.6,1.3,.6);bb(P.white,211.5,.25,15,5.6,1.3,.6);bb(P.green,204,3.8,-10.6,20.6,.6,.3);bb(P.glass,213.98,1.55,-6,.06,2,9)});
+ /* desks and chairs at the seated characters' heights (seat top ~1.36, desk top ~2.0) without growing their footprint: heights scaled,
+    widths kept close to life size, and monitors of ordinary size on the desk */
+ const FL=.27;/* top of the office floor slab: desks, chairs and the seated staff stand on it */
+ const desk=(x,z)=>{Tm(mul(tr(x,FL,z),sc(1.2,1.9,1.1)),()=>{bb(P.table,0,.85,0,2.6,.1,1.3);for(const a of[-1.2,1.2])bb(P.steel,a,0,0,.1,.85,1.1);bb(P.dark,0,.96,.05,.9,.03,.3)});
+  const zm=z-.5,y=FL+1.81;bb(P.dark,x,y,zm,.55,.04,.3);bb(P.dark,x,y+.04,zm,.1,.32,.1);bb(P.dark,x,y+.3,zm,1.25,.78,.06);MAT=2;bb([.55,.85,1],x,y+.34,zm+.04,1.13,.66,.02);MAT=0;
+  Tm(mul(tr(x,FL,z+1.35),sc(1.1,1.8,1.1)),()=>officeChair(0,0))};
+ /* swivel office chair (low-poly, after the reference): five-spoke base with casters, gas lift, blue seat and tall back on a dark shell, armrests */
+ function officeChair(x,z){const BL=[.27,.56,.84],DK=[.12,.12,.14],ST=[.82,.83,.85];
+  for(let k=0;k<5;k++)Tm(mul(tr(x,.1,z),rY(k*TAU/5)),()=>{box(ST,.3,0,0,.6,.05,.07);ball(DK,.58,-.04,0,.06,1,6,3)});
+  cyl(ST,x,.13,z,.09,.1,8);cyl(DK,x,.23,z,.06,.36,8);bb(DK,x,.56,z,1,.09,1);bb(BL,x,.62,z,.92,.13,.92);
+  bb(DK,x,.62,z+.5,.12,.4,.08);bb(DK,x,.86,z+.49,.94,.62,.1);bb(BL,x,.9,z+.43,.8,.54,.06);
+  for(const sd of[-1,1]){bb(DK,x+sd*.5,.62,z+.05,.08,.38,.08);bb(DK,x+sd*.5,1,z-.02,.13,.07,.62)}}
+ ent('Finance desks',9,'Workstations where shipment and sales information becomes an invoice.',()=>{for(const x of[199,204,209])for(const z of[0,6])desk(x,z)});
+ ent('Reconciliation dashboard',9,'Purchases on the left, sales on the right, and the reconciliation result between them.',()=>{bb(P.dark,204,1.2,-10.3,11,3.4,.14);MAT=2;bb([.42,.68,.95],200.2,1.5,-10.21,3.2,2.8,.02);bb([.5,.85,.56],207.8,1.5,-10.21,3.2,2.8,.02);bb([.85,.87,.9],204,1.5,-10.21,2.8,2.8,.02);MAT=0;
+  for(let k=0;k<5;k++){bb(P.white,200.2,1.85+k*.45,-10.18,2.6,.12,.02);bb(P.white,207.8,1.85+k*.45,-10.18,2.6,.12,.02)}});
+ ent('Document printer',9,'Prints and files generated invoices.',()=>{bb(P.white,196.5,.25,-8.5,1.4,1,1);bb(P.dark,196.5,1.25,-8.5,1.2,.1,.8);for(let k=0;k<3;k++)bb(P.steel,196.5,.25,-5+k*1.6,1.2,1.4,1.2)});
+ road([[204,34],[204,15]],2.6,P.path);
 
  
  road([[20,34],[300,34]],5);road([[150,34],[150,32]],5);stripes(24,296,34);bb(P.concD,151,.02,29.5,24,.12,5);
  for(let k=0;k<7;k++)lamp(100+k*17,38,6);
- scatter(3,60,(x,z,s)=>(R()>.45?conifer:tree)(x,z,s),(x,z)=>!(x>118&&x<194&&z>-34&&z<30));
+ scatter(3,60,(x,z,s)=>(R()>.45?conifer:tree)(x,z,s),(x,z)=>!(x>118&&x<218&&z>-34&&z<30));
 
  if(IND)extrasI(3);else extrasD(3);
  site(4);apron(4);
 /* ---------- 10 supermarket ---------- */
- ent('Supermarket',9,'Shown open at the front so the shop floor is visible.',()=>{bb(P.floor,223,.02,2,34,.25,40);bb(P.white,223,.25,-18,34.6,8,.6);bb(P.white,206,.25,-9,.6,5,18.6);bb(P.white,206,.25,16,.6,5,12.6);bb(P.white,206,4.2,5,.6,1.05,10);bb(P.white,240,.25,2,.6,5,40.6);/* roof trim, signs and accents: brand.js */bb(P.white,214,.25,22,15.6,1,.6);bb(P.white,234,.25,22,11.6,1,.6)});
- ent('Shop floor',9,'Chilled cabinets, grocery aisles, bakery, fruit and vegetables, and the checkouts.',storeInterior);
- ent('Melon display',9,'The end of the journey: melons on display for shoppers.',()=>{for(const[x,z]of[[219,8],[226,8]]){bb(P.wood,x,.25,z,5,1.1,3.4);/* brand-coloured top: brand.js */melonStack(x,1.47,z)}});
+ ent('Supermarket',10,'Shown open at the front so the shop floor is visible.',()=>{bb(P.floor,223,.02,2,34,.25,40);bb(P.white,223,.25,-18,34.6,8,.6);bb(P.white,206,.25,-9,.6,5,18.6);bb(P.white,206,.25,16,.6,5,12.6);bb(P.white,206,4.2,5,.6,1.05,10);bb(P.white,240,.25,2,.6,5,40.6);/* roof trim, signs and accents: brand.js */bb(P.white,214,.25,22,15.6,1,.6);bb(P.white,234,.25,22,11.6,1,.6)});
+ ent('Shop floor',10,'Chilled cabinets, grocery aisles, bakery, fruit and vegetables, and the checkouts.',storeInterior);
+ ent('Melon display',10,'The end of the journey: melons on display for shoppers.',()=>{for(const[x,z]of[[219,8],[226,8]]){bb(P.wood,x,.25,z,5,1.1,3.4);/* brand-coloured top: brand.js */melonStack(x,1.47,z)}});
  /* checkout lanes: store.js */
- ent('Delivery bay',9,'Accepted melons arrive here by lorry.',()=>{bb(P.concD,200,.03,14,7,.12,10);pallet(203.6,.15,10,2,true)});
+ ent('Delivery bay',10,'Accepted melons arrive here by lorry.',()=>{bb(P.concD,200,.03,14,7,.12,10);pallet(203.6,.15,10,2,true)});
 
  /* cars */ for(const[x,c]of[[213,P.red],[222,P.blue],[229,P.white]]){bb(c,x,.45,28,2,.9,4.2);bb(P.glass,x,1.3,27.8,1.8,.8,2.2);for(const z of[26.6,29.4])for(const a of[-1,1])wheelX(x+a,.4,z,.4,.3)}
- ent('Houses',9,'The neighbourhood the supermarket serves.',()=>{for(let k=0;k<4;k++)house(204+k*9.5,-34,0,7,6,4.4,P.brick,P.dark)});
+ ent('Houses',10,'The neighbourhood the supermarket serves.',()=>{for(let k=0;k<4;k++)house(204+k*9.5,-34,0,7,6,4.4,P.brick,P.dark)});
 
  road([[110,34],[335,34]],5);road([[200,34],[200,12]],5);stripes(114,330,34);
  for(let k=0;k<6;k++)lamp(190+k*12,38,6);for(let x=196;x<250;x+=2.6)ball(P.leaf,x,.5,42.5,1.1,.7,6,3);
- ent('More houses',9,'Homes around the store.',()=>{for(let k=0;k<4;k++)house(252+k*9.5,-12-k*4,-.3,7,6,4.4,P.brick,P.dark)});
+ ent('More houses',10,'Homes around the store.',()=>{for(let k=0;k<4;k++)house(252+k*9.5,-12-k*4,-.3,7,6,4.4,P.brick,P.dark)});
  scatter(4,50,(x,z,s)=>(R()>.45?conifer:tree)(x,z,s),(x,z)=>!(x>196&&x<246&&z>-42&&z<32)&&!(x>246&&x<292&&z>-34&&z<-4));
  if(IND)extrasI(4);else extrasD(4);
 }

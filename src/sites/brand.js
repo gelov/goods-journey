@@ -31,7 +31,7 @@ const SIGNS=[{c:[214,6.09,22.21],f:'+z',w:12,h:1.24,k:'name'},{c:[233,6.09,22.21
  ...[219,226].map(x=>({c:[x,3.01,6.18],f:'+z',w:4.5,h:.7,k:'produce'})),...[219,226].flatMap(x=>[-1.4,1.4].map(d=>({c:[x+d,.82,9.73],f:'+z',w:1,h:.5,k:'price'}))),
  ...STORE.lanes.map((x,n)=>({c:[x,3.41,12.35],f:'+z',w:1.2,h:.52,k:'check'+(n+1)})),{c:[206.8,2.4,25.66],f:'+z',w:2.2,h:1,k:'parking'},
  {c:[239.6,3.7,5],f:'-x',w:4.4,h:2.2,k:'poster'},...[-1,9].map(z=>({c:[240.37,3.3,z],f:'+x',w:1.4,h:3.2,k:'banner'}))];
-function brandMovers(){BRMOV=mover(4,EM(4,'Store branding',9,'The retailer’s signage and colours, from the shipment manifest.'),brandBoards,()=>{})}
+function brandMovers(){BRMOV=mover(4,EM(4,'Store branding',10,'The retailer’s signage and colours, from the shipment manifest.'),brandBoards,()=>{})}
 /* a manifest was applied: new colours on the boards (every built style), new sign textures on the next frame */
 function applyBrand(N){BRAND=resolveBrand(N&&N.retailer);BRAND.logo=null;
  if(BRAND.logoUrl){const im=new Image(),b=BRAND;im.onload=()=>{if(BRAND===b){b.logo=im;BRSIGN&&(BRSIGN.dirty=true)}};im.src=BRAND.logoUrl}

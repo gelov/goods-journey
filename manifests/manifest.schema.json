@@ -314,7 +314,7 @@
   },
   "stages": {
    "type": "array",
-   "description": "The journey, in order. Supported types: farm, harvest, exportPort, ocean, customs, unloading, warehouse, qualityControl, claims, delivery. claims is optional; the others are needed by the scenes.",
+   "description": "The journey, in order. Supported types: farm, harvest, exportPort, ocean, customs, unloading, warehouse, qualityControl, claims, invoice, delivery. claims and invoice are optional (the Invoice stage is always shown); the others are needed by the scenes.",
    "items": {
     "type": "object",
     "required": [
@@ -337,6 +337,7 @@
        "warehouse",
        "qualityControl",
        "claims",
+       "invoice",
        "delivery"
       ]
      },
@@ -569,6 +570,116 @@
         "type": "string"
        },
        "maxItems": 3
+      }
+     }
+    }
+   }
+  },
+  "billing": {
+   "type": "object",
+   "description": "Optional billing and reconciliation data for the Invoice stage. Only the fields given are shown; nothing is derived or defaulted.",
+   "properties": {
+    "invoiceNumber": {
+     "type": "string"
+    },
+    "invoiceDate": {
+     "type": "string"
+    },
+    "purchaseOrder": {
+     "type": "string"
+    },
+    "supplier": {
+     "type": "string"
+    },
+    "customer": {
+     "type": "string"
+    },
+    "shipmentReference": {
+     "type": "string"
+    },
+    "purchaseQuantity": {
+     "type": [
+      "number",
+      "string"
+     ]
+    },
+    "salesQuantity": {
+     "type": [
+      "number",
+      "string"
+     ]
+    },
+    "purchaseCost": {
+     "type": [
+      "number",
+      "string"
+     ]
+    },
+    "salesValue": {
+     "type": [
+      "number",
+      "string"
+     ]
+    },
+    "currency": {
+     "type": "string"
+    },
+    "reconciliationStatus": {
+     "type": "string"
+    },
+    "invoiceStatus": {
+     "type": "string"
+    },
+    "salesOrder": {
+     "type": "string"
+    },
+    "paymentDueDate": {
+     "type": "string"
+    },
+    "paymentStatus": {
+     "type": "string"
+    },
+    "invoiceAmount": {
+     "type": [
+      "number",
+      "string"
+     ]
+    },
+    "hawkeye": {
+     "type": "object",
+     "description": "A Hawkeye Billing record for this shipment (same shape as a row of Hawkeye's /api/state: so, po, depot, stages[8] of done|wait|idle, note, value, invoice_id).",
+     "properties": {
+      "so": {
+       "type": "string"
+      },
+      "po": {
+       "type": "string"
+      },
+      "depot": {
+       "type": "string"
+      },
+      "stages": {
+       "type": "array",
+       "items": {
+        "enum": [
+         "done",
+         "wait",
+         "idle",
+         "held"
+        ]
+       }
+      },
+      "note": {
+       "type": "string"
+      },
+      "value": {
+       "type": "number"
+      },
+      "invoice_id": {
+       "type": [
+        "number",
+        "string"
+       ]
       }
      }
     }

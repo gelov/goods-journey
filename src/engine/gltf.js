@@ -46,6 +46,9 @@ async function glbImage(J,bin,i){const im=J.images[i],bv=J.bufferViews[im.buffer
 const CHAR_POSES={carry:{armsFrom:'idle','UpperArm.L':[-.95,0,.42],'UpperArm.R':[-.95,0,-.42],'LowerArm.L':[-.55,0,0],'LowerArm.R':[-.55,0,0]},
  push:{armsFrom:'idle','UpperArm.L':[-.5,0,.12],'UpperArm.R':[-.5,0,-.12],'LowerArm.L':[-.45,0,0],'LowerArm.R':[-.45,0,0]},
  sit:{'UpperLeg.L':-1.45,'UpperLeg.R':-1.45,'LowerLeg.L':1.5,'LowerLeg.R':1.5,'UpperArm.L':-.55,'UpperArm.R':-.55,'LowerArm.L':-.75,'LowerArm.R':-.75}};
+/* seated at a keyboard: the sit legs, forearms forward over the desk, hands tapping in turn, now and then a pause to read the screen */
+function typePose(ph){const t=T*7+ph*3,rd=ss(.55,.8,Math.sin(T*.35+ph)),tap=k=>Math.max(0,Math.sin(t+k*2.1))*.12*(1-rd);
+ return{'UpperLeg.L':-1.45,'UpperLeg.R':-1.45,'LowerLeg.L':1.5,'LowerLeg.R':1.5,'UpperArm.L':[-.75,0,.1],'UpperArm.R':[-.75,0,-.1],'LowerArm.L':[-.45+tap(0)+rd*.2,0,0],'LowerArm.R':[-.45+tap(1)+rd*.2,0,0],'Head':[.18+rd*.08,Math.sin(T*.4+ph)*.15*rd,0]}}
 const ARMBONE=/Arm|Shoulder|Wrist|Index|Middle|Ring|Pinky|Thumb/;
 function charWorld(M,clip,t,pose,armClip){const ov={};if(pose)for(const k in pose)if(M.nameIx[k]!=null)ov[M.nameIx[k]]=pose[k];const L=M.N.map(n=>({t:(n.translation||[0,0,0]).slice(),r:(n.rotation||[0,0,0,1]).slice(),s:(n.scale||[1,1,1]).slice(),m:n.matrix}));
  if(!M.armNode)M.armNode=M.N.map(n=>ARMBONE.test(n.name||''));
@@ -60,7 +63,7 @@ function skinInto(M,jm,pos,nor){const P=M.P,Nn=M.Nr,J=M.Jn,Wt=M.Wt;for(let v=0;v
  pos[v*3]=x;pos[v*3+1]=y;pos[v*3+2]=z;if(nor){const l=Math.hypot(a,b,c)||1;nor[v*3]=a/l;nor[v*3+1]=b/l;nor[v*3+2]=c/l}}}
 /* the clip for a pose: walking, carrying, bending, sitting or standing, by the names given in CONFIG.characters.clips */
 function charClip(M,q){const C=(CONFIG.characters||{}).clips||{},get=k=>C[k]&&M.clips[C[k]]?M.clips[C[k]]:null,walk=get('walk')||M.clips[M.names[0]];
- if(q.sit){const c=get('idle')||walk;return{c,t:get('idle')?(T/c.dur)%1:0,pose:CHAR_POSES.sit}}
+ if(q.sit){const c=get('idle')||walk;return{c,t:get('idle')?(T/c.dur)%1:0,pose:q.type?typePose(q.type):CHAR_POSES.sit}}
  const held=q.armPose&&CHAR_POSES[q.armPose],arm=held?get(held.armsFrom)||walk:null,wrap=r=>held?Object.assign(r,{pose:held,arm}):r;
  if((q.amt||0)>.3)return wrap({c:get('carryWalk')&&(q.carry||0)>.5?get('carryWalk'):walk,t:((q.phase||0)/TAU%1+1)%1});const k=!held&&(q.bend||0)>.4&&get('pick')?'pick':(q.carry||0)>.5&&get('carry')?'carry':get('idle')?'idle':null;
  return wrap(k?{c:get(k),t:(T/get(k).dur)%1}:{c:walk,t:0})}

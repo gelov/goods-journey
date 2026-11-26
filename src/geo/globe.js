@@ -45,7 +45,7 @@ const gAt=(i,t)=>{let g=t;for(let j=0;j<i;j++)g+=SCRIPT[j].dur;return g},gNow=()
 const LEGS=[{r:0,dm:()=>LORF,am:()=>LORP,dk:0,dp:()=>RDF,dps:[()=>RDF,()=>RDF_E],d:[1,19.5,25.5],dy:.12,ak:1,ap:()=>RDP,a:[2,1,6.5],ay:.12,mesh:()=>LORF},
  {r:1,dm:()=>SHBR,am:()=>SHUK,dk:1,dp:()=>SBR,d:[2,20.6,26],dy:-1.5,ak:2,ap:()=>SUK,a:[4,.5,9],ay:-1.5,mesh:()=>SHBR,ship:true},
  {r:2,dm:()=>LORU,am:()=>LORW,dk:2,dp:()=>RDU,d:[5,11.3,17.5],dy:.3,ak:3,ap:()=>RWA,a:[6,1,6.5],ay:.12,mesh:()=>LORW},
- {r:3,dm:()=>LORW,am:()=>LORS,dk:3,dp:()=>RWD,d:[9,4,11.5],dy:.12,ak:4,ap:()=>RSM,aps:[()=>RSM,()=>RSM_E],a:[9,16.5,22],ay:.12,mesh:()=>LORS}];
+ {r:3,dm:()=>LORW,am:()=>LORS,dk:3,dp:()=>RWD,d:[10,4,11.5],dy:.12,ak:4,ap:()=>RSM,aps:[()=>RSM,()=>RSM_E],a:[10,16.5,22],ay:.12,mesh:()=>LORS}];
 const LEGON=[false,false,false,false];
 /* a leg whose site road can be driven either way (dps / aps: the farm's and the supermarket's through-roads) is built for each way and
    keeps the shortest whole drive, so the lorry starts out (or arrives) already heading toward the route: no turn-round outside the site.
@@ -66,6 +66,11 @@ function legBuild1(L){const R=ROUTES[L.r];
     approach channel from Dover reaching France). The leg keeps each site path up to the first point where it would go somewhere its
     vehicle cannot (counted outward from the quay or farm), and lets the validated route carry the vehicle from there. */
  const Df=toU(L.dk,L.dp()),Af=toU(L.ak,L.ap());let de=1;while(de<Df.length-1&&!bad(Df[de+1]))de++;let as=Af.length-2;while(as>0&&!bad(Af[as-1]))as--;
+ /* sites closer together than their built areas (a farm placed a few tens of km from its port): each site road would run past the other
+    site and the drive would loop back. Their roads are then kept only to about a third of the distance between the sites each, so the
+    route joins between them; far-apart sites (the usual case) are untouched */
+ const sep=ang(cD,cA),ovl=!L.ship&&sep<1.1*(SITES[L.dk].r0+SITES[L.ak].r0)/RS,cap=Math.max(.35*sep,20/RS);
+ if(ovl){let k=1;while(k<de&&ang(cD,Df[k+1])<=cap)k++;de=Math.min(de,k);k=Af.length-2;while(k>as&&ang(cA,Af[k-1])<=cap)k--;as=Math.max(as,k)}
  const okR=typeof routeOK!=='function'||routeOK(L.r);/* lorries keep their site's whole static road; the route joins it at the site's edge */
  const kr=(L.ship?10:5)/RS,cand=(a,b,c,r,q)=>{const o=[];for(let j=a;j<=b;j++)if(ang(R[j],c)>=r)o.push(j);return o.sort((u,v)=>ang(R[u],q)-ang(R[v],q)).slice(0,16)},tR=j=>dir(R[Math.max(0,j-1)],R[Math.min(n-1,j+1)]);
  /* joins: from the end of the kept site path to a route point outside that site path's reach (nearest first to a point lined up with
@@ -76,7 +81,7 @@ function legBuild1(L){const R=ROUTES[L.r];
     loops to reach a nearer point */
  const rc=[0];for(let j=1;j<n;j++)rc.push(rc[j-1]+ang(R[j-1],R[j]));const allIn=(a,b,c,r)=>{const o=[];for(let j=a;j<=b;j++)if(ang(R[j],c)>=r)o.push(j);return o};
  /* a lorry never leaves its static road inside the site's built area: the search stops backing off at the site's edge */
- const r0D=SITES[L.dk].r0/RS,r0A=SITES[L.ak].r0/RS;let dMin=1,aMax=Af.length-2;if(!L.ship){while(dMin<de&&ang(cD,Df[dMin])<r0D)dMin++;while(aMax>as&&ang(cA,Af[aMax])<r0A)aMax--}
+ const r0D=SITES[L.dk].r0/RS,r0A=SITES[L.ak].r0/RS;let dMin=1,aMax=Af.length-2;if(!L.ship&&!ovl){while(dMin<de&&ang(cD,Df[dMin])<r0D)dMin++;while(aMax>as&&ang(cA,Af[aMax])<r0A)aMax--}
  for(let d=de;d>=dMin&&!J0;d-=stepD){const De=Df[d],t=dir(Df[d-1],De),r=ang(cD,De);const C=allIn(0,Math.floor((n-1)*.6),cD,r).map(j=>[j,dubins(De,t,R[j],tR(j),kr,true)+rc[n-1]-rc[j]]).sort((u,v)=>u[1]-v[1]).slice(0,16);
   for(const[j]of C){const P=dubins(De,t,R[j],tR(j),kr);if(okPath(P)){J0=P;i0=j;de=d;break}}}
  if(!J0){i0=0;while(i0<n-2&&ang(R[i0],cD)<ang(cD,Df[de]))i0++;J0=dubins(Df[de],dir(Df[de-1],Df[de]),R[i0],tR(i0),kr)}
@@ -135,6 +140,11 @@ function legPost(){const L=activeLeg();for(let r=0;r<4;r++)LEGON[r]=!!L&&L.r===r
 const MKU=[0,1,2,3].map(r=>()=>{const L=LEGS[r],g=gNow();if(g<gAt(L.d[0],L.d[2]))return 0;if(g>=gAt(L.a[0],L.a[1]))return 1;return legPose(L).ru});
 /* the camera target for a leg: where its vehicle is */
 const RT=r=>()=>legPose(LEGS[r]).g;
+/* camera distance for a leg key: the designed distance for a route of the reference size (the demo farm-to-port drive, about 240 site
+   units from its middle to its far end; the warehouse legs about 190 and 160, which their keys were framed for), scaled down with a smaller route so a short drive still fills the map, never wider than designed
+   and never closer than lo. The route's real geometry is unchanged; only how near the camera flies. */
+const LEG_REF=[240,240,190,160],legExt=L=>{legBuild(L);if(L.extOf===L.poly)return L.ext;const P=L.poly,c=nrm(P.reduce((a,p)=>[a[0]+p[0],a[1]+p[1],a[2]+p[2]],[0,0,0]));let e=0;for(const p of P)e=Math.max(e,Math.acos(clamp(dot(p,c),-1,1)));L.extOf=P;return L.ext=e*RS};
+const LD=(r,d,lo)=>()=>clamp(d*legExt(LEGS[r])/LEG_REF[r],lo||Math.min(d,300),d);
 /* the vehicle drawn on the map; none on a leg whose route could not be validated */
 function activeMarker(){const L=activeLeg();return L?L.r:-1}
 let RN=[0,0,0];

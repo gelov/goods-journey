@@ -12,7 +12,23 @@ const PUBLIC = ['index.html', 'styles', 'src', 'assets', 'manifests'];
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.jpg': 'image/jpeg', '.png': 'image/png', '.svg': 'image/svg+xml', '.json': 'application/json', '.ico': 'image/x-icon' };
 
+// Hawkeye Billing: its read-only state feed (/api/state, public JSON) relayed for the browser, which cannot read it directly (no CORS).
+// GET only, one fixed upstream path, cached for a minute; nothing is ever posted to Hawkeye from here.
+const HAWKEYE = process.env.HAWKEYE_URL || 'https://hawkeye-eajy.onrender.com';
+let hkCache = null;
+async function hawkeyeState(res) {
+  try {
+    if (!hkCache || Date.now() - hkCache.t > 60000) {
+      const r = await fetch(HAWKEYE + '/api/state', { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(20000) });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      hkCache = { t: Date.now(), body: await r.text() };
+    }
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }).end(hkCache.body);
+  } catch (e) { res.writeHead(502, { 'Content-Type': 'application/json' }).end(JSON.stringify({ error: 'Hawkeye unavailable: ' + e.message })); }
+}
+
 http.createServer((req, res) => {
+  if (req.method === 'GET' && req.url === '/hawkeye/state') { hawkeyeState(res); return; }
   let rel;
   try { rel = decodeURIComponent(new URL(req.url, 'http://x').pathname).replace(/^\/+/, '') || 'index.html'; }
   catch { res.writeHead(400).end('Bad request'); return; }

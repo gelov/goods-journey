@@ -11,7 +11,7 @@ const ROLE_ALIAS={farm:'farm',grower:'farm',exportport:'exportPort',export_port:
  warehouse:'warehouse',distribution_centre:'warehouse',distribution_center:'warehouse',supermarket:'supermarket',store:'supermarket',retail:'supermarket',retailer:'supermarket'};
 const STAGE_ALIAS={farm:'farm',growing:'farm',cultivation:'farm',harvest:'harvest',harvesting:'harvest',packing:'harvest',loading:'harvest',exportport:'exportPort',export_port:'exportPort',port_loading:'exportPort',vessel_loading:'exportPort',
  ocean:'ocean',ocean_transport:'ocean',sea_transport:'ocean',customs:'customs',customs_clearance:'customs',unloading:'unloading',port_unloading:'unloading',warehouse:'warehouse',warehouse_allocation:'warehouse',
- qualitycontrol:'qualityControl',quality_control:'qualityControl',qc:'qualityControl',claims:'claims',claim:'claims',delivery:'delivery',supermarket:'delivery',supermarket_delivery:'delivery',retail:'delivery'};
+ qualitycontrol:'qualityControl',quality_control:'qualityControl',qc:'qualityControl',claims:'claims',claim:'claims',invoice:'invoice',invoicing:'invoice',billing:'invoice',reconciliation:'invoice',delivery:'delivery',supermarket:'delivery',supermarket_delivery:'delivery',retail:'delivery'};
 const LEG_STAGE={road_transport:1,inland_transport:1,transport:1},MODE_ALIAS={road:'road',truck:'road',lorry:'road',sea:'sea',ocean:'sea',vessel:'sea',ship:'sea',maritime:'sea'},VEH_ALIAS={lorry:'lorry',truck:'lorry'};
 const MAIN_EVENT={farm:'expectedHarvest',harvest:'harvested',exportPort:'departed',ocean:'arrived',customs:'cleared',unloading:'unloaded',warehouse:'allocated',delivery:'delivered'};
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];

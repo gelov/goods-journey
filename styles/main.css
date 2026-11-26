@@ -298,3 +298,8 @@ body.pan #pOpen,body.intro #pOpen{transform:translate(-110%,-50%);opacity:0;poin
 .srq{border:1px solid var(--hair);border-radius:10px;margin:6px 0;padding:0 8px}.srq>summary{flex-wrap:wrap;font-size:12px}.srq>summary span{color:var(--ink2)}.srd>summary{font-size:12px;color:var(--ink2)}
 .srl{list-style:none;margin:0;padding:0;font-size:12px}.srl li{display:grid;grid-template-columns:1.2fr .7fr .7fr 1.4fr;gap:6px;padding:5px 2px;border-top:1px solid var(--hair)}.srl span{color:var(--ink3)}
 .srw{font-size:11.5px;color:var(--ink2);margin:6px 0}.srw.bad{color:#f0a37a}.srh{margin:14px 0 4px;font-size:12px;color:var(--ink2)}
+/* Hawkeye Billing block (Invoice stage) */
+.hk .hkh{display:flex;flex-direction:column;gap:2px;padding:10px 12px;margin:12px 0 4px;border:1px solid var(--hair);border-radius:10px;background:rgba(255,255,255,.03)}.hk .hkh b{font-size:14px;color:var(--ink)}.hk .hkh span{font-size:12px;color:var(--ink3)}
+.hk .hsl{list-style:none;margin:4px 0 6px;padding:0}.hk .hs{display:grid;grid-template-columns:18px 1fr auto;gap:8px;align-items:baseline;padding:5px 0;font-size:12.5px;border-top:1px solid var(--hair)}.hk .hs small{display:block;color:var(--ink3);font-size:11px}
+.hk .hs i{font-style:normal;text-align:center}.hk .hs em{font-style:normal;font-size:11.5px;color:var(--ink3)}.hk .hs.done i,.hk .hs.done em{color:var(--ok)}.hk .hs.wait i,.hk .hs.wait em{color:#f2b33d}.hk .hs.held i,.hk .hs.held em{color:#f0a37a}.hk .hs.na i{color:var(--ink3)}
+.hk .hl{background:rgba(242,179,61,.12);border-radius:6px;transition:background .4s}.hk h3{transition:background .4s;padding:2px 4px;margin-left:-4px}.hk .hkl{display:block;text-align:center}.hk dd.ok{color:var(--ok)}.hk dd.bad{color:#f0a37a}

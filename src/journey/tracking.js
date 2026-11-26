@@ -96,8 +96,8 @@ function trkScene(){const i=STATE.idx,t=STATE.t,key=i+'|'+t+'|'+T;if(key===TSK)r
  if(i===1){if(t<4);else if(t<4.6){cr.p=mixv(CR0,hd,io((t-4)/.6));cr.yaw=hw.yaw*ss(4,4.6,t)}else if(t<7.4){cr.p=hd;cr.yaw=hw.yaw}else if(t<8){const u=io(u01(t,7.4,8));cr.p=hop(hd,onCart(2),u,.25);cr.yaw=hw.yaw+dang(hw.yaw,cY)*u}else viaBelt(cr,2,UNLOADS[2])}
  else if(i===2){const c=Math.cos(cu.yaw),n=Math.sin(cu.yaw),ox=.58*cu.s,oz=.78*cu.s;cr={k:1,vis:cu.vis,s:cu.s,yaw:cu.yaw+Math.PI/2,p:[cu.p[0]+c*ox+n*oz,cu.p[1]+.2*cu.s,cu.p[2]-n*ox+c*oz]}}
  else if(i===7){cr.k=3;if(t<2.5)cr.vis=false;else if(t<4.3){const u=(t-2.5)/1.8;cr.p=hop([QCP[0],2.3,QCP[2]],TBL,io(u),3);cr.s=Math.min(1,u*5)}else if(t<11)cr.p=TBL;else if(t<12)cr.p=hop(TBL,forks(fw),io(t-11),1.5);else cr.p=forks(fw)}
- else if(i===8){cr.k=3;cr.p=DSP}
- else if(i===9){if(t<2.4){cr.k=3;cr.p=DSP}else if(t<3.4){const u=t-2.4;cr.k=3;cr.p=hop(DSP,[151.5,2,29.5],u,2.5);cr.s=1-u*u*u}else if(t<22){cr.vis=false;cr.k=t<12?3:4}
+ else if(i===8||i===9){cr.k=3;cr.p=DSP}
+ else if(i===10){if(t<2.4){cr.k=3;cr.p=DSP}else if(t<3.4){const u=t-2.4;cr.k=3;cr.p=hop(DSP,[151.5,2,29.5],u,2.5);cr.s=1-u*u*u}else if(t<22){cr.vis=false;cr.k=t<12?3:4}
   else{cr.k=4;if(t<23){const u=t-22;cr.p=hop([200,2,19.8],[204,.4,6],u,3);cr.s=Math.min(1,u*4)}else if(t<24)cr.p=hop([204,.4,6],[213,.4,7.5],t-23,2.5);else if(t<24.8)cr.p=hop([213,.4,7.5],[215.4,.3,8],(t-24)/.8,1.5);else cr.p=[215.4,.3,8]}}
  else if(i>1)cr.vis=false;S.crate=cr;
  /* the cart's other two crates, already loaded at the collection point */
@@ -109,7 +109,7 @@ function trkScene(){const i=STATE.idx,t=STATE.t,key=i+'|'+t+'|'+T;if(key===TSK)r
  if(i<1)me={k:0,vis:true,p:M0,s:1};
  else if(i===1){if(t<1.5)me.p=M0;else if(t<2.3)me.p=mixv(M0,hand,io((t-1.5)/.8));else if(t<3.4)me.p=hand;else if(t<4)me.p=hop(hand,inCr,(t-3.4)/.6,.8);if(t<4)me.s=sz(u01(t,3.4,4))}
  else if(i===7){if(t<4.5)me.vis=false;else if(t<5.5)me.p=mixv(inCr,HOV,io(t-4.5));else if(t<10){me.p=[HOV[0],HOV[1]+Math.sin(T*2)*.12,HOV[2]];me.spin=T*1.6}else if(t<11)me.p=mixv(HOV,inCr,io(t-10));if(t<11)me.s=sz(1-u01(t,4.5,5.5)+u01(t,10,11))}
- else if(i===9&&t>=25)me={k:4,vis:true,p:t<26.2?hop(inCr,SHELF,io((t-25)/1.2),1.6):SHELF,s:sz(1-u01(t,25,26.2))};S.melon=me;
+ else if(i===10&&t>=25)me={k:4,vis:true,p:t<26.2?hop(inCr,SHELF,io((t-25)/1.2),1.6):SHELF,s:sz(1-u01(t,25,26.2))};S.melon=me;
  /* container, its trailer at the UK quay */
  let co=hide;const tp=tugPair(i===4?t:1e9),ch={k:2,vis:i===4&&t<22.6,p:tp.ch.p,yaw:tp.ch.yaw};
  /* the tractor and its driver: the driver walks over, climbs into the cab before the container is set down, and stays at the wheel */
@@ -140,7 +140,7 @@ function trkScene(){const i=STATE.idx,t=STATE.t,key=i+'|'+t+'|'+T;if(key===TSK)r
  return TSC=S}
 /* the one list that says who carries the melon when: [stage, from stage time, carrier] */
 const STEPS=[[0,0,'melon'],[1,4,'crate'],[1,19.3,'lorryF'],[2,0,'lorryP'],[2,9.3,'crate'],[2,14.1,'cont'],[2,19.24,'ship'],[3,0,'ship'],[4,0,'shipUK'],[4,10,'cont'],[5,0,'open'],[5,1.8,'fork'],[5,9.3,'lorryU'],
- [6,0,'lorryW'],[6,6.5,'pallet'],[7,2.5,'crate'],[7,4.5,'melon'],[7,11,'crate'],[9,3.4,'lorryW'],[9,18.5,'lorryS'],[9,22,'crate'],[9,25,'melon']];
+ [6,0,'lorryW'],[6,6.5,'pallet'],[7,2.5,'crate'],[7,4.5,'melon'],[7,11,'crate'],[10,3.4,'lorryW'],[10,18.5,'lorryS'],[10,22,'crate'],[10,25,'melon']];
 const mvp=(k,m)=>[k,m.p[0],m.p[1]+4.6,m.p[2]],obj=o=>[o.k,o.p[0],o.p[1]+1.5,o.p[2]];
 /* carrier -> object to highlight, marker position [site, x, y, z], wording, and whether its id is a record or simulated */
 const CARRIER={
@@ -153,7 +153,7 @@ const CARRIER={
  ship:{pid:()=>SHBR.pid,pos:()=>[1,SHBR.p[0],13,SHBR.p[2]],txt:c=>'in container '+c.cont+' on the vessel '+c.vessel},
  shipUK:{pid:()=>SHUK.pid,pos:()=>[2,SHUK.p[0],13,SHUK.p[2]],txt:c=>'in container '+c.cont+' on the vessel '+c.vessel},
  lorryF:{pid:()=>LORF.pid,pos:()=>mvp(0,LORF),txt:c=>'on lorry '+c.lorryBR},lorryP:{pid:()=>LORP.pid,pos:()=>mvp(1,LORP),txt:c=>'on lorry '+c.lorryBR},
- lorryU:{pid:()=>LORU.pid,pos:()=>mvp(2,LORU),txt:c=>'on lorry '+c.lorryUK},lorryW:{pid:()=>LORW.pid,pos:()=>mvp(3,LORW),txt:c=>STATE.idx>8?(c.lorryDel?'on lorry '+c.lorryDel:'on the delivery lorry'):'on lorry '+c.lorryUK},
+ lorryU:{pid:()=>LORU.pid,pos:()=>mvp(2,LORU),txt:c=>'on lorry '+c.lorryUK},lorryW:{pid:()=>LORW.pid,pos:()=>mvp(3,LORW),txt:c=>STATE.idx>9?(c.lorryDel?'on lorry '+c.lorryDel:'on the delivery lorry'):'on lorry '+c.lorryUK},
  lorryS:{pid:()=>LORS.pid,pos:()=>mvp(4,LORS),txt:c=>c.lorryDel?'on lorry '+c.lorryDel:'on the delivery lorry'}};
 function trkStep(){const i=STATE.idx,t=STATE.t;let s=STEPS[0];for(const q of STEPS)if(q[0]<i||(q[0]===i&&q[1]<=t))s=q;return s}
 /* ids for the wording, from the journey records; '?' when a record does not have it */
@@ -234,7 +234,7 @@ function updateTrack(){if(!TEL||!TRK.step)return;const tx=trkText(),key=tx.where
  else if(PRIM&&PRIM.k===p[0]&&FADE>.6&&X.d<900)q=proj(PRIM.vp,[p[1],p[2],p[3]]);
  const ok=STATE.started&&q&&q[1]>24&&q[1]<GLS.ch-80;TEL.classList.toggle('show',!!ok);if(ok)TEL.style.transform=`translate(${q[0].toFixed(1)}px,${q[1].toFixed(1)}px) translate(-50%,${MARK&&X.d>1500?'95%':'-120%'})`;TEL.classList.toggle('map',!!(MARK&&X.d>1500));
  /* closing summary, once the melon is on the shelf */
- const fin=STATE.idx===9&&STATE.t>=27.5&&TSUMX!==9,su=$('#trkSum');if(STATE.idx!==9)TSUMX=-1;
+ const fin=STATE.idx===10&&STATE.t>=27.5&&TSUMX!==10,su=$('#trkSum');if(STATE.idx!==10)TSUMX=-1;
  if(fin&&!su.classList.contains('show')){const c=tx.id.c,g=(k,f)=>{const r=c.one(k);return r&&r[f]!=null?esc(r[f]):'not recorded'},row=(a,b)=>`<li><b>${a}</b>${b}</li>`;
   $('#tsBody').innerHTML=`<p>${tx.rep} of batch ${esc(tx.id.batch)}, shipment ${g('shipment','id')}.</p><ol>${row('Farm',g('farm','name')+' · harvested '+g('batch','harvestDate'))}${row('Road',  'lorry '+g('batch','lorry')+' to the export port')}${row('Sea','container '+g('container','id')+' on '+g('shipment','vessel')+' · '+g('shipment','departure')+' to '+g('shipment','arrival'))}${row('Customs',g('customs','id')+' · '+g('customs','status')+' '+g('customs','cleared'))}${row('Warehouse',g('allocation','warehouse')+' · pick list '+g('allocation','id'))}${row('Quality control',g('qc','id')+' · '+g('qc','accepted')+' accepted, '+g('qc','rejected')+' rejected')}${row('Delivery',g('delivery','id')+' · '+g('delivery','date')+' · '+g('delivery','status'))}</ol><small>Ids, dates and quantities: ${STATUS[DATA.status]}. The path of this single melon and its crate is a simulated illustration of how the batch moved; individual melons are not tracked.</small>`}
  su.classList.toggle('show',fin)}

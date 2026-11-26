@@ -19,7 +19,7 @@ const CONFIG={
   clips:{walk:'CharacterArmature|Walk',idle:'CharacterArmature|Idle_Neutral',pick:'CharacterArmature|Interact'},
   models:{farmer:{url:'assets/characters/farmer.glb',roles:['farm','harvest']},
    worker:{url:'assets/characters/worker.glb',roles:['port','warehouse','qc']},
-   casual:{url:'assets/characters/casual.glb',roles:['shopper','store']}}},
+   casual:{url:'assets/characters/casual.glb',roles:['shopper','store','office']}}},
  routing:{roadUrl:'https://router.project-osrm.org/route/v1/driving/'},
  tiles:{url:'https://tile.openstreetmap.org/{z}/{x}/{y}.png',maxZoom:11,px:210},
  brPort:'Brazilian export port (location to be confirmed)',ukPort:'UK port (Dover shown as an illustration, to be confirmed)'};

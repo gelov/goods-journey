@@ -7,7 +7,7 @@
    (linked records for the panel and tracking). Missing optional values become null and show as "Unavailable". */
 const DATA={records:{},status:'unavailable',man:null};
 const ROLES=['farm','exportPort','arrivalPort','warehouse','supermarket'];
-const STAGE_TYPES=['farm','harvest','exportPort','ocean','customs','unloading','warehouse','qualityControl','claims','delivery'],OPTIONAL_STAGES=['claims'];
+const STAGE_TYPES=['farm','harvest','exportPort','ocean','customs','unloading','warehouse','qualityControl','claims','invoice','delivery'],OPTIONAL_STAGES=['claims','invoice'];
 function validateManifest(m){const E=[],err=s=>{if(E.length<12)E.push(s)},isObj=o=>!!o&&typeof o==='object'&&!Array.isArray(o);
  const ids=(list,path)=>{const seen={};if(list!=null&&!Array.isArray(list)){err(path+': must be a list');return seen}(list||[]).forEach((o,i)=>{if(!isObj(o)||typeof o.id!=='string'||!o.id)err(`${path}[${i}]: needs an "id"`);else if(seen[o.id])err(`${path}: the id "${o.id}" is used twice`);else seen[o.id]=1});return seen};
  if(!isObj(m))return['The file does not contain a JSON object.'];
@@ -26,6 +26,7 @@ function validateManifest(m){const E=[],err=s=>{if(E.length<12)E.push(s)},isObj=
   if(!STAGE_TYPES.includes(o.type))err(`${w}: stage type "${o.type}" is not supported. Supported types: ${STAGE_TYPES.join(', ')}`);else{if(seenT[o.type])err(`stages: the type "${o.type}" appears more than once`);seenT[o.type]=1;ord.push(STAGE_TYPES.indexOf(o.type))}
   if(o.locationId!=null&&!L[o.locationId])err(`${w}: locationId "${o.locationId}" is not a location id`);if(o.events!=null&&(!Array.isArray(o.events)||o.events.some(e=>!isObj(e)||typeof e.type!=='string')))err(`${w}: events must be a list of objects with a "type"`);
   else for(const e of o.events||[])if(e.timestamp!=null&&(typeof e.timestamp!=='string'||isNaN(Date.parse(e.timestamp))))err(`${w}: the ${e.type} timestamp ${JSON.stringify(e.timestamp)} is not a date this app can read; use a form like "2026-10-12" or "12 October 2026"`)});
+ if(m.billing!=null&&(typeof m.billing!=='object'||Array.isArray(m.billing)))err('billing: must be an object of invoice and reconciliation fields');
  if(Array.isArray(m.stages)){for(const t of STAGE_TYPES)if(!OPTIONAL_STAGES.includes(t)&&!seenT[t])err(`stages: a "${t}" stage is needed by the current scenes`);if(ord.some((v,i)=>i&&v<ord[i-1]))err('stages: must be listed in journey order ('+STAGE_TYPES.join(' > ')+')')}
  const LEGS=['farm-exportPort','arrivalPort-warehouse','warehouse-supermarket'],T=m.transport;if(T!=null){if(!isObj(T))err('transport: must be an object with vehicles, vessel and containers');else{ids(T.vehicles,'transport.vehicles');
   (Array.isArray(T.vehicles)?T.vehicles:[]).forEach((v,i)=>{if(!isObj(v))return;if(v.type!=null&&v.type!=='lorry')err(`transport.vehicles[${i}] (${v.id}): type "${v.type}" is not supported; use "lorry"`);for(const l of v.legs||(v.leg!=null?[v.leg]:[]))if(!LEGS.includes(l))err(`transport.vehicles[${i}] (${v.id}): leg "${l}" must be one of ${LEGS.join(', ')}`)});const C=ids(T.containers,'transport.containers'),tc=isObj(m.tracking)&&m.tracking.containerId;if(tc&&Array.isArray(T.containers)&&!C[tc])err(`tracking.containerId "${tc}" is not listed in transport.containers`)}}
@@ -54,8 +55,15 @@ function normalizeManifest(m){const nil=v=>v==null||v===''?null:v,M=m.manifest,T
   claims:QC&&QC.claim&&st.claims?[{id:nil(QC.claim.id),qcReportId:nil(QC.reportId),quantity:num(QC.rejected,'melons'),reason:nil(QC.claim.reason),status:nil(QC.claim.status),value:nil(QC.claim.value),settled:nil(QC.claim.settled),growerRef:farmId}]:[],
   deliveries:[{id:nil(ev('delivery','delivered').reference),shipmentId:ship,qcReportId:QC?nil(QC.reportId):null,customer:nil(loc.supermarket.details.customer),destination:loc.supermarket.name+(loc.supermarket.illustrative?' (illustrative)':''),quantity:QC?num(QC.accepted,'melons'):null,
    date:nil(ev('delivery','delivered').timestamp),status:nil(ev('delivery','delivered').status),pod:nil(ev('delivery','delivered').proofOfDelivery),lorry:veh('warehouse-supermarket'),simulated:!!ev('delivery','delivered').simulated}],
+  invoices:billRecs(m.billing,ship),
   tracking:[{id:M.id,shipmentId:ship,batchId:bat,palletId:pal,containerId:con?con.id:null,level:TR.level==='item'?'item':'batch'}]};
  /* the linked-record helpers need pallets to tie container, pick list and QC together; without a pallet id they simply show nothing */
  return{retailer:m.retailer&&typeof m.retailer==='object'&&!Array.isArray(m.retailer)?m.retailer:null,id:M.id,ref:ship,demo:M.demo!==false,description:nil(M.description),loc,routes,records:R,origin:loc.farm.country||'Origin',dest:loc.supermarket.country||'Destination',
-  stageOn:STAGE_TYPES.map(t=>!!st[t]),stageOver:STAGE_TYPES.map(t=>st[t]?{title:nil(st[t].title),summary:nil(st[t].summary)}:{}),vessel:nil(ves.name),lorries:[veh('farm-exportPort'),veh('arrivalPort-warehouse'),veh('warehouse-supermarket')],
+  stageOn:STAGE_TYPES.map(t=>t==='invoice'||!!st[t]),billing:m.billing&&typeof m.billing==='object'&&!Array.isArray(m.billing)?m.billing:null,stageOver:STAGE_TYPES.map(t=>st[t]?{title:nil(st[t].title),summary:nil(st[t].summary)}:{}),vessel:nil(ves.name),lorries:[veh('farm-exportPort'),veh('arrivalPort-warehouse'),veh('warehouse-supermarket')],
   customsSystem:nil(ev('customs','declared').system),warehouseSystem:nil(ev('warehouse','allocated').system)}}
+
+/* billing and reconciliation (optional "billing" block). Only values the manifest gives are kept; nothing is derived or defaulted, so a
+   manifest without billing shows the Invoice stage with no financial fields and no status. Amounts keep their number and currency. */
+function billRecs(b,ship){if(!b||typeof b!=='object'||Array.isArray(b))return[];const v=x=>x==null||x===''?null:x,cur=v(b.currency),amt=x=>typeof x==='number'?x.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2})+(cur?' '+cur:''):v(x),qty=x=>typeof x==='number'?x.toLocaleString('en-GB'):v(x);
+ return[{id:v(b.invoiceNumber),date:v(b.invoiceDate),purchaseOrder:v(b.purchaseOrder),supplier:v(b.supplier),customer:v(b.customer),shipmentRef:v(b.shipmentReference),shipmentId:ship,
+  purchaseQty:qty(b.purchaseQuantity),salesQty:qty(b.salesQuantity),purchaseCost:amt(b.purchaseCost),salesValue:amt(b.salesValue),currency:cur,reconciliation:v(b.reconciliationStatus),status:v(b.invoiceStatus),amount:amt(b.invoiceAmount),dueDate:v(b.paymentDueDate),payment:v(b.paymentStatus),salesOrder:v(b.salesOrder)}]}

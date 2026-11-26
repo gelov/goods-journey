@@ -10,7 +10,7 @@ const SITES=[
  {n:'Export port',c:[-84,0],g:CONFIG.geo.brPort,r0:130,r1:185,st:2,sea:[-70,1],rot:.785},
  {n:'UK port',c:[92,0],g:CONFIG.geo.ukPort,r0:130,r1:185,st:4,sea:[70,-1],rot:2.356},
  {n:'Warehouse & QC',c:[156,0],g:CONFIG.geo.wh,r0:105,r1:150,st:6},
- {n:'Supermarket',c:[222,0],g:CONFIG.geo.sm,r0:90,r1:130,st:9}];
+ {n:'Supermarket',c:[222,0],g:CONFIG.geo.sm,r0:90,r1:130,st:10}];
 SITES.forEach((s,k)=>s.k=k);
 /* set by applyManifest: camera way-points on the globe, and the big country labels */
 const VIEWS={start:[-54,-14],approach:[-45,-9],claimA:[-30,22],claimB:[-8,30]},LBL=[];

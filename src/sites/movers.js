@@ -34,7 +34,23 @@ function buildMovers(){
  /* people standing at their posts in the ports, warehouse and supermarket: animated so they can use the rigged characters */
  for(const[k,x,z,yaw,shirt,role,nm]of[[1,-80,10,1,P.yel,'port','Port worker'],[1,-78,-22,2.5,P.orange,'port','Port worker'],[1,-96,20,0,P.yel,'port','Port worker'],
   [2,101,12.5,2.4,P.yel,'port','Port worker'],[2,84,4,4,P.yel,'port','Port worker'],[2,98,-8,1,P.orange,'port','Port worker'],[3,141,17,3.14,P.blue,'warehouse','Warehouse operative'],
-  [4,234.4,15,-Math.PI/2,P.green,'store','Cashier'],[4,230.9,15,-Math.PI/2,P.green,'store','Cashier'],[4,216,-6.5,2.8,P.orange,'shopper','Shopper']])workerRig(k,EM(k,nm,{1:2,2:4,3:6,4:9}[k],role==='port'?'Works on the quay.':role==='warehouse'?'Reads the pick list at the warehouse terminal.':role==='store'?'Serves at a checkout.':'Browsing the shelves.'),shirt,role==='port'?P.white:null,role,()=>({p:[x,0,z],yaw,s:1.35}));
+  [4,234.4,15,-Math.PI/2,P.green,'store','Cashier'],[4,230.9,15,-Math.PI/2,P.green,'store','Cashier'],[4,216,-6.5,2.8,P.orange,'shopper','Shopper']])workerRig(k,EM(k,nm,{1:2,2:4,3:6,4:10}[k],role==='port'?'Works on the quay.':role==='warehouse'?'Reads the pick list at the warehouse terminal.':role==='store'?'Serves at a checkout.':'Browsing the shelves.'),shirt,role==='port'?P.white:null,role,()=>({p:[x,0,z],yaw,s:1.35}));
+ /* ---- finance office (Invoice stage) ---- */
+ /* staff at their desks, typing now and then */
+ for(const[x,z,yaw,shirt,ph,nm,note]of[[199,0,0,P.white,0,'Finance clerk','Enters the shipment and sales details for the invoice.'],[204,0,0,P.blue,1.7,'Billing officer','Generates the invoice from the shipment record.'],[209,6,0,P.white,3.1,'Reconciliation analyst','Compares purchase records with sales records.']])
+  workerRig(3,EM(3,nm,9,note),shirt,null,'office',()=>{const w=Math.sin(T*1.7+ph);return{p:[x,.27,z+1.15],yaw:yaw+Math.PI,s:1.35,sit:1,type:ph+1,reachR:.35+.25*ss(-.2,.6,w)}});
+ /* illustrative data and documents; seen only during the Invoice stage (stage 9) */
+ const inv=()=>STATE.idx===9?STATE.t:-1,glow=c=>{MAT=2;C=c},card=c=>()=>{glow(c);bb(c,0,0,0,.5,.32,.04);MAT=0};
+ /* shipment data: cards rise from the clerk's screen to the billing officer's desk */
+ for(let n=0;n<4;n++)mover(3,0,card([1,.82,.35]),o=>{const t=inv(),u=(t-3-n*.6)/1.6;o.vis=u>0&&u<1&&t<9;if(!o.vis)return;setM(o,lerp(199,204,u),3+Math.sin(u*Math.PI)*1.1,lerp(-.4,-.4,u),0,1)});
+ /* the invoice: a sheet comes out of the printer and is lifted to the dashboard */
+ mover(3,0,()=>{bb(P.white,0,0,0,.8,.02,1.1);bb(P.dark,0,.02,-.35,.5,.01,.08);for(let k=0;k<4;k++)bb(P.steel,0,.02,-.1+k*.14,.6,.01,.04)},o=>{const t=inv();o.vis=t>=7.5&&t<12.5;if(!o.vis)return;const u=ss(9,12,t);setM(o,lerp(196.5,204,u),lerp(1.4+ss(7.5,8.5,t)*.2,3.2,u),lerp(-8.5,-9.6,u),0,1)});
+ /* reconciliation: purchase records (blue) and sales records (green) travel to the centre panel and meet */
+ for(let n=0;n<3;n++)for(const sd of[-1,1])mover(3,0,card(sd<0?[.42,.68,.95]:[.5,.85,.56]),o=>{const t=inv(),u=(t-11.5-n*.7)/1.8;o.vis=u>0&&u<1;if(!o.vis)return;setM(o,lerp(204+sd*3.8,204+sd*.6,ss(0,1,u)),1.9+n*.6,-10.02,0,1)});
+ /* the result between them follows the manifest: green only when it states the records are reconciled, red when it states a
+    discrepancy, grey otherwise (no data or no stated status: nothing is shown as complete) */
+ const recSt=()=>{const b=DATA.man&&DATA.man.billing,s=b&&String(b.reconciliationStatus||'');return!s?0:/discrep|mismatch|unmatch|differ|fail/i.test(s)?2:/reconcil|match|balanced|complete|ok/i.test(s)?1:0};
+ [[.55,.85,.4],[.9,.35,.3],[.6,.62,.66]].forEach((c,j)=>mover(3,0,()=>{glow(c);bb(c,0,0,0,2.4,.5,.04);MAT=0},o=>{const t=inv();o.vis=t>=14.5&&recSt()===[1,2,0][j];if(o.vis)setM(o,204,2.4,-10.12,0,1)}));
  /* packers at the collection shed: stand at the tables and reach down into the crates now and then */
  for(const[x,z,yaw,shirt,ph]of[[-143.5,10.5,1.6,P.orange,0],[-139,6.2,3.1,P.blue,2.3]])workerRig(0,EM(0,'Packer',1,'Packs melons into crates at the collection shed.'),shirt,P.straw,'harvest',()=>{const w=Math.sin(T*.55+ph);return{p:[x,0,z],yaw,s:1.35,bend:w>.35?.55:.08,reachR:ss(.2,.7,w)}});
  mover(0,0,()=>{for(let k=0;k<3;k++)Tp(0,0,0,k/3*TAU,1,()=>{bb(P.steel,.5,0,0,1,.07,.07);ball(P.dark,1,0,0,.22,1,6,3)})},o=>{o.m=mul(tr(-186,6,-6),rY(T*3))});
@@ -70,7 +86,7 @@ function buildMovers(){
  const fkA=FKA=mover(2,fa,()=>forklift(true),o=>{const q=trkScene().fu;setM(o,q.p[0],.25,q.p[2],q.yaw,1.15)});forkliftOperator(2,fkA,'port');
  LORU=mover(2,EM(2,'Inland lorry',5,'Carries the pallets from the port to the warehouse.'),()=>lorry(LRED,LRED,P.white,true),o=>{const t=tau(5);o.vis=STATE.idx>=4&&t<17.4;onPath(o,RDU,legE(2,'d',u01(t,11.3,17.5)),.3)});
  /* ---- warehouse, QC ---- */
- LORW=mover(3,EM(3,'Lorry at the loading bay',6,'Brings pallets in from the port, and later leaves with accepted melons for the supermarket.'),()=>lorry(LRED,LRED,P.white),o=>{const t=tau(6),t9=tau(9);o.vis=t>=0&&t9<11.4;if(t9>=4)onPath(o,RWD,legE(3,'d',u01(t9,4,11.5)),.12);else onPath(o,RWA,legE(2,'a',u01(t,1,6.5)),.12)});
+ LORW=mover(3,EM(3,'Lorry at the loading bay',6,'Brings pallets in from the port, and later leaves with accepted melons for the supermarket.'),()=>lorry(LRED,LRED,P.white),o=>{const t=tau(6),t9=tau(10);o.vis=t>=0&&t9<11.4;if(t9>=4)onPath(o,RWD,legE(3,'d',u01(t9,4,11.5)),.12);else onPath(o,RWA,legE(2,'a',u01(t,1,6.5)),.12)});
  const fb=EM(3,'Warehouse forklift',6,'Moves each pallet to the location the pick list gives it.'),ZX=[134,146,158];
  const FKB=ZX.map(x=>P2([[131,13],[134.5,12.4],[(134.5+x)/2,10.4],[x,8.6],[x,4.5]],5)),FKY=Math.atan2(3.5,-.6);
  const fkB=mover(3,fb,forklift,o=>{const c=T/10,zi=Math.floor(c)%3,q=c%1,f=q<.5?q*2:2-q*2,p=pathPose(FKB[zi],io(f),2.2);
@@ -78,20 +94,20 @@ function buildMovers(){
   const w=STATE.idx===6?ss(4.5,6.5,STATE.t):STATE.idx===7?1-ss(15,16,STATE.t):0;/* at its base every trip starts on the same heading, so switching to the next bay does not snap it round */
   setM(o,lerp(p[0],131,w),.27,lerp(p[2],13,w),lerp(FKY,p[3],ss(0,.12,f)),1.15);o.laden=q<.5&&w<.02});
  mover(3,fb,()=>pallet(0,.45,2.3,2),o=>{o.vis=fkB.laden;o.m=fkB.m});forkliftOperator(3,fkB,'warehouse');
- for(let k=0;k<3;k++)mover(3,0,()=>crate(0,0,0,1),o=>{const t=tau(9),u=(t/1.4+k/3)%1;o.vis=t>=0&&t<2.2;setM(o,lerp(150.2,152,u),.4+Math.sin(u*Math.PI)*3.2,lerp(23.5,29.5,u),0,Math.min(1,u*8,(1-u)*8))});
+ for(let k=0;k<3;k++)mover(3,0,()=>crate(0,0,0,1),o=>{const t=tau(10),u=(t/1.4+k/3)%1;o.vis=t>=0&&t<2.2;setM(o,lerp(150.2,152,u),.4+Math.sin(u*Math.PI)*3.2,lerp(23.5,29.5,u),0,Math.min(1,u*8,(1-u)*8))});
  const ins=EM(3,'Third-party inspector',7,'Checks the fruit for damage and decides whether it is fit to ship to supermarket suppliers.');
  /* inspectors shuffle along their table and reach out to the fruit in front of them */
  for(const[x,ph]of[[174.5,0],[183.5,2]])workerRig(3,ins,P.white,null,'qc',()=>{const u=Math.sin(T*.7+ph),v=Math.cos(T*.7+ph);return{p:[x+u*.9,0,5.5],yaw:0,s:1.35,phase:u*5,amt:Math.min(1,Math.abs(v)*.8),reachR:ss(.2,.9,Math.sin(T*1.3+ph)),bend:.12}});
  for(const[x,ph,c]of[[174.5,0,P.melY],[183.5,1.5,[.6,.46,.27]]])mover(3,0,()=>ball(c,0,0,0,MELR,.9,8,4),o=>{const q=(T/4+ph)%1;o.m=mul(mul(tr(x-.3,2+Math.sin(q*Math.PI)*1.1,7.6),rY(T*2)),rZ(.4))});
  for(let k=0;k<6;k++)mover(3,0,()=>ball(k%3?P.melY:P.melG,0,0,0,MELR,.9,6,3),o=>{const u=(T/9+k/6)%1;setM(o,lerp(172,186,u),1.37,13,T+k,Math.min(1,u*12,(1-u)*12))});
  /* ---- supermarket ---- */
- LORS=mover(4,EM(4,'Delivery lorry',9,'Carries accepted melons from the warehouse to the supermarket.'),()=>lorry(LRED,LRED,P.white),o=>{const t=tau(9);o.vis=t>=16;const L=typeof LEGS!=='undefined'?LEGS[3]:null;if(L&&ROUTES[3]&&ROUTES[3].length>1)legBuild(L);onPath(o,L?L.ap():RSM,legE(3,'a',u01(t,16.5,22)),.12)});
- for(let k=0;k<3;k++)mover(4,0,()=>crate(0,0,0,1),o=>{const t=tau(9),u=((t-24.9)/1.6+k/3)%1;o.vis=t>=24.9&&t<28.5;setM(o,lerp(201.5,214.5,u),.5+Math.sin(u*Math.PI)*4,lerp(13,10.6,u),0,Math.min(1,u*8,(1-u)*8))});
+ LORS=mover(4,EM(4,'Delivery lorry',10,'Carries accepted melons from the warehouse to the supermarket.'),()=>lorry(LRED,LRED,P.white),o=>{const t=tau(10);o.vis=t>=16;const L=typeof LEGS!=='undefined'?LEGS[3]:null;if(L&&ROUTES[3]&&ROUTES[3].length>1)legBuild(L);onPath(o,L?L.ap():RSM,legE(3,'a',u01(t,16.5,22)),.12)});
+ for(let k=0;k<3;k++)mover(4,0,()=>crate(0,0,0,1),o=>{const t=tau(10),u=((t-24.9)/1.6+k/3)%1;o.vis=t>=24.9&&t<28.5;setM(o,lerp(201.5,214.5,u),.5+Math.sin(u*Math.PI)*4,lerp(13,10.6,u),0,Math.min(1,u*8,(1-u)*8))});
  const sh=walker(4,'Shopper',9,'Chooses a melon from the display.',[226.5,19.6],[223.5,11.2],14,P.red,null,0);
  /* more of the store at work: a shopper walking the aisles, two browsing the produce, a colleague restocking an aisle */
  walker(4,'Shopper',9,'Walks the aisles with a basket.',[236.4,-2],[209.6,-14],18,P.blue,null,3);
- for(const[x,z,yaw,c,nm,note]of[[220,17.6,Math.PI,P.yel,'Shopper','Choosing fruit.'],[208.5,15,Math.PI/2,P.teal,'Shopper','Looking over the vegetables.']])workerRig(4,EM(4,nm,9,note),c,null,'shopper',()=>({p:[x,0,z],yaw,s:1.35,phase:Math.sin(T*.6+x)*.4,amt:.15,reachR:ss(.3,.9,Math.sin(T*.9+z))*.7,bend:.08}));
- workerRig(4,EM(4,'Store colleague',9,'Restocks the grocery aisle.'),P.green,null,'store',()=>({p:[227,0,-9.7],yaw:Math.PI,s:1.35,reachR:ss(.1,.9,Math.sin(T*1.1)),bend:.1+.08*Math.sin(T*1.1)}));
+ for(const[x,z,yaw,c,nm,note]of[[220,17.6,Math.PI,P.yel,'Shopper','Choosing fruit.'],[208.5,15,Math.PI/2,P.teal,'Shopper','Looking over the vegetables.']])workerRig(4,EM(4,nm,10,note),c,null,'shopper',()=>({p:[x,0,z],yaw,s:1.35,phase:Math.sin(T*.6+x)*.4,amt:.15,reachR:ss(.3,.9,Math.sin(T*.9+z))*.7,bend:.08}));
+ workerRig(4,EM(4,'Store colleague',10,'Restocks the grocery aisle.'),P.green,null,'store',()=>({p:[227,0,-9.7],yaw:Math.PI,s:1.35,reachR:ss(.1,.9,Math.sin(T*1.1)),bend:.1+.08*Math.sin(T*1.1)}));
  /* the melon the shopper picks up, held in front of them */
  mover(4,0,()=>ball(P.melY,0,0,0,MELR,.9,8,4),o=>{o.vis=sh.f>.9;setM(o,223.45,1.72+Math.sin(T*2)*.03,10.75,T*.3,1)});
  walker(4,'Store colleague',9,'Restocks the melon display.',[204.5,10],[217,8.5],13,P.green,null,5);
